@@ -1,0 +1,236 @@
+<div class="admin-workshops">
+  <!-- Workshop Detail Modal -->
+  <app-workshop-detail
+    (edit)="editWorkshop($event)"
+    (delete)="deleteWorkshop($event)">
+  </app-workshop-detail>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Workshops</h1>
+      <p class="page-header__subtitle">Planifier et gérer les sessions</p>
+    </div>
+    <button class="btn btn--primary" (click)="toggleForm()">
+      @if (showForm()) {
+        ✕ Annuler
+      } @else {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nouveau workshop
+      }
+    </button>
+  </div>
+
+  <!-- Create Form -->
+  @if (showForm()) {
+    <div class="create-form animate-fade-in">
+      <div class="create-form__header">
+        <h3>Planifier un workshop</h3>
+        <span class="badge badge--primary">NOUVEAU</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="create()" class="workshop-form">
+        <!-- ... formulaire inchangé ... -->
+        <div class="form-group">
+          <label class="form-label form-label--required">Thématique</label>
+          <select formControlName="themeId" class="form-select" (change)="onThemeChange($event)">
+            <option value="">Sélectionner une thématique</option>
+            @for (theme of themes(); track theme.id) {
+              <option [value]="theme.id">{{ theme.title }}</option>
+            }
+          </select>
+          @if (isInvalid('themeId')) {
+            <span class="form-error">Veuillez sélectionner une thématique</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Présentateur</label>
+            <input type="text" formControlName="presenter" class="form-input"
+                   placeholder="Nom du présentateur" />
+            @if (isInvalid('presenter')) {
+              <span class="form-error">Nom du présentateur requis</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label--required">Durée (minutes)</label>
+            <input type="number" formControlName="duration" class="form-input"
+                   min="15" max="480" step="15" />
+            <span class="form-hint">Entre 15 et 480 minutes</span>
+            @if (isInvalid('duration')) {
+              <span class="form-error">Durée invalide</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Date</label>
+            <input type="date" formControlName="date" class="form-input" [min]="minDate" />
+            @if (isInvalid('date')) {
+              <span class="form-error">Date requise</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label--required">Heure</label>
+            <input type="time" formControlName="time" class="form-input" />
+            @if (isInvalid('time')) {
+              <span class="form-error">Heure requise</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Format</label>
+            <select formControlName="location" class="form-select">
+              <option value="en ligne">💻 En ligne</option>
+              <option value="présentiel">🏛️ Présentiel</option>
+              <option value="hybride">🔄 Hybride</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Lien Meet/Zoom</label>
+            <input type="url" formControlName="meetLink" class="form-input"
+                   placeholder="https://meet.google.com/..." />
+            <span class="form-hint">Optionnel - pour les sessions en ligne</span>
+          </div>
+        </div>
+
+        <div class="create-form__actions">
+          <button type="button" class="btn btn--ghost" (click)="toggleForm()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn--primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner"></span>
+              Création...
+            } @else {
+              Créer le workshop
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Workshops List -->
+  @if (workshops().length === 0) {
+    <div class="empty-state">
+      <div class="empty-state__icon">📅</div>
+      <h3 class="empty-state__title">Aucun workshop</h3>
+      <p class="empty-state__description">Commencez par créer votre premier workshop</p>
+      <button class="btn btn--primary btn--sm" (click)="toggleForm()">
+        Créer un workshop
+      </button>
+    </div>
+  } @else {
+    <div class="workshops-grid">
+      @for (workshop of workshops(); track workshop.id) {
+        <div class="workshop-card" [class.workshop-card--canceled]="workshop.status === 'annulé'" (click)="openWorkshopDetail(workshop)">
+          <div class="workshop-card__header">
+            <div class="workshop-card__status">
+              <span class="badge" [class]="getStatusBadgeClass(workshop.status)">
+                {{ workshop.status }}
+              </span>
+              <span class="workshop-card__location">
+                {{ getLocationIcon(workshop.location) }} {{ workshop.location }}
+              </span>
+            </div>
+            <div class="workshop-card__actions" (click)="$event.stopPropagation()">
+              <a [routerLink]="['/admin/presence', workshop.id]" class="btn-icon"
+                 title="Configurer la présence">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+              </a>
+              <button class="btn-icon btn-icon--danger" (click)="deleteWorkshop(workshop)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="workshop-card__title">{{ workshop.themeTitle }}</h3>
+          <p class="workshop-card__presenter">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            {{ workshop.presenter }}
+          </p>
+
+          <div class="workshop-card__details">
+            <div class="detail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ workshop.date | date:'dd/MM/yyyy' }} à {{ workshop.date | date:'HH:mm' }}
+            </div>
+            <div class="detail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ formatDuration(workshop.duration) }}
+            </div>
+            <div class="detail">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              {{ workshop.registrations.length || 0 }} inscrits
+            </div>
+          </div>
+
+          @if (workshop.meetLink) {
+            <div class="workshop-card__meet-link" (click)="$event.stopPropagation()">
+              <a [href]="workshop.meetLink" target="_blank" rel="noopener">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Lien de connexion
+              </a>
+            </div>
+          }
+
+          @if (workshop.presenceFormEnabled) {
+            <div class="workshop-card__presence-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Formulaire de présence activé
+            </div>
+          }
+
+          <div class="workshop-card__footer" (click)="$event.stopPropagation()">
+            <select class="form-select form-select--sm"
+                    [value]="workshop.status"
+                    (change)="updateStatus(workshop, $event)">
+              <option value="planifié">📋 Planifié</option>
+              <option value="en cours">▶️ En cours</option>
+              <option value="terminé">✅ Terminé</option>
+              <option value="annulé">❌ Annulé</option>
+            </select>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

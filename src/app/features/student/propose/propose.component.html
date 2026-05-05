@@ -1,0 +1,222 @@
+<div class="propose-page">
+  <div class="container">
+    <div class="propose-container">
+      <!-- Header -->
+      <div class="page-header">
+        <div class="page-header__badge">
+          <span class="badge badge--primary">FORMULAIRE DE SOUMISSION</span>
+        </div>
+        <h1 class="page-header__title">Proposer une thématique</h1>
+        <p class="page-header__subtitle">
+          Présente ton idée de workshop. Elle sera examinée par l'admin avant
+          publication.
+        </p>
+      </div>
+
+      @if (success()) {
+        <div class="success-card animate-fade-in">
+          <div class="success-card__icon">✅</div>
+          <h3>Soumission envoyée avec succès !</h3>
+          <p>
+            Ta proposition est en cours d'examen. Tu recevras une réponse
+            prochainement.
+          </p>
+          <button class="btn btn--outline" (click)="resetForm()">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            Proposer une autre thématique
+          </button>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" class="propose-form">
+          <!-- Section 1: Informations de base -->
+          <div class="form-section">
+            <div class="form-section__header">
+              <span class="form-section__number">01</span>
+              <h3 class="form-section__title">Informations de base</h3>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label form-label--required"
+                >Titre de la thématique</label
+              >
+              <input
+                type="text"
+                formControlName="proposedTitle"
+                class="form-input"
+                [class.form-input--error]="isInvalid('proposedTitle')"
+                placeholder="Ex: Introduction au pentest avec Kali Linux"
+              />
+              @if (isInvalid("proposedTitle")) {
+                <span class="form-error">Titre requis (max 80 caractères)</span>
+              }
+              <span class="form-hint">Sois concis et précis</span>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label form-label--required">Catégorie</label>
+                <select
+                  formControlName="category"
+                  class="form-select"
+                  [class.form-select--error]="isInvalid('category')"
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+                @if (isInvalid("category")) {
+                  <span class="form-error"
+                    >Veuillez sélectionner une catégorie</span
+                  >
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label form-label--required"
+                  >Difficulté</label
+                >
+                <select
+                  formControlName="difficulty"
+                  class="form-select"
+                  [class.form-select--error]="isInvalid('difficulty')"
+                >
+                  @for (diff of difficulties; track diff.value) {
+                    <option [value]="diff.value">
+                      {{ diff.label }} - {{ diff.desc }}
+                    </option>
+                  }
+                </select>
+                @if (isInvalid("difficulty")) {
+                  <span class="form-error"
+                    >Veuillez sélectionner une difficulté</span
+                  >
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label form-label--required">Description</label>
+              <textarea
+                formControlName="description"
+                class="form-textarea"
+                [class.form-textarea--error]="isInvalid('description')"
+                rows="4"
+                placeholder="Décris le sujet, l'approche, ce qui sera traité durant le workshop…"
+              ></textarea>
+              @if (isInvalid("description")) {
+                <span class="form-error"
+                  >Description requise (min. 50 caractères)</span
+                >
+              }
+            </div>
+          </div>
+
+          <!-- Section 2: Contenu pédagogique -->
+          <div class="form-section">
+            <div class="form-section__header">
+              <span class="form-section__number">02</span>
+              <h3 class="form-section__title">Contenu pédagogique</h3>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label form-label--required"
+                >Objectifs pédagogiques</label
+              >
+              <textarea
+                formControlName="objectives"
+                class="form-textarea"
+                [class.form-textarea--error]="isInvalid('objectives')"
+                rows="3"
+                placeholder="Ce que les participants sauront faire à la fin du workshop…"
+              ></textarea>
+              @if (isInvalid("objectives")) {
+                <span class="form-error">Objectifs requis</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Prérequis</label>
+              <textarea
+                formControlName="prerequisites"
+                class="form-textarea"
+                rows="2"
+                placeholder="Connaissances ou outils nécessaires pour suivre le workshop…"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Matériels / outils nécessaires</label>
+              <textarea
+                formControlName="materialsNeeded"
+                class="form-textarea"
+                rows="2"
+                placeholder="Logiciels, VM, accès réseau, équipements…"
+              ></textarea>
+            </div>
+          </div>
+
+          @if (error()) {
+            <div class="alert alert--error">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              {{ error() }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn--ghost"
+              routerLink="/etudiant/themes"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="btn btn--primary"
+              [disabled]="loading()"
+            >
+              @if (loading()) {
+                <span class="spinner"></span>
+                Envoi en cours...
+              } @else {
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Soumettre la thématique
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</div>

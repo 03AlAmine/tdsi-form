@@ -1,0 +1,215 @@
+<div class="profile-page">
+  <div class="container">
+    <div class="profile-container">
+      <!-- Back button -->
+      <button class="back-btn" (click)="goBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Retour
+      </button>
+
+      <!-- Header -->
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <span>{{ user?.displayName?.charAt(0)?.toUpperCase() || '?' }}</span>
+        </div>
+        <h1 class="profile-header__title">Mon profil</h1>
+        <p class="profile-header__subtitle">Gère tes informations personnelles</p>
+      </div>
+
+      <!-- Success/Error Messages -->
+      @if (successMessage()) {
+        <div class="alert alert--success animate-fade-in">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ successMessage() }}
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="alert alert--error animate-fade-in">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Profile Information Section -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__number">01</span>
+          <h3 class="form-section__title">Informations du compte</h3>
+        </div>
+
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ user?.email }}</span>
+            <span class="info-badge">Non modifiable</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Section -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__number">02</span>
+          <h3 class="form-section__title">Modifier mon profil</h3>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
+          <div class="form-group">
+            <label class="form-label form-label--required">Nom complet</label>
+            <input
+              type="text"
+              formControlName="displayName"
+              class="form-input"
+              [class.form-input--error]="isProfileInvalid('displayName')"
+              placeholder="Votre nom et prénom"
+            />
+            @if (isProfileInvalid('displayName')) {
+              <span class="form-error">Nom requis (min. 3 caractères)</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label--required">Promotion</label>
+            <select formControlName="promo" class="form-select" [class.form-select--error]="isProfileInvalid('promo')">
+              <option value="">Sélectionner votre promotion</option>
+              @for (p of promos; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+            @if (isProfileInvalid('promo')) {
+              <span class="form-error">Veuillez sélectionner votre promotion</span>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn--primary" [disabled]="savingProfile()">
+              @if (savingProfile()) {
+                <span class="spinner"></span>
+                Enregistrement...
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Mettre à jour
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Change Password Section -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__number">03</span>
+          <h3 class="form-section__title">Changer mon mot de passe</h3>
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-form">
+          <div class="form-group">
+            <label class="form-label form-label--required">Mot de passe actuel</label>
+            <div class="password-input">
+              <input
+                [type]="showCurrentPassword() ? 'text' : 'password'"
+                formControlName="currentPassword"
+                class="form-input password-input__field"
+                [class.form-input--error]="isPasswordInvalid('currentPassword')"
+                placeholder="Votre mot de passe actuel"
+              />
+              <button type="button" class="password-input__toggle" (click)="toggleCurrentPassword()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            @if (isPasswordInvalid('currentPassword')) {
+              <span class="form-error">Mot de passe actuel requis</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label form-label--required">Nouveau mot de passe</label>
+              <div class="password-input">
+                <input
+                  [type]="showNewPassword() ? 'text' : 'password'"
+                  formControlName="newPassword"
+                  class="form-input password-input__field"
+                  [class.form-input--error]="isPasswordInvalid('newPassword')"
+                  placeholder="Min. 6 caractères"
+                />
+                <button type="button" class="password-input__toggle" (click)="toggleNewPassword()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              @if (isPasswordInvalid('newPassword')) {
+                <span class="form-error">Mot de passe requis (min. 6 caractères)</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label form-label--required">Confirmer</label>
+              <div class="password-input">
+                <input
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  class="form-input password-input__field"
+                  [class.form-input--error]="isPasswordInvalid('confirmPassword') || passwordForm.hasError('mismatch')"
+                  placeholder="Confirmer le nouveau mot de passe"
+                />
+                <button type="button" class="password-input__toggle" (click)="toggleConfirmPassword()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              @if (passwordForm.hasError('mismatch') && passwordForm.get('confirmPassword')?.touched) {
+                <span class="form-error">Les mots de passe ne correspondent pas</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn--secondary" [disabled]="changingPassword()">
+              @if (changingPassword()) {
+                <span class="spinner"></span>
+                Modification...
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Changer le mot de passe
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Account Info -->
+      <div class="info-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div>
+          <strong>Note de sécurité :</strong> Pour des raisons de sécurité, nous te recommandons d'utiliser un mot de passe unique et complexe.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

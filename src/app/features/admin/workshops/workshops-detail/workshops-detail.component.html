@@ -1,0 +1,422 @@
+@if (isOpen() && workshop) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div
+      class="modal-container modal-container--large"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div class="modal-header__info">
+          <span
+            class="status-badge"
+            [class]="'status-badge--' + getStatusInfo(workshop.status).color"
+          >
+            {{ getStatusInfo(workshop.status).icon }}
+            {{ getStatusInfo(workshop.status).label }}
+          </span>
+          <span class="badge badge--neutral">
+            {{ getLocationInfo(workshop.location).icon }}
+            {{ getLocationInfo(workshop.location).label }}
+          </span>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h2 class="modal-title">{{ workshop.themeTitle }}</h2>
+
+        <div class="presenter-info">
+          <div class="presenter-avatar">👨‍🏫</div>
+          <div>
+            <div class="presenter-label">Présentateur</div>
+            <div class="presenter-name">{{ workshop.presenter }}</div>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card__icon">📅</div>
+            <div class="info-card__content">
+              <div class="info-card__label">Date & Heure</div>
+              <div class="info-card__value">
+                {{ workshop.date | date: "EEEE dd MMMM yyyy" }}
+                <span class="time">{{ workshop.date | date: "HH:mm" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card__icon">⏱️</div>
+            <div class="info-card__content">
+              <div class="info-card__label">Durée</div>
+              <div class="info-card__value">
+                {{ formatDuration(workshop.duration) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card__icon">👥</div>
+            <div class="info-card__content">
+              <div class="info-card__label">Participants</div>
+              <div class="info-card__value">
+                {{ workshop.registrations.length || 0 }} inscrits
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (workshop.meetLink) {
+          <div class="meet-section">
+            <h4>Lien de connexion</h4>
+            <a
+              [href]="workshop.meetLink"
+              target="_blank"
+              rel="noopener"
+              class="meet-link"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              {{ workshop.meetLink }}
+            </a>
+          </div>
+        }
+
+        <!-- Participants inscrits -->
+        @if (participants().length > 0) {
+          <div class="registrations-section">
+            <h4>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Membres inscrits ({{ participants().length }})
+            </h4>
+            <div class="registrations-list">
+              @for (participant of participants(); track participant.uid) {
+                <div
+                  class="registration-item"
+                  (click)="openParticipantProfile(participant, $event)"
+                >
+                  <div class="registration-avatar">
+                    <span>{{
+                      participant.displayName.charAt(0).toUpperCase()
+                    }}</span>
+                  </div>
+                  <div class="registration-info">
+                    <div class="registration-name">
+                      {{ participant.displayName }}
+                    </div>
+                    <div class="registration-promo">
+                      {{ participant.promo }}
+                    </div>
+                    <div class="registration-email">
+                      {{ participant.email }}
+                    </div>
+                  </div>
+                  <div class="registration-status">
+                    <span class="badge badge--success">✓ Membre</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Participants invités (inscription publique) -->
+        @if (guestRegistrations().length > 0) {
+          <div class="registrations-section">
+            <h4>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              Invités ({{ guestRegistrations().length }})
+            </h4>
+            <div class="registrations-list">
+              @for (guest of guestRegistrations(); track guest.id) {
+                <div
+                  class="registration-item"
+                  (click)="openGuestProfile(guest, $event)"
+                >
+                  <div class="registration-avatar">
+                    <span>{{ guest.fullName.charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <div class="registration-info">
+                    <div class="registration-name">{{ guest.fullName }}</div>
+                    <div class="registration-promo">
+                      {{ guest.establishment }} · {{ guest.level }}
+                    </div>
+                    <div class="registration-email">{{ guest.email }}</div>
+                  </div>
+                  <div class="registration-status">
+                    @if (guest.checkedIn) {
+                      <span class="badge badge--success">✓ Présent</span>
+                    } @else {
+                      <span class="badge badge--neutral">⏳ En attente</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (workshop.presenceFormEnabled && workshop.presenceFormConfig) {
+          <div class="presence-section">
+            <h4>Formulaire de présence</h4>
+            <div class="presence-config">
+              <div class="presence-config__header">
+                <span class="badge badge--success">✓ Activé</span>
+                <span
+                  >{{ workshop.presenceFormConfig.fields.length || 0 }} champs
+                  configurés</span
+                >
+              </div>
+              @if (
+                workshop.presenceFormConfig.fields &&
+                workshop.presenceFormConfig.fields.length > 0
+              ) {
+                <div class="presence-fields">
+                  @for (
+                    field of workshop.presenceFormConfig.fields;
+                    track field.id
+                  ) {
+                    <div class="presence-field">
+                      <span class="presence-field__label">{{
+                        field.label
+                      }}</span>
+                      <span class="presence-field__type">{{ field.type }}</span>
+                      @if (field.required) {
+                        <span class="presence-field__required"
+                          >Obligatoire</span
+                        >
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <a
+          [routerLink]="['/admin/presence', workshop.id]"
+          class="btn btn--primary"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M9 11l3 3L22 4" />
+            <path
+              d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+            />
+          </svg>
+          Configurer la présence
+        </a>
+        <button class="btn btn--ghost" (click)="onEdit()">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M17 3l4 4L7 21H3v-4L17 3z" />
+          </svg>
+          Modifier
+        </button>
+        <button class="btn btn--danger" (click)="onDelete()">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
+            />
+          </svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Participant Profile Modal -->
+<!-- Guest Profile Modal -->
+@if (showGuestModal() && selectedGuest()) {
+  <div class="profile-modal-overlay" (click)="closeGuestModal()">
+    <div class="profile-modal" (click)="$event.stopPropagation()">
+      <div class="profile-modal__header">
+        <div class="profile-modal__avatar">
+          <span>{{
+            (selectedGuest()?.fullName?.charAt(0) || "?").toUpperCase()
+          }}</span>
+        </div>
+        <button class="profile-modal__close" (click)="closeGuestModal()">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="profile-modal__content">
+        <h3 class="profile-modal__name">{{ selectedGuest()?.fullName }}</h3>
+
+        <div class="profile-info-list">
+          <div class="profile-info-item">
+            <span class="profile-info-item__icon">📧</span>
+            <div>
+              <div class="profile-info-item__label">Email</div>
+              <div class="profile-info-item__value">
+                {{ selectedGuest()?.email }}
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-info-item">
+            <span class="profile-info-item__icon">🏫</span>
+            <div>
+              <div class="profile-info-item__label">Établissement</div>
+              <div class="profile-info-item__value">
+                {{ selectedGuest()?.establishment }}
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-info-item">
+            <span class="profile-info-item__icon">📚</span>
+            <div>
+              <div class="profile-info-item__label">Niveau</div>
+              <div class="profile-info-item__value">
+                {{ selectedGuest()?.level }}
+              </div>
+            </div>
+          </div>
+
+          @if (selectedGuest()?.phone) {
+            <div class="profile-info-item">
+              <span class="profile-info-item__icon">📱</span>
+              <div>
+                <div class="profile-info-item__label">Téléphone</div>
+                <div class="profile-info-item__value">
+                  {{ selectedGuest()?.phone }}
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="profile-info-item">
+            <span class="profile-info-item__icon">📅</span>
+            <div>
+              <div class="profile-info-item__label">Inscrit le</div>
+              <div class="profile-info-item__value">
+                {{ selectedGuest()?.registeredAt | date: "dd/MM/yyyy à HH:mm" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-info-item">
+            <span class="profile-info-item__icon">✅</span>
+            <div>
+              <div class="profile-info-item__label">Statut</div>
+              <div class="profile-info-item__value">
+                @if (selectedGuest()?.checkedIn) {
+                  <span class="badge badge--success">Présent</span>
+                } @else {
+                  <span class="badge badge--neutral">Non présent</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-modal__footer">
+        @if (!selectedGuest()?.checkedIn) {
+          <button
+            class="btn btn--success btn--full"
+            (click)="checkInGuest(selectedGuest()!.id!)"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Valider la présence
+          </button>
+        }
+        <button class="btn btn--outline btn--full" (click)="closeGuestModal()">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+}

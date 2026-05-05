@@ -1,0 +1,265 @@
+<div class="submissions-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Mes soumissions</h1>
+        <p class="page-header__subtitle">Suivi de tes propositions de thématiques</p>
+      </div>
+      <a routerLink="/etudiant/proposer" class="btn btn--primary btn--sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nouvelle proposition
+      </a>
+    </div>
+
+    @if (loading()) {
+      <div class="skeleton-list">
+        @for (n of [1,2,3]; track n) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else if (submissions().length === 0) {
+      <div class="empty-state">
+        <div class="empty-state__icon">📝</div>
+        <h3>Aucune soumission</h3>
+        <p>Vous n'avez encore rien soumis</p>
+        <a routerLink="/etudiant/proposer" class="btn btn--primary btn--sm">
+          Proposer une thématique
+        </a>
+      </div>
+    } @else {
+      <div class="submissions-list">
+        @for (sub of submissions(); track sub.id) {
+          <div class="submission-card"
+               [class.submission-card--pending]="sub.status === 'en attente'"
+               [class.submission-card--approved]="sub.status === 'approuvé'"
+               [class.submission-card--refused]="sub.status === 'refusé'"
+               (click)="openSubmissionDetail(sub)">
+            <div class="submission-card__status">
+              <span class="status-icon" [class]="'status-icon--' + sub.status">
+                {{ getStatusIcon(sub.status) }}
+              </span>
+            </div>
+            <div class="submission-card__content">
+              <div class="submission-card__header">
+                <h3 class="submission-card__title">{{ sub.proposedTitle }}</h3>
+                <span class="badge" [class]="getBadgeClass(sub.status)">
+                  {{ sub.status }}
+                </span>
+              </div>
+              <p class="submission-card__description">{{ sub.description | slice:0:100 }}{{ sub.description.length > 100 ? '...' : '' }}</p>
+              <div class="submission-card__footer">
+                <div class="submission-card__meta">
+                  <span class="meta">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    {{ sub.submittedAt | date:'dd MMM yyyy' }}
+                  </span>
+                  <span class="meta">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    {{ sub.estimatedDuration }} min
+                  </span>
+                  <span class="badge badge--sm badge--primary">{{ sub.category }}</span>
+                </div>
+                @if (sub.adminComment) {
+                  <div class="submission-card__comment-indicator">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Commentaire administrateur
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="submission-card__arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Submission Detail Drawer -->
+@if (selectedSubmission()) {
+  <div class="drawer-overlay" (click)="closeDrawer()">
+    <div class="drawer" [class.drawer--open]="drawerOpen()" (click)="$event.stopPropagation()">
+      <div class="drawer__header">
+        <div class="drawer__badges">
+          <span class="badge" [class]="getBadgeClass(selectedSubmission()?.status || '')">
+            {{ selectedSubmission()?.status }}
+          </span>
+          <span class="badge badge--primary">{{ selectedSubmission()?.category }}</span>
+        </div>
+        <button class="drawer__close" (click)="closeDrawer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer__content">
+        <h2 class="drawer__title">{{ selectedSubmission()?.proposedTitle }}</h2>
+
+        <div class="submission-meta">
+          <div class="meta-item">
+            <span class="meta-item__label">Soumis le</span>
+            <span class="meta-item__value">{{ selectedSubmission()?.submittedAt | date:'EEEE dd MMMM yyyy à HH:mm' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item__label">Durée estimée</span>
+            <span class="meta-item__value">{{ selectedSubmission()?.estimatedDuration }} minutes</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item__label">Promotion</span>
+            <span class="meta-item__value">{{ selectedSubmission()?.promo }}</span>
+          </div>
+        </div>
+
+        <!-- Admin Comment (prominent if exists) -->
+        @if (selectedSubmission()?.adminComment) {
+          <div class="admin-comment"
+               [class.admin-comment--approved]="selectedSubmission()?.status === 'approuvé'"
+               [class.admin-comment--refused]="selectedSubmission()?.status === 'refusé'">
+            <div class="admin-comment__header">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span>Réponse de l'administrateur</span>
+            </div>
+            <p class="admin-comment__text">{{ selectedSubmission()?.adminComment }}</p>
+          </div>
+        }
+
+        <!-- Details Chips (Duration + Difficulty + Student) -->
+        <div class="detail-chips">
+          <div class="detail-chip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <div>
+              <div class="detail-chip__val font-mono">{{ selectedSubmission()?.estimatedDuration }} min</div>
+              <div class="detail-chip__lbl">Durée estimée</div>
+            </div>
+          </div>
+
+          <div class="detail-chip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <div>
+              <div class="detail-chip__val font-mono">
+                @switch (selectedSubmission()?.difficulty) {
+                  @case ('débutant') { <span>🌱 Débutant</span> }
+                  @case ('intermédiaire') { <span>📘 Intermédiaire</span> }
+                  @case ('avancé') { <span>⚡ Avancé</span> }
+                  @default { <span>📍 Non spécifiée</span> }
+                }
+              </div>
+              <div class="detail-chip__lbl">Niveau requis</div>
+            </div>
+          </div>
+
+          <div class="detail-chip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <div>
+              <div class="detail-chip__val font-mono">{{ selectedSubmission()?.studentName }}</div>
+              <div class="detail-chip__lbl">{{ selectedSubmission()?.promo }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section">
+          <h4>Description</h4>
+          <p>{{ selectedSubmission()?.description }}</p>
+        </div>
+
+        <!-- Objectives -->
+        <div class="detail-section">
+          <h4>Objectifs pédagogiques</h4>
+          <p>{{ selectedSubmission()?.objectives }}</p>
+        </div>
+
+        <!-- Prerequisites -->
+        @if (selectedSubmission()?.prerequisites) {
+          <div class="detail-section">
+            <h4>Prérequis</h4>
+            <p>{{ selectedSubmission()?.prerequisites }}</p>
+          </div>
+        }
+
+        <!-- Materials -->
+        @if (selectedSubmission()?.materialsNeeded) {
+          <div class="detail-section">
+            <h4>Matériels & outils</h4>
+            <p>{{ selectedSubmission()?.materialsNeeded }}</p>
+          </div>
+        }
+
+        <!-- Update date -->
+        @if (selectedSubmission()?.updatedAt) {
+          <div class="update-info">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Dernière mise à jour : {{ selectedSubmission()?.updatedAt | date:'dd MMMM yyyy' }}
+          </div>
+        }
+      </div>
+
+      <div class="drawer__actions">
+        @if (selectedSubmission()?.status === 'refusé') {
+          <a routerLink="/etudiant/proposer" class="btn btn--primary btn--full" (click)="closeDrawer()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Proposer une nouvelle thématique
+          </a>
+        }
+
+        @if (selectedSubmission()?.status === 'en attente') {
+          <div class="pending-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Ta proposition est en cours d'examen par l'administrateur.
+          </div>
+        }
+
+        @if (selectedSubmission()?.status === 'approuvé') {
+          <div class="approved-note">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Félicitations ! Ta proposition a été acceptée et publiée.
+          </div>
+        }
+
+        <button class="btn btn--ghost btn--full" (click)="closeDrawer()">Fermer</button>
+      </div>
+    </div>
+  </div>
+}

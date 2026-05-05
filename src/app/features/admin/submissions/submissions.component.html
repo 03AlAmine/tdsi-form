@@ -1,0 +1,272 @@
+<div class="submissions">
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Soumissions</h1>
+      <p class="page-header__subtitle">Gérer les propositions des étudiants</p>
+    </div>
+    <div class="page-header__stats">
+      <div class="stat-badge">
+        <span class="stat-badge__label">En attente</span>
+        <span class="stat-badge__value">{{ pendingCount() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    @for (filter of filters; track filter.value) {
+      <button
+        class="filter-chip"
+        [class.filter-chip--active]="activeFilter() === filter.value"
+        (click)="setFilter(filter.value)"
+      >
+        {{ filter.label }}
+        @if (filter.value === "en attente" && pendingCount() > 0) {
+          <span class="filter-chip__count">{{ pendingCount() }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- Submissions List -->
+  @if (filteredSubmissions().length === 0) {
+    <div class="empty-state">
+      <div class="empty-state__icon">📋</div>
+      <h3 class="empty-state__title">Aucune soumission</h3>
+      <p class="empty-state__description">
+        @switch (activeFilter()) {
+          @case ("en attente") {
+            Aucune soumission en attente de validation.
+          }
+          @case ("approuvé") {
+            Aucune soumission approuvée pour le moment.
+          }
+          @case ("refusé") {
+            Aucune soumission refusée.
+          }
+          @default {
+            Aucune soumission trouvée.
+          }
+        }
+      </p>
+    </div>
+  } @else {
+    <div class="submissions-list">
+      @for (sub of filteredSubmissions(); track sub.id) {
+        <div
+          class="submission-card"
+          [class.submission-card--approved]="sub.status === 'approuvé'"
+        >
+          <!-- Status Indicator -->
+          <div class="submission-card__status" [attr.data-status]="sub.status">
+            <span
+              class="status-indicator"
+              [class.status-indicator--pending]="sub.status === 'en attente'"
+              [class.status-indicator--approved]="sub.status === 'approuvé'"
+              [class.status-indicator--refused]="sub.status === 'refusé'"
+            >
+              {{ getStatusIcon(sub.status) }}
+            </span>
+          </div>
+
+          <!-- Content -->
+          <div class="submission-card__content">
+            <div class="submission-card__header">
+              <div>
+                <h3 class="submission-card__title">{{ sub.proposedTitle }}</h3>
+                <div class="submission-card__meta">
+                  <span class="badge badge--primary">{{ sub.category }}</span>
+                  <span class="submission-card__author">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    {{ sub.studentName }} · {{ sub.promo }}
+                  </span>
+                  <span class="submission-card__date">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    {{ sub.submittedAt | date: "dd/MM/yyyy à HH:mm" }}
+                  </span>
+                </div>
+              </div>
+              <span class="badge" [class]="getStatusBadgeClass(sub.status)">
+                {{ sub.status }}
+              </span>
+            </div>
+
+            <p class="submission-card__description">{{ sub.description }}</p>
+
+            <!-- Details Grid -->
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-item__label">Objectifs</span>
+                <p class="detail-item__value">{{ sub.objectives }}</p>
+              </div>
+              @if (sub.prerequisites) {
+                <div class="detail-item">
+                  <span class="detail-item__label">Prérequis</span>
+                  <p class="detail-item__value">{{ sub.prerequisites }}</p>
+                </div>
+              }
+              @if (sub.materialsNeeded) {
+                <div class="detail-item">
+                  <span class="detail-item__label">Matériel nécessaire</span>
+                  <p class="detail-item__value">{{ sub.materialsNeeded }}</p>
+                </div>
+              }
+              <div class="detail-item">
+                <span class="detail-item__label">Durée estimée</span>
+                <p class="detail-item__value">
+                  {{ sub.estimatedDuration }} minutes
+                </p>
+              </div>
+            </div>
+            <!-- Dans la section des détails de la soumission -->
+            <div class="detail-block">
+              <span class="detail-block__lbl">Difficulté proposée</span>
+              <p>
+                @switch (sub.difficulty) {
+                  @case ("débutant") {
+                    <span>🌱 Débutant</span>
+                  }
+                  @case ("intermédiaire") {
+                    <span>📘 Intermédiaire</span>
+                  }
+                  @case ("avancé") {
+                    <span>⚡ Avancé</span>
+                  }
+                  @default {
+                    <span>📍 Non spécifiée</span>
+                  }
+                }
+              </p>
+            </div>
+
+            <!-- Admin Comment Display -->
+            @if (sub.adminComment && sub.status !== "en attente") {
+              <div
+                class="admin-comment"
+                [class.admin-comment--approved]="sub.status === 'approuvé'"
+                [class.admin-comment--refused]="sub.status === 'refusé'"
+              >
+                <div class="admin-comment__header">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                    />
+                  </svg>
+                  <span>Commentaire administrateur</span>
+                </div>
+                <p class="admin-comment__text">{{ sub.adminComment }}</p>
+              </div>
+            }
+
+            <!-- Actions (for pending submissions) -->
+            @if (sub.status === "en attente") {
+              <div class="action-section">
+                <div class="comment-input">
+                  <label class="form-label">Commentaire (optionnel)</label>
+                  <textarea
+                    class="form-textarea form-textarea--sm"
+                    [ngModel]="commentText()[sub.id!]"
+                    (ngModelChange)="updateComment(sub.id!, $event)"
+                    placeholder="Ajouter un commentaire pour l'étudiant..."
+                    rows="2"
+                  ></textarea>
+                </div>
+                <div class="action-buttons">
+                  <button
+                    class="btn btn--success btn--sm"
+                    [disabled]="processingId() === sub.id"
+                    (click)="approve(sub)"
+                  >
+                    @if (processingId() === sub.id) {
+                      <span class="spinner"></span>
+                    } @else {
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    }
+                    Approuver & publier
+                  </button>
+                  <button
+                    class="btn btn--danger btn--sm"
+                    [disabled]="processingId() === sub.id"
+                    (click)="refuse(sub)"
+                  >
+                    @if (processingId() === sub.id) {
+                      <span class="spinner"></span>
+                    } @else {
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    }
+                    Refuser
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Published Badge -->
+            @if (sub.status === "approuvé") {
+              <div class="published-badge">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Thématique publiée dans le catalogue
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

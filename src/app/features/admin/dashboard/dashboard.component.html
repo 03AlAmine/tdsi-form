@@ -1,0 +1,183 @@
+<div class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__title">Tableau de bord</h1>
+    <p class="dashboard__subtitle">Bienvenue, Administrateur 👋</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--themes">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__value">{{ stats().totalThemes }}</span>
+          <span class="stat-card__label">Thématiques</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--workshops">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__value">{{ stats().totalWorkshops }}</span>
+          <span class="stat-card__label">Workshops</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--pending">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__value">{{ stats().pendingSubmissions }}</span>
+          <span class="stat-card__label">En attente</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--users">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-card__content">
+          <span class="stat-card__value">{{ stats().totalRegistrations }}</span>
+          <span class="stat-card__label">Inscriptions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Workshops & Pending Submissions -->
+    <div class="dashboard-grid">
+      <!-- Recent Workshops -->
+      <div class="dashboard-card">
+        <div class="dashboard-card__header">
+          <h3 class="dashboard-card__title">Workshops récents</h3>
+          <a routerLink="/admin/workshops" class="dashboard-card__link">
+            Voir tout
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="dashboard-card__body">
+          @if (recentWorkshops().length === 0) {
+            <div class="empty-message">
+              <span>📅</span>
+              <p>Aucun workshop pour le moment</p>
+            </div>
+          } @else {
+            <div class="recent-list">
+              @for (workshop of recentWorkshops(); track workshop.id) {
+                <div class="recent-item">
+                  <div class="recent-item__info">
+                    <div class="recent-item__title">{{ workshop.themeTitle }}</div>
+                    <div class="recent-item__meta">
+                      <span class="badge badge--sm" [class.badge--primary]="workshop.status === 'planifié'">
+                        {{ workshop.status }}
+                      </span>
+                      <span>{{ workshop.date | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                  <div class="recent-item__stats">
+                    <span>{{ workshop.registrations?.length || 0 }} inscrits</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Pending Submissions -->
+      <div class="dashboard-card">
+        <div class="dashboard-card__header">
+          <h3 class="dashboard-card__title">Soumissions en attente</h3>
+          <a routerLink="/admin/soumissions" class="dashboard-card__link">
+            Voir tout
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="dashboard-card__body">
+          @if (pendingSubmissionsList().length === 0) {
+            <div class="empty-message">
+              <span>✅</span>
+              <p>Aucune soumission en attente</p>
+            </div>
+          } @else {
+            <div class="pending-list">
+              @for (sub of pendingSubmissionsList(); track sub.id) {
+                <div class="pending-item">
+                  <div class="pending-item__title">{{ sub.proposedTitle }}</div>
+                  <div class="pending-item__meta">
+                    <span>{{ sub.studentName }}</span>
+                    <span>{{ sub.promo }}</span>
+                  </div>
+                  <a routerLink="/admin/soumissions" class="pending-item__action">
+                    Traiter
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </a>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3 class="quick-actions__title">Actions rapides</h3>
+      <div class="quick-actions__grid">
+        <a routerLink="/admin/themes" class="quick-action">
+          <div class="quick-action__icon">➕</div>
+          <div class="quick-action__content">
+            <div class="quick-action__title">Nouvelle thématique</div>
+            <div class="quick-action__desc">Ajouter un sujet de workshop</div>
+          </div>
+        </a>
+        <a routerLink="/admin/workshops" class="quick-action">
+          <div class="quick-action__icon">📅</div>
+          <div class="quick-action__content">
+            <div class="quick-action__title">Planifier un workshop</div>
+            <div class="quick-action__desc">Organiser une session</div>
+          </div>
+        </a>
+        <a routerLink="/admin/soumissions" class="quick-action">
+          <div class="quick-action__icon">📋</div>
+          <div class="quick-action__content">
+            <div class="quick-action__title">Voir les soumissions</div>
+            <div class="quick-action__desc">Approuver ou refuser</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  }
+</div>

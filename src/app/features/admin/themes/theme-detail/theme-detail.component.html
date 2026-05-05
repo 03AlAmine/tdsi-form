@@ -1,0 +1,103 @@
+@if (isOpen() && theme) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header__info">
+          <span class="badge" [class]="'badge--' + getStatusColor(theme.status)">
+            {{ theme.status }}
+          </span>
+          <span class="badge badge--primary">{{ theme.category }}</span>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h2 class="modal-title">{{ theme.title }}</h2>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <span class="meta-item__label">Difficulté</span>
+            <div class="meta-item__value">
+              <span>{{ getDifficultyInfo(theme.difficulty).icon }}</span>
+              {{ theme.difficulty }}
+            </div>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item__label">Participants</span>
+            <div class="meta-item__value">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              {{ theme.currentParticipants }}/{{ theme.maxParticipants }}
+            </div>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item__label">Créé le</span>
+            <div class="meta-item__value">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ theme.createdAt | date:'dd MMMM yyyy' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="description-section">
+          <h4>Description</h4>
+          <p>{{ theme.description }}</p>
+        </div>
+
+        @if (theme.tags && theme.tags.length > 0) {
+          <div class="tags-section">
+            <h4>Tags</h4>
+            <div class="tags-list">
+              @for (tag of theme.tags; track tag) {
+                <span class="tag">#{{ tag }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        @if (theme.workshopDate) {
+          <div class="workshop-info">
+            <h4>Workshop associé</h4>
+            <div class="info-card">
+              <span class="info-card__icon">📅</span>
+              <div>
+                <div class="info-card__title">Date prévue</div>
+                <div class="info-card__value">{{ theme.workshopDate | date:'EEEE dd MMMM yyyy à HH:mm' }}</div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn--ghost" (click)="onEdit()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 3l4 4L7 21H3v-4L17 3z"/>
+          </svg>
+          Modifier
+        </button>
+        <button class="btn btn--danger" (click)="onDelete()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+}

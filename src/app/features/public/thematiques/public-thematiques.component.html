@@ -1,0 +1,172 @@
+<div class="public-thematiques">
+  <app-tech-background />
+  <!-- Navigation -->
+  <app-public-navbar />
+
+    <!-- Hero section -->
+    <div class="hero">
+      <div class="container">
+        <div class="hero__badge">
+          <span class="badge badge--primary">CATALOGUE COMPLET</span>
+        </div>
+        <h1 class="hero__title">Thématiques disponibles</h1>
+        <p class="hero__description">
+          Découvrez l'ensemble des sujets proposés par la communauté TDSI.
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Filters -->
+      <div class="filters">
+        <button
+          class="filter-chip"
+          [class.active]="!activeCategory()"
+          (click)="activeCategory.set(null)"
+        >
+          Tous
+        </button>
+        @for (cat of categories; track cat) {
+          <button
+            class="filter-chip"
+            [class.active]="activeCategory() === cat"
+            (click)="activeCategory.set(cat)"
+          >
+            {{ cat }}
+          </button>
+        }
+      </div>
+
+      <!-- Liste des thématiques -->
+      @if (loading()) {
+        <div class="skeleton-grid">
+          @for (n of [1, 2, 3, 4, 5, 6]; track n) {
+            <div class="skeleton-card"></div>
+          }
+        </div>
+      } @else if (filteredThemes.length === 0) {
+        <div class="empty-state">
+          <div class="empty-state__icon">📚</div>
+          <h3>Aucune thématique</h3>
+          <p>Aucune thématique disponible dans cette catégorie</p>
+        </div>
+      } @else {
+        <div class="themes-grid">
+          @for (theme of filteredThemes; track theme.id) {
+            <div class="theme-card" (click)="openThemeDrawer(theme)">
+              <div class="theme-card__badges">
+                <span class="badge badge--primary">{{ theme.category }}</span>
+                <span class="badge badge--success">{{ theme.status }}</span>
+              </div>
+              <h3 class="theme-card__title">{{ theme.title }}</h3>
+              <p class="theme-card__description">
+                {{ theme.description | slice: 0 : 100
+                }}{{ theme.description.length > 100 ? "..." : "" }}
+              </p>
+              <div class="theme-card__footer">
+                <div class="theme-card__difficulty">
+                  {{ getDifficultyIcon(theme.difficulty) }}
+                  {{ theme.difficulty }}
+                </div>
+                <div class="theme-card__stats">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  {{ theme.currentParticipants }}/{{ theme.maxParticipants }}
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+  <app-public-footer />
+</div>
+
+<!-- Theme Detail Drawer (latéral - comme pour les étudiants) -->
+@if (selectedTheme()) {
+  <div class="drawer-overlay" (click)="closeDrawer()">
+    <div
+      class="drawer"
+      [class.drawer--open]="drawerOpen()"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="drawer__header">
+        <div class="drawer__badges">
+          <span class="badge badge--primary">{{
+            selectedTheme()?.category
+          }}</span>
+          <span class="badge badge--success">{{
+            selectedTheme()?.status
+          }}</span>
+        </div>
+        <button class="drawer__close" (click)="closeDrawer()">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer__content">
+        <h2 class="drawer__title">{{ selectedTheme()?.title }}</h2>
+
+        <div class="drawer__section">
+          <h4>Description</h4>
+          <p>{{ selectedTheme()?.description }}</p>
+        </div>
+
+        <div class="drawer__section">
+          <h4>Difficulté</h4>
+          <p>
+            {{ getDifficultyIcon(selectedTheme()?.difficulty || "") }}
+            {{ selectedTheme()?.difficulty }}
+          </p>
+        </div>
+
+        <div class="drawer__section">
+          <h4>Participants</h4>
+          <p>
+            {{ selectedTheme()?.currentParticipants }} /
+            {{ selectedTheme()?.maxParticipants }} inscrits
+          </p>
+        </div>
+
+        @if (selectedTheme()?.tags && selectedTheme()?.tags?.length) {
+          <div class="drawer__section">
+            <h4>Tags</h4>
+            <div class="tags-list">
+              @for (tag of selectedTheme()?.tags; track tag) {
+                <span class="tag">#{{ tag }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="drawer__footer">
+        <button class="btn btn--outline btn--full" (click)="closeDrawer()">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+}

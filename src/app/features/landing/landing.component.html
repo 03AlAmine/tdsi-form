@@ -1,0 +1,275 @@
+<div class="landing">
+<app-tech-background/>
+<app-public-navbar/>
+
+<!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero__container">
+      <div class="hero__grid">
+        <!-- Left side - Text content -->
+        <div class="hero__content">
+          <div class="hero__badge">
+            <span class="badge-glow"></span>
+            <span class="hero__badge-text"
+              >TECH COMMUNITY · UCAD · DAKAR · AFRIQUE</span
+            >
+            <span class="blink-dot"></span>
+          </div>
+
+          <div class="hero__title">
+            <span class="hero__title-static">Bienvenue sur</span>
+            <span class="hero__title-animated">
+              <span class="typing-text" id="typing-text"></span>
+              <span class="cursor">_</span>
+            </span>
+          </div>
+
+          <p class="hero__subtitle">
+            L'écosystème collaboratif de la tech africaine
+          </p>
+          <p class="hero__description">
+            Rejoignez la première communauté sénégalaise dédiée à la
+            cybersécurité et aux technologies de l'information. Proposez des
+            workshops, partagez vos connaissances et développez votre réseau.
+          </p>
+
+          <div class="hero__cta">
+            <a
+              routerLink="/workshops"
+              class="btn btn--primary btn--lg hero__btn-primary"
+            >
+              <span class="btn-content">
+                <i class="fas fa-calendar-alt"></i>
+                Explorer les workshops
+                <i class="fas fa-arrow-right"></i>
+              </span>
+              <span class="btn-bg"></span>
+            </a>
+            <a routerLink="/thematiques" class="btn btn--outline btn--lg">
+              <i class="fas fa-th-large"></i>
+              Découvrir les thématiques
+            </a>
+          </div>
+        </div>
+
+        <!-- Right side - Animated Logo -->
+        <div class="hero__logo">
+          <div class="logo-animation">
+            <div class="logo-3d">
+              <img
+                src="/assets/images/logo.png"
+                alt="Club TDSI"
+                class="logo-img"
+              />
+              <div class="logo-glow-ring"></div>
+            </div>
+            <div class="logo-particles">
+              <span class="particle"></span>
+              <span class="particle"></span>
+              <span class="particle"></span>
+              <span class="particle"></span>
+              <span class="particle"></span>
+            </div>
+            <div class="logo-text-animated">
+              <span>C</span><span>T</span><span>C</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="hero__stats">
+        <div class="stat-card">
+          <div class="stat-card__value">
+            <span class="counter" data-target="12">0</span>+
+          </div>
+          <div class="stat-card__label">Thématiques</div>
+          <div class="stat-card__icon">
+            <i class="fas fa-book-open"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value">
+            <span class="counter" data-target="48">0</span>
+          </div>
+          <div class="stat-card__label">Membres actifs</div>
+          <div class="stat-card__icon">
+            <i class="fas fa-users"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value">
+            <span class="counter" data-target="8">0</span>
+          </div>
+          <div class="stat-card__label">Workshops</div>
+          <div class="stat-card__icon">
+            <i class="fas fa-chalkboard"></i>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__value">
+            <span class="counter" data-target="4">0</span>
+          </div>
+          <div class="stat-card__label">Experts</div>
+          <div class="stat-card__icon">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Features Section -->
+  <section class="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">
+          <i class="fas fa-question-circle"></i>
+          Pourquoi TDSI ?
+        </span>
+        <h2 class="section-title">
+          Une communauté qui
+          <span class="gradient-text">innove</span>
+        </h2>
+        <p class="section-subtitle">
+          Découvrez les avantages de rejoindre le club TDSI
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <i class="fas fa-lightbulb"></i>
+            <div class="icon-glow"></div>
+          </div>
+          <h3 class="feature-card__title">Proposer une thématique</h3>
+          <p class="feature-card__desc">
+            Soumets une idée de workshop. L'admin valide, programme et configure
+            le formulaire de présence.
+          </p>
+          <div class="feature-card__link">
+            <span>En savoir plus</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <i class="fas fa-microphone-alt"></i>
+            <div class="icon-glow"></div>
+          </div>
+          <h3 class="feature-card__title">Workshops interactifs</h3>
+          <p class="feature-card__desc">
+            Participe aux sessions en direct. Confirme ta présence via un
+            formulaire personnalisé par l'admin.
+          </p>
+          <div class="feature-card__link">
+            <span>En savoir plus</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <i class="fas fa-shield-alt"></i>
+            <div class="icon-glow"></div>
+          </div>
+          <h3 class="feature-card__title">Sécurité & Réseaux</h3>
+          <p class="feature-card__desc">
+            Cryptographie, pentest, protocoles de transmission — explore les
+            domaines clés du numérique moderne.
+          </p>
+          <div class="feature-card__link">
+            <span>En savoir plus</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <i class="fas fa-robot"></i>
+            <div class="icon-glow"></div>
+          </div>
+          <h3 class="feature-card__title">Intelligence Artificielle</h3>
+          <p class="feature-card__desc">
+            Découvre les applications de l'IA dans la cybersécurité et la
+            transmission de données.
+          </p>
+          <div class="feature-card__link">
+            <span>En savoir plus</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="icon-glow"></div>
+          </div>
+          <h3 class="feature-card__title">Cloud & DevOps</h3>
+          <p class="feature-card__desc">
+            Apprends les bonnes pratiques de sécurité dans les environnements
+            cloud modernes.
+          </p>
+          <div class="feature-card__link">
+            <span>En savoir plus</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card__icon">
+            <i class="fas fa-code"></i>
+            <div class="icon-glow"></div>
+          </div>
+          <h3 class="feature-card__title">Développement Web</h3>
+          <p class="feature-card__desc">
+            Maîtrise les frameworks modernes et les bonnes pratiques de sécurité
+            web.
+          </p>
+          <div class="feature-card__link">
+            <span>En savoir plus</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-card">
+        <div class="cta-card__content">
+          <span class="cta-badge">
+            <i class="fas fa-rocket"></i>
+            Prêt à commencer ?
+          </span>
+          <h2 class="cta-title">
+            Rejoins l'aventure <span class="gradient-text">TDSI</span>
+          </h2>
+          <p class="cta-description">
+            Intègre une communauté dynamique et participe à des workshops
+            exclusifs
+          </p>
+          <div class="cta-buttons">
+            <a routerLink="/inscription" class="btn btn--primary btn--lg">
+              <span class="btn-content">
+                <i class="fas fa-user-plus"></i>
+                Créer mon compte
+                <i class="fas fa-arrow-right"></i>
+              </span>
+            </a>
+            <a routerLink="/workshops" class="btn btn--outline btn--lg">
+              <i class="fas fa-calendar-alt"></i>
+              Voir les workshops
+            </a>
+          </div>
+        </div>
+        <div class="cta-card__bg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+<app-public-footer/>
+</div>

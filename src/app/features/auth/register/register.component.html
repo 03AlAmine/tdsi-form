@@ -1,0 +1,188 @@
+<div class="register-page">
+    <app-tech-background />
+
+  <!-- Tech Background -->
+  <div class="register-page__bg">
+    <div class="register-page__grid"></div>
+    <div class="register-page__gradient"></div>
+  </div>
+
+  <div class="register-card">
+    <a routerLink="/" class="register-card__back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Retour
+    </a>
+
+    <div class="register-card__header">
+      <app-logo size="md"></app-logo>
+      <h1 class="register-card__title">Créer un compte</h1>
+      <p class="register-card__subtitle">Rejoins la communauté TDSI</p>
+    </div>
+
+    @if (error()) {
+      <div class="alert alert--error animate-fade-in" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {{ error() }}
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="register-form" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="displayName" class="form-label form-label--required">
+            Prénom & Nom
+          </label>
+          <input
+            id="displayName"
+            type="text"
+            formControlName="displayName"
+            class="form-input"
+            [class.form-input--error]="isInvalid('displayName')"
+            placeholder="Fatou Diallo"
+            autocomplete="name"
+          />
+          @if (isInvalid('displayName')) {
+            <span class="form-error">
+              Nom complet requis (min. 3 caractères)
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="promo" class="form-label form-label--required">
+            Promotion
+          </label>
+          <select id="promo" formControlName="promo" class="form-select" [class.form-input--error]="isInvalid('promo')">
+            <option value="">Sélectionner</option>
+            @for (p of promos; track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+          @if (isInvalid('promo')) {
+            <span class="form-error">
+              Veuillez sélectionner une promotion
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label form-label--required">
+          Email institutionnel
+        </label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          [class.form-input--error]="isInvalid('email')"
+          placeholder="prenom.nom@esp.sn"
+          autocomplete="email"
+        />
+        @if (isInvalid('email')) {
+          <span class="form-error">
+            Email invalide
+          </span>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password" class="form-label form-label--required">
+            Mot de passe
+          </label>
+          <div class="password-input">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              class="form-input password-input__field"
+              [class.form-input--error]="isInvalid('password')"
+              placeholder="Min. 6 caractères"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="password-input__toggle"
+              (click)="togglePassword()"
+              aria-label="Afficher/masquer le mot de passe"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          @if (isInvalid('password')) {
+            <span class="form-error">
+              Mot de passe requis (min. 6 caractères)
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="confirm" class="form-label form-label--required">
+            Confirmer
+          </label>
+          <div class="password-input">
+            <input
+              id="confirm"
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirm"
+              class="form-input password-input__field"
+              [class.form-input--error]="passwordMismatch"
+              placeholder="Répéter le mot de passe"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="password-input__toggle"
+              (click)="toggleConfirmPassword()"
+              aria-label="Afficher/masquer la confirmation"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      @if (passwordMismatch) {
+        <div class="form-error">Les mots de passe ne correspondent pas</div>
+      }
+
+      <button
+        type="submit"
+        class="btn btn--primary btn--full btn--lg"
+        [disabled]="loading()"
+      >
+        @if (loading()) {
+          <span class="spinner" aria-hidden="true"></span>
+          Création...
+        } @else {
+          Créer mon compte
+        }
+      </button>
+    </form>
+
+    <div class="register-card__divider"></div>
+
+    <p class="register-card__footer">
+      Déjà membre ?
+      <a routerLink="/connexion" class="register-card__link">
+        Se connecter
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </p>
+  </div>
+</div>

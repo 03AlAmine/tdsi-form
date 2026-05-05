@@ -1,0 +1,221 @@
+<div class="public-register">
+  <app-tech-background />
+  <div class="container">
+    <div class="register-container">
+      <a routerLink="/workshops" class="back-link">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Retour aux workshops
+      </a>
+
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+        </div>
+      } @else if (error()) {
+        <div class="error-state">
+          <div class="error-state__icon">❌</div>
+          <h3>Workshop indisponible</h3>
+          <p>{{ error() }}</p>
+          <a routerLink="/workshops" class="btn btn--primary"
+            >Voir les workshops disponibles</a
+          >
+        </div>
+      } @else if (registered()) {
+        <div class="success-card">
+          <div class="success-card__icon">✅</div>
+          <h2>Inscription confirmée !</h2>
+          <p>
+            Vous êtes inscrit au workshop
+            <strong>{{ workshop()?.themeTitle }}</strong>
+          </p>
+          <div class="success-card__info">
+            <div class="info-item">
+              <span>📅 Date</span>
+              <strong>{{
+                workshop()?.date | date: "EEEE dd MMMM yyyy à HH:mm"
+              }}</strong>
+            </div>
+            <div class="info-item">
+              <span>📍 Lieu</span>
+              <strong>{{
+                workshop()?.location === "en ligne"
+                  ? "💻 En ligne"
+                  : "🏛️ Présentiel"
+              }}</strong>
+            </div>
+            @if (workshop()?.meetLink && workshop()?.location === "en ligne") {
+              <div class="info-item">
+                <span>🔗 Lien</span>
+                <a [href]="workshop()?.meetLink" target="_blank"
+                  >Accéder à la session</a
+                >
+              </div>
+            }
+          </div>
+          <p class="success-card__note">
+            Un email de confirmation vous a été envoyé. Pensez à vérifier vos
+            spams.
+          </p>
+          <div class="success-card__actions">
+            <a routerLink="/workshops" class="btn btn--outline">
+              Découvrir d'autres workshops
+            </a>
+          </div>
+        </div>
+      } @else if (alreadyRegistered()) {
+        <div class="warning-card">
+          <div class="warning-card__icon">⚠️</div>
+          <h3>Déjà inscrit</h3>
+          <p>
+            L'adresse email <strong>{{ form.value.email }}</strong> est déjà
+            inscrite à ce workshop.
+          </p>
+          <div class="warning-card__actions">
+            <button class="btn btn--outline" (click)="resetForm()">
+              S'inscrire avec un autre email
+            </button>
+            <a routerLink="/workshops" class="btn btn--primary">
+              Voir autres workshops
+            </a>
+          </div>
+        </div>
+      } @else {
+        <div class="form-header">
+          <div class="form-header__badge">
+            <span class="badge badge--primary">INSCRIPTION GRATUITE</span>
+          </div>
+          <h1 class="form-header__title">{{ workshop()?.themeTitle }}</h1>
+          <p class="form-header__subtitle">
+            Remplissez le formulaire ci-dessous pour participer à ce workshop.
+          </p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="register-form">
+          <div class="form-group">
+            <label class="form-label form-label--required">Nom complet</label>
+            <input
+              type="text"
+              formControlName="fullName"
+              class="form-input"
+              [class.form-input--error]="isInvalid('fullName')"
+              placeholder="Votre prénom et nom"
+            />
+            @if (isInvalid("fullName")) {
+              <span class="form-error">Nom complet requis</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label--required">Email</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="form-input"
+              [class.form-input--error]="isInvalid('email')"
+              placeholder="votre@email.com"
+            />
+            @if (isInvalid("email")) {
+              <span class="form-error">Email valide requis</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label form-label--required"
+                >Établissement</label
+              >
+              <select
+                formControlName="establishment"
+                class="form-select"
+                [class.form-select--error]="isInvalid('establishment')"
+              >
+                <option value="">Sélectionner votre établissement</option>
+                @for (est of establishments; track est) {
+                  <option [value]="est">{{ est }}</option>
+                }
+              </select>
+              @if (isInvalid("establishment")) {
+                <span class="form-error"
+                  >Veuillez sélectionner un établissement</span
+                >
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label form-label--required">Niveau</label>
+              <select
+                formControlName="level"
+                class="form-select"
+                [class.form-select--error]="isInvalid('level')"
+              >
+                <option value="">Sélectionner votre niveau</option>
+                @for (level of studyLevels; track level) {
+                  <option [value]="level">{{ level }}</option>
+                }
+              </select>
+              @if (isInvalid("level")) {
+                <span class="form-error">Veuillez sélectionner un niveau</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Téléphone (optionnel)</label>
+            <input
+              type="tel"
+              formControlName="phone"
+              class="form-input"
+              placeholder="+221 77 123 45 67"
+            />
+          </div>
+
+          <!-- Correction ici : utiliser error() au lieu de submitError() -->
+          @if (error()) {
+            <div class="alert alert--error">
+              {{ error() }}
+            </div>
+          }
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn btn--primary"
+              [disabled]="submitting()"
+            >
+              @if (submitting()) {
+                <span class="spinner"></span>
+                Inscription en cours...
+              } @else {
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                M'inscrire gratuitement
+              }
+            </button>
+          </div>
+
+          <p class="form-footer">
+            En vous inscrivant, vous acceptez de recevoir des emails de
+            confirmation et des rappels concernant ce workshop.
+          </p>
+        </form>
+      }
+    </div>
+  </div>
+</div>

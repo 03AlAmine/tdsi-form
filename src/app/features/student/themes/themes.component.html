@@ -1,0 +1,203 @@
+<div class="themes-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Thématiques</h1>
+        <p class="page-header__subtitle">Explore les sujets disponibles</p>
+      </div>
+      <a routerLink="/etudiant/proposer" class="btn btn--primary btn--sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Proposer
+      </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <button class="filter-chip" [class.active]="!activeCategory()" (click)="activeCategory.set(null)">
+        Tous
+      </button>
+      @for (cat of categories; track cat) {
+        <button class="filter-chip" [class.active]="activeCategory() === cat" (click)="activeCategory.set(cat)">
+          {{ cat }}
+        </button>
+      }
+    </div>
+
+    <!-- Themes Grid -->
+    @if (loading()) {
+      <div class="skeleton-grid">
+        @for (n of [1,2,3,4,5,6]; track n) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else if (filteredThemes().length === 0) {
+      <div class="empty-state">
+        <div class="empty-state__icon">📭</div>
+        <h3>Aucune thématique</h3>
+        <p>Aucune thématique disponible dans cette catégorie</p>
+      </div>
+    } @else {
+      <div class="themes-grid">
+        @for (theme of filteredThemes(); track theme.id) {
+          <div class="theme-card" (click)="openThemeDetail(theme)">
+            <div class="theme-card__badges">
+              <span class="badge badge--primary">{{ theme.category }}</span>
+              <span class="badge"
+                [class.badge--success]="theme.status === 'ouvert'"
+                [class.badge--warning]="theme.status === 'complet'"
+                [class.badge--danger]="theme.status === 'fermé'">
+                {{ theme.status }}
+              </span>
+            </div>
+
+            <h3 class="theme-card__title">{{ theme.title }}</h3>
+            <p class="theme-card__description">{{ theme.description | slice:0:100 }}{{ theme.description.length > 100 ? '...' : '' }}</p>
+
+            <div class="theme-card__footer">
+              <div class="theme-card__stats">
+                <span class="stat">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  {{ theme.currentParticipants }}/{{ theme.maxParticipants }}
+                </span>
+                <span class="difficulty" [class]="'difficulty--' + getDifficultyClass(theme.difficulty)">
+                  {{ getDifficultyIcon(theme.difficulty) }} {{ theme.difficulty }}
+                </span>
+              </div>
+              @if (theme.linkedWorkshop) {
+                <div class="workshop-indicator">
+                  <span class="dot dot--live"></span>
+                  Workshop disponible
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Theme Detail Drawer -->
+@if (selectedTheme()) {
+  <div class="drawer-overlay" (click)="closeDrawer()">
+    <div class="drawer" [class.drawer--open]="drawerOpen()" (click)="$event.stopPropagation()">
+      <div class="drawer__header">
+        <div class="drawer__badges">
+          <span class="badge badge--primary">{{ selectedTheme()?.category }}</span>
+          <span class="badge"
+            [class.badge--success]="selectedTheme()?.status === 'ouvert'"
+            [class.badge--warning]="selectedTheme()?.status === 'complet'"
+            [class.badge--danger]="selectedTheme()?.status === 'fermé'">
+            {{ selectedTheme()?.status }}
+          </span>
+        </div>
+        <button class="drawer__close" (click)="closeDrawer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer__content">
+        <h2 class="drawer__title">{{ selectedTheme()?.title }}</h2>
+
+        <div class="drawer__meta">
+          <div class="meta-item">
+            <span class="meta-item__label">Difficulté</span>
+            <span class="meta-item__value" [class]="'difficulty--' + getDifficultyClass(selectedTheme()?.difficulty || '')">
+              {{ getDifficultyIcon(selectedTheme()?.difficulty || '') }} {{ selectedTheme()?.difficulty }}
+            </span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item__label">Participants</span>
+            <span class="meta-item__value">{{ selectedTheme()?.currentParticipants }}/{{ selectedTheme()?.maxParticipants }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item__label">Créée le</span>
+            <span class="meta-item__value">{{ selectedTheme()?.createdAt | date:'dd MMM yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="drawer__section">
+          <h4>Description</h4>
+          <p>{{ selectedTheme()?.description }}</p>
+        </div>
+
+        @if (selectedTheme()?.tags && selectedTheme()?.tags?.length) {
+          <div class="drawer__section">
+            <h4>Tags</h4>
+            <div class="tags-list">
+              @for (tag of selectedTheme()?.tags; track tag) {
+                <span class="tag">#{{ tag }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Workshop associé -->
+        @if (selectedTheme()?.linkedWorkshop) {
+          <div class="workshop-card-detail">
+            <h4>Workshop associé</h4>
+            <div class="workshop-info">
+              <div class="workshop-info__header">
+                <span class="status-badge" [class]="'status-badge--' + getWorkshopStatusClass(selectedTheme()?.linkedWorkshop?.status || '')">
+                  {{ getWorkshopStatusIcon(selectedTheme()?.linkedWorkshop?.status || '') }} {{ selectedTheme()?.linkedWorkshop?.status }}
+                </span>
+                <span class="workshop-location">{{ getLocationIcon(selectedTheme()?.linkedWorkshop?.location || '') }} {{ selectedTheme()?.linkedWorkshop?.location }}</span>
+              </div>
+              <p class="workshop-info__presenter">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                {{ selectedTheme()?.linkedWorkshop?.presenter }}
+              </p>
+              <div class="workshop-info__datetime">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                {{ selectedTheme()?.linkedWorkshop?.date | date:'EEEE dd MMMM yyyy à HH:mm' }}
+              </div>
+
+              <div class="workshop-info__actions">
+                @if (selectedTheme()?.linkedWorkshop?.presenceFormEnabled) {
+                  <a [routerLink]="['/etudiant/presence', selectedTheme()?.linkedWorkshop?.id]"
+                     class="btn btn--primary btn--sm" (click)="closeDrawer()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Confirmer ma présence
+                  </a>
+                }
+
+                @if (selectedTheme()?.linkedWorkshop?.meetLink && selectedTheme()?.linkedWorkshop?.status === 'en cours') {
+                  <a [href]="selectedTheme()?.linkedWorkshop?.meetLink" target="_blank" class="btn btn--secondary btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                      <polyline points="15 3 21 3 21 9"/>
+                      <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    Rejoindre
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

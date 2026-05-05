@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ToastComponent } from './features/shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [RouterOutlet, ToastComponent],
+  template: `
+    <router-outlet />
+    <app-toast />
+  `
 })
-export class AppComponent {
-  title = 'tdsi-form';
-}
+export class AppComponent {}

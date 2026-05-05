@@ -1,0 +1,283 @@
+<div class="admin-themes">
+  <!-- Theme Detail Modal -->
+  <app-theme-detail (edit)="editTheme($event)" (delete)="deleteTheme($event)">
+  </app-theme-detail>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Thématiques</h1>
+      <p class="page-header__subtitle">Gérer le catalogue des workshops</p>
+    </div>
+    <button class="btn btn--primary" (click)="toggleForm()">
+      @if (showForm()) {
+        ✕ Annuler
+      } @else {
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Nouvelle thématique
+      }
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-wrapper">
+    <app-search-bar (searchChange)="searchQuery.set($event)" />
+  </div>
+
+  <!-- Create Form -->
+  @if (showForm()) {
+    <div class="create-form animate-fade-in">
+      <div class="create-form__header">
+        <h3>Créer une thématique</h3>
+        <span class="badge badge--primary">NOUVEAU</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="create()" class="theme-form">
+        <div class="form-group">
+          <label class="form-label form-label--required">Titre</label>
+          <input
+            type="text"
+            formControlName="title"
+            class="form-input"
+            placeholder="Ex: Introduction à la Cryptographie"
+          />
+          @if (form.get("title")?.invalid && form.get("title")?.touched) {
+            <span class="form-error">Titre requis (min. 3 caractères)</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Catégorie</label>
+            <select formControlName="category" class="form-select">
+              <option value="">Sélectionner une catégorie</option>
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            @if (form.get("category")?.invalid && form.get("category")?.touched) {
+              <span class="form-error">Veuillez sélectionner une catégorie</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label form-label--required">Difficulté</label>
+            <select formControlName="difficulty" class="form-select">
+              <option value="débutant">🌱 Débutant</option>
+              <option value="intermédiaire">📘 Intermédiaire</option>
+              <option value="avancé">⚡ Avancé</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label form-label--required">Description</label>
+          <textarea
+            formControlName="description"
+            class="form-textarea"
+            rows="4"
+            placeholder="Décrivez le contenu de la thématique..."
+          ></textarea>
+          @if (form.get("description")?.invalid && form.get("description")?.touched) {
+            <span class="form-error">Description requise (min. 20 caractères)</span>
+          }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Max participants</label>
+            <input
+              type="number"
+              formControlName="maxParticipants"
+              class="form-input"
+              min="1"
+              max="100"
+            />
+            <span class="form-hint">Entre 1 et 100 participants</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <input
+              type="text"
+              formControlName="tags"
+              class="form-input"
+              placeholder="sécurité, réseau, crypto (séparés par virgule)"
+            />
+            <span class="form-hint">Séparez les tags par des virgules</span>
+          </div>
+        </div>
+
+        <div class="create-form__actions">
+          <button type="button" class="btn btn--ghost" (click)="toggleForm()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn--primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner"></span>
+              Création...
+            } @else {
+              Créer la thématique
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Themes List with Search -->
+  @if (allThemes().length === 0 && !(themes$ | async)) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+    </div>
+  } @else if (filteredThemes().length === 0) {
+    <div class="empty-state">
+      <div class="empty-state__icon">
+        @if (searchQuery()) { 🔍 } @else { 📚 }
+      </div>
+      <h3 class="empty-state__title">
+        @if (searchQuery()) { Aucun résultat } @else { Aucune thématique }
+      </h3>
+      <p class="empty-state__description">
+        @if (searchQuery()) {
+          Aucune thématique ne correspond à "{{ searchQuery() }}"
+        } @else {
+          Commencez par créer votre première thématique
+        }
+      </p>
+      @if (!searchQuery()) {
+        <button class="btn btn--primary btn--sm" (click)="toggleForm()">
+          Créer une thématique
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="themes-grid">
+      @for (theme of filteredThemes(); track theme.id) {
+        <div class="theme-card" (click)="openThemeDetail(theme)">
+          <div class="theme-card__header">
+            <div class="theme-card__category">
+              <span class="badge badge--primary">{{ theme.category }}</span>
+              <span
+                class="badge"
+                [class.badge--success]="theme.status === 'ouvert'"
+                [class.badge--warning]="theme.status === 'complet'"
+                [class.badge--danger]="theme.status === 'fermé'"
+              >
+                {{ theme.status }}
+              </span>
+            </div>
+            <div class="theme-card__difficulty">
+              @switch (theme.difficulty) {
+                @case ("débutant") {
+                  <span>🌱 Débutant</span>
+                }
+                @case ("intermédiaire") {
+                  <span>📘 Intermédiaire</span>
+                }
+                @case ("avancé") {
+                  <span>⚡ Avancé</span>
+                }
+              }
+            </div>
+          </div>
+
+          <h3 class="theme-card__title">{{ theme.title }}</h3>
+          <p class="theme-card__description">
+            {{ theme.description | slice: 0 : 100
+            }}{{ theme.description.length > 100 ? "..." : "" }}
+          </p>
+
+          <div class="theme-card__stats">
+            <div class="theme-card__stat">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>{{ theme.currentParticipants }}/{{ theme.maxParticipants }}</span>
+              <span class="stat-label">inscrits</span>
+            </div>
+
+            <!-- Affichage de la durée si un workshop est lié -->
+            @if (theme.linkedWorkshop) {
+              <div class="theme-card__stat">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>{{ theme.linkedWorkshop.duration }} min</span>
+                <span class="stat-label">durée</span>
+              </div>
+            }
+          </div>
+
+          @if (theme.tags && theme.tags.length > 0) {
+            <div class="theme-card__tags">
+              @for (tag of theme.tags.slice(0, 3); track tag) {
+                <span class="tag">#{{ tag }}</span>
+              }
+              @if (theme.tags.length > 3) {
+                <span class="tag">+{{ theme.tags.length - 3 }}</span>
+              }
+            </div>
+          }
+
+          <div class="theme-card__actions" (click)="$event.stopPropagation()">
+            <select
+              class="form-select form-select--sm"
+              [value]="theme.status"
+              (change)="updateStatus(theme, $event)"
+            >
+              <option value="ouvert">Ouvert</option>
+              <option value="complet">Complet</option>
+              <option value="fermé">Fermé</option>
+            </select>
+            <button
+              class="btn-icon btn-icon--danger"
+              (click)="deleteTheme(theme)"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

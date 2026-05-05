@@ -1,0 +1,135 @@
+.footer {
+  position: relative;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-default);
+  padding: 3rem 0 2rem;
+  margin-top: 4rem;
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  &__brand {
+    max-width: 250px;
+
+    img {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+    }
+
+    span {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+  }
+
+  &__links {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+
+  &__column {
+    h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+
+      i {
+        margin-right: 0.5rem;
+        color: var(--accent-primary);
+      }
+    }
+
+    a {
+      display: block;
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+      transition: color var(--transition-fast);
+
+      i {
+        width: 20px;
+        margin-right: 0.5rem;
+        font-size: 0.75rem;
+      }
+
+      &:hover {
+        color: var(--text-primary);
+      }
+    }
+  }
+
+  &__bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+  }
+
+  &__social {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+  }
+
+  i {
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
+
+  &:hover i {
+    color: var(--accent-primary);
+  }
+}
+
+@media (max-width: 768px) {
+  .footer__content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer__links {
+    justify-content: center;
+  }
+
+  .footer__bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}

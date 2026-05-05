@@ -1,0 +1,240 @@
+<div class="workshops-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Workshops</h1>
+        <p class="page-header__subtitle">Sessions planifiées et en cours</p>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="skeleton-list">
+        @for (n of [1,2,3]; track n) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else if (workshops().length === 0) {
+      <div class="empty-state">
+        <div class="empty-state__icon">📅</div>
+        <h3>Aucun workshop</h3>
+        <p>Aucun workshop n'est planifié pour le moment</p>
+      </div>
+    } @else {
+      <div class="workshops-list">
+        @for (workshop of workshops(); track workshop.id) {
+          <div class="workshop-card" [class.workshop-card--live]="workshop.status === 'en cours'" (click)="openWorkshopDetail(workshop)">
+            <div class="workshop-card__header">
+              <div class="workshop-card__badges">
+                <span class="status-badge" [class]="'status-badge--' + getStatusClass(workshop.status)">
+                  {{ getStatusIcon(workshop.status) }} {{ workshop.status }}
+                </span>
+                <span class="location-badge">
+                  {{ getLocationIcon(workshop.location) }} {{ workshop.location }}
+                </span>
+              </div>
+              <div class="workshop-card__date">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                {{ workshop.date | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+
+            <h3 class="workshop-card__title">{{ workshop.themeTitle }}</h3>
+
+            <div class="workshop-card__presenter">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              {{ workshop.presenter }}
+            </div>
+
+            <div class="workshop-card__stats">
+              <div class="stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {{ formatDuration(workshop.duration) }}
+              </div>
+              <div class="stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                {{ workshop.registrations.length || 0 }} inscrits
+              </div>
+              <div class="stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {{ workshop.date | date:'HH:mm' }}
+              </div>
+            </div>
+
+            <div class="workshop-card__actions" (click)="$event.stopPropagation()">
+              @if (workshop.status === 'planifié') {
+                @if (!isRegistered(workshop)) {
+                  <button class="btn btn--primary btn--sm" (click)="register(workshop)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <line x1="19" y1="8" x2="19" y2="14"/>
+                      <line x1="22" y1="11" x2="16" y2="11"/>
+                    </svg>
+                    S'inscrire
+                  </button>
+                } @else {
+                  <button class="btn btn--outline btn--sm" (click)="unregister(workshop)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Se désinscrire
+                  </button>
+                }
+              }
+
+              @if (workshop.meetLink && workshop.status === 'en cours') {
+                <a [href]="workshop.meetLink" target="_blank" class="btn btn--success btn--sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                  Rejoindre
+                </a>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Workshop Detail Drawer -->
+@if (selectedWorkshop()) {
+  <div class="drawer-overlay" (click)="closeDrawer()">
+    <div class="drawer" [class.drawer--open]="drawerOpen()" (click)="$event.stopPropagation()">
+      <div class="drawer__header">
+        <div class="drawer__badges">
+          <span class="status-badge" [class]="'status-badge--' + getStatusClass(selectedWorkshop()?.status || '')">
+            {{ getStatusIcon(selectedWorkshop()?.status || '') }} {{ selectedWorkshop()?.status }}
+          </span>
+          <span class="location-badge">
+            {{ getLocationIcon(selectedWorkshop()?.location || '') }} {{ selectedWorkshop()?.location }}
+          </span>
+        </div>
+        <button class="drawer__close" (click)="closeDrawer()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer__content">
+        <h2 class="drawer__title">{{ selectedWorkshop()?.themeTitle }}</h2>
+
+        <div class="presenter-info">
+          <div class="presenter-avatar">
+            <span>👨‍🏫</span>
+          </div>
+          <div>
+            <div class="presenter-label">Présentateur</div>
+            <div class="presenter-name">{{ selectedWorkshop()?.presenter }}</div>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card__icon">📅</div>
+            <div>
+              <div class="info-card__label">Date</div>
+              <div class="info-card__value">{{ selectedWorkshop()?.date | date:'EEEE dd MMMM yyyy' }}</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">⏰</div>
+            <div>
+              <div class="info-card__label">Horaire</div>
+              <div class="info-card__value">{{ selectedWorkshop()?.date | date:'HH:mm' }}</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">⏱️</div>
+            <div>
+              <div class="info-card__label">Durée</div>
+              <div class="info-card__value">{{ formatDuration(selectedWorkshop()?.duration || 0) }}</div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">👥</div>
+            <div>
+              <div class="info-card__label">Participants</div>
+              <div class="info-card__value">{{ selectedWorkshop()?.registrations?.length || 0 }} inscrits</div>
+            </div>
+          </div>
+        </div>
+
+        @if (selectedWorkshop()?.meetLink) {
+          <div class="meet-section">
+            <h4>Lien de connexion</h4>
+            <a [href]="selectedWorkshop()?.meetLink" target="_blank" rel="noopener" class="meet-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              {{ selectedWorkshop()?.meetLink }}
+            </a>
+          </div>
+        }
+
+        <div class="drawer__actions" (click)="$event.stopPropagation()">
+          @if (selectedWorkshop()?.status === 'planifié') {
+            @if (!isRegistered(selectedWorkshop()!)) {
+              <button class="btn btn--primary btn--full" (click)="register(selectedWorkshop()!); closeDrawer()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <line x1="19" y1="8" x2="19" y2="14"/>
+                  <line x1="22" y1="11" x2="16" y2="11"/>
+                </svg>
+                S'inscrire
+              </button>
+            } @else {
+              <button class="btn btn--outline btn--full" (click)="unregister(selectedWorkshop()!); closeDrawer()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Se désinscrire
+              </button>
+            }
+          }
+
+          @if (selectedWorkshop()?.meetLink && selectedWorkshop()?.status === 'en cours') {
+            <a [href]="selectedWorkshop()?.meetLink" target="_blank" class="btn btn--success btn--full">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              Rejoindre la session
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
