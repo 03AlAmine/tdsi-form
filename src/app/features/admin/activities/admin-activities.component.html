@@ -1,0 +1,261 @@
+<div class="admin-activities">
+
+  <!-- ── En-tête ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Activités</h1>
+      <p class="page-header__subtitle">Conférences, journées, hackathons et ateliers</p>
+    </div>
+    <button class="btn btn--primary" (click)="toggleForm()">
+      @if (showForm()) {
+        ✕ Annuler
+      } @else {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nouvelle activité
+      }
+    </button>
+  </div>
+
+  <!-- ── Formulaire de création ───────────────────────────── -->
+  @if (showForm()) {
+    <div class="create-form animate-fade-in">
+      <div class="create-form__header">
+        <h3>Créer une activité</h3>
+        <span class="badge badge--primary">NOUVELLE</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="create()" class="activity-form">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Type</label>
+            <select formControlName="type" class="form-select">
+              @for (t of types; track t) {
+                <option [value]="t">{{ typeLabels[t] }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--required">Titre</label>
+            <input type="text" formControlName="title" class="form-input" placeholder="Ex : Sécurité des objets connectés" />
+            @if (isInvalid('title')) { <span class="form-error">Titre requis (min. 5 caractères)</span> }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label form-label--required">Description</label>
+          <textarea formControlName="description" class="form-textarea" rows="4"
+            placeholder="Décrivez l'activité, les objectifs, le public cible..."></textarea>
+          @if (isInvalid('description')) { <span class="form-error">Description requise (min. 20 caractères)</span> }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Date de début</label>
+            <input type="date" formControlName="date" class="form-input" [min]="minDate" />
+            @if (isInvalid('date')) { <span class="form-error">Date requise</span> }
+          </div>
+          <div class="form-group">
+            <label class="form-label form-label--required">Heure</label>
+            <input type="time" formControlName="time" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date de fin (facultatif)</label>
+            <input type="date" formControlName="endDate" class="form-input" [min]="minDate" />
+            <span class="form-hint">Pour les journées multi-jours</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Lieu</label>
+            <input type="text" formControlName="location" class="form-input" placeholder="Ex : Amphi A, ESP Dakar" />
+            @if (isInvalid('location')) { <span class="form-error">Lieu requis</span> }
+          </div>
+          <div class="form-group">
+            <label class="form-label">Capacité max</label>
+            <input type="number" formControlName="maxParticipants" class="form-input" min="1" placeholder="Laisser vide = illimité" />
+          </div>
+        </div>
+
+        <div class="form-row form-row--align-center">
+          <div class="form-group form-group--checkbox">
+            <input type="checkbox" formControlName="isOnline" id="isOnline" class="form-checkbox" />
+            <label for="isOnline" class="form-label">Événement en ligne (ou hybride)</label>
+          </div>
+          @if (form.get('isOnline')?.value) {
+            <div class="form-group">
+              <label class="form-label">Lien de réunion</label>
+              <input type="url" formControlName="meetLink" class="form-input" placeholder="https://meet.jit.si/tdsi-..." />
+            </div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tags</label>
+          <input type="text" formControlName="tags" class="form-input"
+            placeholder="cybersécurité, réseaux, IA  (séparés par des virgules)" />
+          <span class="form-hint">Facilitent la recherche sur la page publique</span>
+        </div>
+
+        <div class="create-form__actions">
+          <button type="button" class="btn btn--ghost" (click)="toggleForm()">Annuler</button>
+          <button type="submit" class="btn btn--primary" [disabled]="saving()">
+            @if (saving()) { Création... } @else { Créer en brouillon }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ── Filtres statut ────────────────────────────────────── -->
+  <div class="filters">
+    <button class="filter-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">Toutes</button>
+    <button class="filter-btn" [class.active]="filterStatus() === 'draft'" (click)="filterStatus.set('draft')">Brouillons</button>
+    <button class="filter-btn" [class.active]="filterStatus() === 'published'" (click)="filterStatus.set('published')">Publiées</button>
+    <button class="filter-btn" [class.active]="filterStatus() === 'ongoing'" (click)="filterStatus.set('ongoing')">En cours</button>
+    <button class="filter-btn" [class.active]="filterStatus() === 'done'" (click)="filterStatus.set('done')">Terminées</button>
+  </div>
+
+  <!-- ── Liste ──────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement des activités...</p>
+    </div>
+  } @else if (filteredActivities().length === 0) {
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <p>Aucune activité pour ce filtre</p>
+      <button class="btn btn--primary" (click)="toggleForm()">Créer une activité</button>
+    </div>
+  } @else {
+    <div class="activities-grid">
+      @for (activity of filteredActivities(); track activity.id) {
+        <div class="activity-card">
+          <div class="activity-card__header">
+            <div class="activity-card__badges">
+              <span class="badge" [class]="getTypeClass(activity.type)">
+                {{ typeLabels[activity.type] }}
+              </span>
+              <span class="badge" [class]="getStatusClass(activity.status)">
+                {{ statusLabels[activity.status] }}
+              </span>
+              @if (activity.presenceEnabled) {
+                <span class="badge badge--success">✓ Check-in actif</span>
+              }
+            </div>
+            <div class="activity-card__actions">
+              <button class="btn-icon" title="QR inscription" (click)="openQr(activity)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
+                </svg>
+              </button>
+              <a [routerLink]="['/admin/activites', activity.id, 'presences']" class="btn-icon" title="Présences">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/>
+                </svg>
+              </a>
+              <button class="btn-icon btn-icon--danger" title="Supprimer" (click)="delete(activity)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="activity-card__title">{{ activity.title }}</h3>
+          <p class="activity-card__desc">{{ activity.description | slice:0:100 }}...</p>
+
+          <div class="activity-card__meta">
+            <span class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ activity.date | date:'d MMM yyyy, HH:mm' }}
+            </span>
+            <span class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              {{ activity.location }}
+            </span>
+            <span class="meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              </svg>
+              {{ (activity?.registrations?.length ?? 0) + (activity?.guestCount ?? 0) }} inscrits · {{ spotsLeft(activity) }}
+            </span>
+          </div>
+
+          @if (activity.tags.length) {
+            <div class="activity-card__tags">
+              @for (tag of activity.tags; track tag) {
+                <span class="tag">{{ tag }}</span>
+              }
+            </div>
+          }
+
+          <div class="activity-card__footer">
+            @if (activity.status === 'draft') {
+              <button class="btn btn--primary btn--sm" (click)="publish(activity)">
+                Publier
+              </button>
+            }
+            @if (activity.status === 'published' || activity.status === 'ongoing') {
+              <button class="btn btn--sm"
+                [class.btn--success]="!activity.presenceEnabled"
+                [class.btn--ghost]="activity.presenceEnabled"
+                (click)="togglePresence(activity)">
+                {{ activity.presenceEnabled ? 'Désactiver check-in' : 'Activer check-in' }}
+              </button>
+            }
+            <select class="form-select form-select--sm"
+              [value]="activity.status"
+              (change)="updateStatus(activity, $any($event.target).value)">
+              <option value="draft">Brouillon</option>
+              <option value="published">Publié</option>
+              <option value="ongoing">En cours</option>
+              <option value="done">Terminé</option>
+              <option value="cancelled">Annulé</option>
+            </select>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Modale QR code ────────────────────────────────────── -->
+  @if (qrActivity()) {
+    <div class="qr-overlay" (click)="closeQr()">
+      <div class="qr-modal" (click)="$event.stopPropagation()">
+        <button class="qr-modal__close" (click)="closeQr()">✕</button>
+        <div class="qr-modal__header">
+          <span class="badge badge--primary" style="font-size:11px;letter-spacing:.1em">QR INSCRIPTION</span>
+          <h3 class="qr-modal__title">{{ qrActivity()!.title }}</h3>
+          <p class="qr-modal__sub">Partagez ce QR ou projetez-le pour les inscriptions</p>
+        </div>
+        <div class="qr-modal__img-wrap">
+          <img [src]="getInscriptionQr(qrActivity()!.id!)" alt="QR inscription" width="180" height="180" />
+        </div>
+        <p class="qr-modal__url font-mono">
+          /activites/{{ qrActivity()!.id }}/inscription
+        </p>
+        <button class="btn btn--primary" (click)="downloadQr(qrActivity()!)">
+          Télécharger PNG (400×400)
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

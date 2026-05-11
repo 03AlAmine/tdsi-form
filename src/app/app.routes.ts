@@ -31,6 +31,27 @@ export const routes: Routes = [
         (m) => m.PublicRegisterComponent,
       ),
   },
+  {
+    path: 'activites',
+    loadComponent: () =>
+      import('./features/public/activities/public-activities.component').then(
+        (m) => m.PublicActivitiesComponent,
+      ),
+  },
+  {
+    path: 'activites/:id',
+    loadComponent: () =>
+      import('./features/public/activities/activity-detail.component').then(
+        (m) => m.ActivityDetailComponent,
+      ),
+  },
+  {
+    path: 'activites/:id/inscription',
+    loadComponent: () =>
+      import('./features/public/activities/activity-register.component').then(
+        (m) => m.ActivityRegisterComponent,
+      ),
+  },
 
   // 🔐 Auth
   {
@@ -93,12 +114,18 @@ export const routes: Routes = [
             (m) => m.ProfileComponent,
           ),
       },
-      // ✅ ROUTE PRÉSENCE AJOUTÉE
       {
         path: 'presence/:workshopId',
         loadComponent: () =>
           import('./features/student/presence/presence.component').then(
             (m) => m.PresenceComponent,
+          ),
+      },
+      {
+        path: 'activites',
+        loadComponent: () =>
+          import('./features/student/activities/student-activities.component').then(
+            (m) => m.StudentActivitiesComponent,
           ),
       },
     ],
@@ -147,6 +174,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/presence-config/presence-config.component').then(
             (m) => m.PresenceConfigComponent,
+          ),
+      },
+      {
+        path: 'activites',
+        loadComponent: () =>
+          import('./features/admin/activities/admin-activities.component').then(
+            (m) => m.AdminActivitiesComponent,
+          ),
+      },
+      {
+        path: 'activites/:id/presences',
+        loadComponent: () =>
+          import('./features/admin/activities/activity-presence/activity-presence.component').then(
+            (m) => m.ActivityPresenceComponent,
           ),
       },
     ],

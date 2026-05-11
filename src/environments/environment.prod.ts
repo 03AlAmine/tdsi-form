@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   // Backend Node.js en local (npm run dev dans tdsi-backend/)
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'https://club-tdsi-campus.onrender.com',
   firebase: {
     apiKey: 'AIzaSyD-bglX-I4R6XYKFegytaPvlO7nGdwCOzA',
     authDomain: 'club-tdsi-sign.firebaseapp.com',

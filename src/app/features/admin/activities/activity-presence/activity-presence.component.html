@@ -1,0 +1,157 @@
+<div class="activity-presence">
+
+  @if (loading()) {
+    <div class="loading-state"><div class="spinner"></div><p>Chargement...</p></div>
+  } @else if (!activity()) {
+    <div class="empty-state"><p>Activité introuvable</p><a routerLink="/admin/activites" class="btn btn--ghost">Retour</a></div>
+  } @else {
+
+    <!-- ── En-tête ─────────────────────────────────────────── -->
+    <div class="page-header">
+      <div>
+        <a routerLink="/admin/activites" class="back-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour aux activités
+        </a>
+        <h1 class="page-header__title">{{ activity()!.title }}</h1>
+        <p class="page-header__subtitle">Gestion des présences</p>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn--ghost" (click)="exportCsv()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Stats ───────────────────────────────────────────── -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__value">{{ stats().total }}</div>
+        <div class="stat-card__label">Inscrits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__value">{{ stats().members }}</div>
+        <div class="stat-card__label">Membres</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__value">{{ stats().guests }}</div>
+        <div class="stat-card__label">Invités</div>
+      </div>
+      <div class="stat-card stat-card--accent">
+        <div class="stat-card__value">{{ stats().checkedIn }}</div>
+        <div class="stat-card__label">Présents</div>
+        <div class="stat-card__rate">{{ stats().rate }}%</div>
+      </div>
+    </div>
+
+    <!-- ── QR check-in ──────────────────────────────────────── -->
+    <div class="checkin-qr-card">
+      <div class="checkin-qr-card__info">
+        <h3>QR de check-in</h3>
+        <p>Projetez ce QR sur un écran à l'entrée. Les participants scannent avec leur téléphone pour confirmer leur présence.</p>
+        <div class="checkin-status" [class.active]="activity()!.presenceEnabled">
+          @if (activity()!.presenceEnabled) {
+            <span class="dot dot--green"></span> Check-in actif
+          } @else {
+            <span class="dot dot--grey"></span> Check-in inactif — activez-le depuis la liste
+          }
+        </div>
+        <button class="btn btn--ghost btn--sm" (click)="downloadPresenceQr()">
+          Télécharger PNG
+        </button>
+      </div>
+      <div class="checkin-qr-card__qr">
+        <div class="qr-wrap">
+          <img [src]="getPresenceQr(activity()!.id!)" alt="QR check-in" width="150" height="150" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Filtres + recherche ──────────────────────────────── -->
+    <div class="toolbar">
+      <div class="toolbar__filters">
+        <button class="filter-btn" [class.active]="filterType() === 'all'" (click)="filterType.set('all')">Tous ({{ stats().total }})</button>
+        <button class="filter-btn" [class.active]="filterType() === 'member'" (click)="filterType.set('member')">Membres ({{ stats().members }})</button>
+        <button class="filter-btn" [class.active]="filterType() === 'guest'" (click)="filterType.set('guest')">Invités ({{ stats().guests }})</button>
+      </div>
+      <input
+        type="text"
+        class="form-input search-input"
+        placeholder="Rechercher par nom, email..."
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+
+    <!-- ── Barre de progression ─────────────────────────────── -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar">
+        <div class="progress-bar__fill" [style.width.%]="stats().rate"></div>
+      </div>
+      <span class="progress-bar__label">{{ stats().checkedIn }} / {{ stats().total }} présents</span>
+    </div>
+
+    <!-- ── Table des inscrits ────────────────────────────────── -->
+    @if (filteredRegistrations().length === 0) {
+      <div class="empty-state"><p>Aucun inscrit pour ce filtre</p></div>
+    } @else {
+      <div class="registrations-table-wrap">
+        <table class="registrations-table">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Type</th>
+              <th>Organisation</th>
+              <th>Inscrit le</th>
+              <th>Présence</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (reg of filteredRegistrations(); track reg.id) {
+              <tr [class.row--checkedin]="reg.checkedIn">
+                <td class="td--name">
+                  <div class="participant-name">
+                    <div class="avatar">{{ reg.name.charAt(0).toUpperCase() }}</div>
+                    {{ reg.name }}
+                  </div>
+                </td>
+                <td class="td--email">{{ reg.email }}</td>
+                <td>
+                  <span class="badge" [class.badge--info]="reg.type === 'member'" [class.badge--neutral]="reg.type === 'guest'">
+                    {{ reg.type === 'member' ? 'Membre' : 'Invité' }}
+                  </span>
+                </td>
+                <td class="td--org">{{ reg.organization || '—' }}</td>
+                <td class="td--date">{{ reg.registeredAt | date:'d MMM, HH:mm' }}</td>
+                <td>
+                  @if (reg.checkedIn) {
+                    <div class="checkin-status active">
+                      <span class="dot dot--green"></span>
+                      {{ reg.checkedInAt | date:'HH:mm' }}
+                    </div>
+                  } @else {
+                    <span class="checkin-status"><span class="dot dot--grey"></span> Absent</span>
+                  }
+                </td>
+                <td>
+                  @if (!reg.checkedIn) {
+                    <button class="btn btn--success btn--xs" (click)="checkIn(reg)" title="Marquer présent">
+                      ✓ Check-in
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
