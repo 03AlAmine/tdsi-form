@@ -6,6 +6,8 @@ import { WorkshopService } from '../../../core/services/workshop.service';
 import { PublicRegistrationService } from '../../../core/services/public-registration.service';
 import { ESTABLISHMENTS, STUDY_LEVELS } from '../../../core/model/guest-registration.model';
 import { Workshop } from '../../../core/model/models';
+import { db } from '../../../../firebase.config';
+import { doc, getDoc } from 'firebase/firestore';
 import { TechBackgroundComponent } from '../../shared/components/tech-background/tech-background.component';
 
 
@@ -44,18 +46,27 @@ export class PublicRegisterComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const workshopId = this.route.snapshot.params['id'];
 
-    this.workshopService.getWorkshops().subscribe(workshops => {
-      const found = workshops.find(w => w.id === workshopId);
-
-      if (!found || (found.status !== 'planifié' && found.status !== 'en cours')) {
-        this.error.set('Ce workshop n\'est plus disponible');
-        this.loading.set(false);
-        return;
-      }
-
-      this.workshop.set(found);
+    // Charge uniquement ce workshop — 1 lecture au lieu de toute la collection
+    const snap = await getDoc(doc(db, 'workshops', workshopId));
+    if (!snap.exists()) {
+      this.error.set('Ce workshop n\'est plus disponible');
       this.loading.set(false);
-    });
+      return;
+    }
+    const d = snap.data() as any;
+    const found: Workshop = {
+      ...d,
+      id: snap.id,
+      date: d['date']?.toDate?.() ?? new Date(),
+      createdAt: d['createdAt']?.toDate?.() ?? new Date(),
+    };
+    if (found.status !== 'planifié' && found.status !== 'en cours') {
+      this.error.set('Ce workshop n\'est plus disponible');
+      this.loading.set(false);
+      return;
+    }
+    this.workshop.set(found);
+    this.loading.set(false);
   }
 
   isInvalid(field: string): boolean {

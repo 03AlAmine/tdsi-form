@@ -1,11 +1,12 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ThemeService } from '../../../core/services/theme.service';
 import { Theme } from '../../../core/model/models';
 import { TechBackgroundComponent } from '../../shared/components/tech-background/tech-background.component';
-import { PublicNavbarComponent } from "../../shared/components/public-navbar/public-navbar.component";
-import { PublicFooterComponent } from "../../shared/components/public-footer/public-footer.component";
+import { PublicNavbarComponent } from '../../shared/components/public-navbar/public-navbar.component';
+import { PublicFooterComponent } from '../../shared/components/public-footer/public-footer.component';
 
 @Component({
   selector: 'app-public-thematiques',
@@ -14,26 +15,27 @@ import { PublicFooterComponent } from "../../shared/components/public-footer/pub
   templateUrl: './public-thematiques.component.html',
   styleUrls: ['./public-thematiques.component.scss']
 })
-export class PublicThematiquesComponent implements OnInit {
+export class PublicThematiquesComponent {
   private themeService = inject(ThemeService);
 
-  themes = signal<Theme[]>([]);
-  loading = signal(true);
-  selectedTheme = signal<Theme | null>(null);
-  drawerOpen = signal(false);
+  themes         = signal<Theme[]>([]);
+  loading        = signal(true);
+  selectedTheme  = signal<Theme | null>(null);
+  drawerOpen     = signal(false);
+  activeCategory = signal<string | null>(null);
 
   categories = [
     'Sécurité Réseau', 'Cryptographie', 'Transmission de Données',
     'Intelligence Artificielle', 'Développement Web', 'Cloud & DevOps', 'Autre'
   ];
-  activeCategory = signal<string | null>(null);
 
-  ngOnInit(): void {
-    this.themeService.getThemes().subscribe(themes => {
-      const openThemes = themes.filter(t => t.status === 'ouvert');
-      this.themes.set(openThemes);
-      this.loading.set(false);
-    });
+  constructor() {
+    this.themeService.getThemes()
+      .pipe(takeUntilDestroyed())
+      .subscribe(themes => {
+        this.themes.set(themes.filter(t => t.status === 'ouvert'));
+        this.loading.set(false);
+      });
   }
 
   get filteredThemes() {
@@ -43,12 +45,7 @@ export class PublicThematiquesComponent implements OnInit {
   }
 
   getDifficultyIcon(difficulty: string): string {
-    const map: Record<string, string> = {
-      'débutant': '🌱',
-      'intermédiaire': '📘',
-      'avancé': '⚡'
-    };
-    return map[difficulty] || '📚';
+    return ({ débutant: '🌱', intermédiaire: '📘', avancé: '⚡' } as any)[difficulty] || '📚';
   }
 
   openThemeDrawer(theme: Theme): void {
@@ -59,9 +56,6 @@ export class PublicThematiquesComponent implements OnInit {
 
   closeDrawer(): void {
     this.drawerOpen.set(false);
-    setTimeout(() => {
-      this.selectedTheme.set(null);
-      document.body.style.overflow = '';
-    }, 300);
+    setTimeout(() => { this.selectedTheme.set(null); document.body.style.overflow = ''; }, 300);
   }
 }

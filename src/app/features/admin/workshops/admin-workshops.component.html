@@ -144,6 +144,14 @@
               </span>
             </div>
             <div class="workshop-card__actions" (click)="$event.stopPropagation()">
+              <button class="btn-icon" title="QR Code présence"
+                (click)="$event.stopPropagation(); openQr(workshop)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                  <path d="M14 14h1v1h-1z M17 14h1v1h-1z M14 17h1v1h-1z M17 17h3v3h-3z"/>
+                </svg>
+              </button>
               <a [routerLink]="['/admin/presence', workshop.id]" class="btn-icon"
                  title="Configurer la présence">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -234,3 +242,54 @@
     </div>
   }
 </div>
+
+  <!-- ══ QR Code Modal ══ -->
+  @if (qrWorkshop()) {
+    <div class="qr-overlay" (click)="closeQr()">
+      <div class="qr-modal" (click)="$event.stopPropagation()">
+        <button class="qr-modal__close" (click)="closeQr()">✕</button>
+
+        <div class="qr-modal__header">
+          <span class="font-mono text-xs" style="color:var(--accent-bright);letter-spacing:.1em">QR CODES</span>
+          <h3 class="qr-modal__title">{{ qrWorkshop()!.themeTitle }}</h3>
+        </div>
+
+        <div class="qr-modal__grid">
+
+          <!-- QR Présence (membres connectés) -->
+          <div class="qr-card">
+            <div class="qr-card__badge qr-card__badge--presence">✓ Présence</div>
+            <div class="qr-card__img-wrap">
+              <img [src]="getPresenceQr(qrWorkshop()!.id!)" alt="QR Présence"
+                width="180" height="180" />
+            </div>
+            <p class="qr-card__label">Membres connectés</p>
+            <p class="qr-card__sub">Redirige vers le formulaire de présence</p>
+            <button class="btn btn--primary btn--sm btn--full"
+              (click)="downloadQr('presence', qrWorkshop()!)">
+              ↓ Télécharger
+            </button>
+          </div>
+
+          <!-- QR Public (invités non connectés) -->
+          <div class="qr-card">
+            <div class="qr-card__badge qr-card__badge--public">👥 Public</div>
+            <div class="qr-card__img-wrap">
+              <img [src]="getPublicQr(qrWorkshop()!.id!)" alt="QR Public"
+                width="180" height="180" />
+            </div>
+            <p class="qr-card__label">Visiteurs / Invités</p>
+            <p class="qr-card__sub">Redirige vers la page d'inscription publique</p>
+            <button class="btn btn--outline btn--sm btn--full"
+              (click)="downloadQr('public', qrWorkshop()!)">
+              ↓ Télécharger
+            </button>
+          </div>
+        </div>
+
+        <div class="qr-modal__hint font-mono">
+          💡 Affiche ces QR sur ton écran ou imprime-les pour le workshop
+        </div>
+      </div>
+    </div>
+  }

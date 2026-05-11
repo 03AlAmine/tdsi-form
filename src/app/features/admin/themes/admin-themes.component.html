@@ -55,23 +55,70 @@
           }
         </div>
 
+        <!-- ── IA Axe 3 — Catégorisation automatique ── -->
+        <div class="ai-bar-admin">
+          <div class="ai-bar-admin__info">
+            <span class="ai-icon">✦</span>
+            <div>
+              <div class="ai-bar-admin__title">Catégorisation IA</div>
+              <div class="ai-bar-admin__sub">
+                Détecte automatiquement la catégorie, la difficulté et les tags
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn btn--ai-sm"
+            (click)="autoCategorize()"
+            [disabled]="aiLoading()"
+          >
+            @if (aiLoading()) {
+              <span class="spinner-xs-dark"></span> Analyse…
+            } @else {
+              ✦ Catégoriser
+            }
+          </button>
+        </div>
+        @if (aiError()) {
+          <div class="alert alert--error" style="margin: 0.25rem 0">
+            {{ aiError() }}
+          </div>
+        }
+        @if (aiUsed()) {
+          <div class="ai-applied-badge">
+            ✦ Catégorie, difficulté et tags suggérés par IA — modifiables
+          </div>
+        }
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label form-label--required">Catégorie</label>
-            <select formControlName="category" class="form-select">
+            <select
+              formControlName="category"
+              class="form-select"
+              [class.form-select--ai]="aiUsed()"
+            >
               <option value="">Sélectionner une catégorie</option>
               @for (cat of categories; track cat) {
                 <option [value]="cat">{{ cat }}</option>
               }
             </select>
-            @if (form.get("category")?.invalid && form.get("category")?.touched) {
-              <span class="form-error">Veuillez sélectionner une catégorie</span>
+            @if (
+              form.get("category")?.invalid && form.get("category")?.touched
+            ) {
+              <span class="form-error"
+                >Veuillez sélectionner une catégorie</span
+              >
             }
           </div>
 
           <div class="form-group">
             <label class="form-label form-label--required">Difficulté</label>
-            <select formControlName="difficulty" class="form-select">
+            <select
+              formControlName="difficulty"
+              class="form-select"
+              [class.form-select--ai]="aiUsed()"
+            >
               <option value="débutant">🌱 Débutant</option>
               <option value="intermédiaire">📘 Intermédiaire</option>
               <option value="avancé">⚡ Avancé</option>
@@ -87,8 +134,12 @@
             rows="4"
             placeholder="Décrivez le contenu de la thématique..."
           ></textarea>
-          @if (form.get("description")?.invalid && form.get("description")?.touched) {
-            <span class="form-error">Description requise (min. 20 caractères)</span>
+          @if (
+            form.get("description")?.invalid && form.get("description")?.touched
+          ) {
+            <span class="form-error"
+              >Description requise (min. 20 caractères)</span
+            >
           }
         </div>
 
@@ -135,17 +186,25 @@
   }
 
   <!-- Themes List with Search -->
-  @if (allThemes().length === 0 && !(themes$ | async)) {
+  @if (allThemes().length === 0) {
     <div class="loading-state">
       <div class="spinner"></div>
     </div>
   } @else if (filteredThemes().length === 0) {
     <div class="empty-state">
       <div class="empty-state__icon">
-        @if (searchQuery()) { 🔍 } @else { 📚 }
+        @if (searchQuery()) {
+          🔍
+        } @else {
+          📚
+        }
       </div>
       <h3 class="empty-state__title">
-        @if (searchQuery()) { Aucun résultat } @else { Aucune thématique }
+        @if (searchQuery()) {
+          Aucun résultat
+        } @else {
+          Aucune thématique
+        }
       </h3>
       <p class="empty-state__description">
         @if (searchQuery()) {
@@ -212,7 +271,11 @@
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              <span>{{ theme.currentParticipants }}/{{ theme.maxParticipants }}</span>
+              <span
+                >{{ theme.currentParticipants }}/{{
+                  theme.maxParticipants
+                }}</span
+              >
               <span class="stat-label">inscrits</span>
             </div>
 

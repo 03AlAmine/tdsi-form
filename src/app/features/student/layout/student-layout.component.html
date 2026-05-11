@@ -1,98 +1,50 @@
 <div class="student-layout">
-  <!-- Top Navigation -->
+  <!-- Tech Background (comme sur les pages publiques) -->
+  <app-tech-background />
+  <!-- Navigation (version membre) -->
   <header class="topbar">
     <div class="container topbar__container">
-      <a routerLink="/etudiant/themes" class="topbar__brand">
+      <a routerLink="/espace-membre" class="topbar__brand">
         <img
           src="/assets/images/logo.png"
-          alt="Club TDSI"
+          alt="TDSI Club"
           class="topbar__logo"
         />
-        <span class="topbar__name">TDSI <span>Club</span></span>
+        <span class="topbar__name">Club <span>TDSI </span>Campus</span>
       </a>
 
       <!-- Desktop Navigation -->
       <nav class="desktop-nav">
         <a
-          routerLink="/etudiant/themes"
+          routerLink="/espace-membre/thematiques"
           routerLinkActive="active"
           class="desktop-nav__item"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-          >
-            <rect x="3" y="3" width="7" height="7" />
-            <rect x="14" y="3" width="7" height="7" />
-            <rect x="14" y="14" width="7" height="7" />
-            <rect x="3" y="14" width="7" height="7" />
-          </svg>
+          <i class="fas fa-layer-group"></i>
           Thématiques
         </a>
         <a
-          routerLink="/etudiant/proposer"
+          routerLink="/espace-membre/workshops"
           routerLinkActive="active"
           class="desktop-nav__item"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="16" />
-            <line x1="8" y1="12" x2="16" y2="12" />
-          </svg>
-          Proposer
-        </a>
-        <a
-          routerLink="/etudiant/workshops"
-          routerLinkActive="active"
-          class="desktop-nav__item"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
+          <i class="fas fa-chalkboard-user"></i>
           Workshops
         </a>
         <a
-          routerLink="/etudiant/mes-soumissions"
+          routerLink="/espace-membre/proposer"
           routerLinkActive="active"
           class="desktop-nav__item"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-          >
-            <path
-              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-            />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
+          <i class="fas fa-lightbulb"></i>
+          Proposer
+        </a>
+        <a
+          routerLink="/espace-membre/mes-soumissions"
+          routerLinkActive="active"
+          class="desktop-nav__item"
+        >
+          <i class="fas fa-file-alt"></i>
           Mes dépôts
         </a>
       </nav>
@@ -104,16 +56,7 @@
               <span>{{ initial }}</span>
             </div>
             <span class="user-name">{{ user?.displayName }}</span>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <i class="fas fa-chevron-down"></i>
           </button>
 
           @if (userMenuOpen()) {
@@ -129,37 +72,16 @@
               <div class="user-menu__divider"></div>
 
               <a
-                routerLink="/etudiant/profil"
+                routerLink="/espace-membre/profil"
                 class="user-menu__item"
                 (click)="userMenuOpen.set(false)"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                <i class="fas fa-user-circle"></i>
                 Mon profil
               </a>
 
               <button class="user-menu__logout" (click)="logout()">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16 17 21 12 16 7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
+                <i class="fas fa-sign-out-alt"></i>
                 Déconnexion
               </button>
             </div>
@@ -171,95 +93,11 @@
 
   <!-- Main Content -->
   <main class="main-content">
-    <router-outlet />
+    <div class="page-transition">
+      <router-outlet />
+    </div>
   </main>
 
-  <!-- Bottom Navigation (Mobile) -->
-  <nav class="bottom-nav">
-    <a
-      routerLink="/etudiant/themes"
-      routerLinkActive="active"
-      class="bottom-nav__item"
-      [routerLinkActiveOptions]="{ exact: true }"
-    >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.75"
-      >
-        <rect x="3" y="3" width="7" height="7" />
-        <rect x="14" y="3" width="7" height="7" />
-        <rect x="14" y="14" width="7" height="7" />
-        <rect x="3" y="14" width="7" height="7" />
-      </svg>
-      <span>Thèmes</span>
-    </a>
-
-    <a
-      routerLink="/etudiant/proposer"
-      routerLinkActive="active"
-      class="bottom-nav__item"
-    >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.75"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="8" x2="12" y2="16" />
-        <line x1="8" y1="12" x2="16" y2="12" />
-      </svg>
-      <span>Proposer</span>
-    </a>
-
-    <a
-      routerLink="/etudiant/workshops"
-      routerLinkActive="active"
-      class="bottom-nav__item"
-    >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.75"
-      >
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-      <span>Workshops</span>
-    </a>
-
-    <a
-      routerLink="/etudiant/mes-soumissions"
-      routerLinkActive="active"
-      class="bottom-nav__item"
-    >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.75"
-      >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-      </svg>
-      <span>Mes dépôts</span>
-    </a>
-  </nav>
-  <app-confirm-modal />
-  <app-toast />
+  <!-- Footer (réutilisé)
+  <app-public-footer /> -->
 </div>

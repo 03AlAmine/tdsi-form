@@ -12,7 +12,7 @@ import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@ang
       width: 100%;
       height: 100%;
       z-index: 0;
-      opacity: 0.4;
+      opacity: 0.6;
       pointer-events: none;
     }
   `]
@@ -58,10 +58,13 @@ export class TechCanvasComponent implements AfterViewInit, OnDestroy {
     initDrops();
 
     const draw = () => {
-      ctx.fillStyle = 'rgba(10, 15, 26, 0.08)';
+      // 🔥 AUGMENTER L'OPACITÉ DU FOND pour effacer les traces
+      // Valeur plus élevée = effacement plus fort (entre 0.1 et 0.3)
+      ctx.fillStyle = 'rgba(10, 15, 26, 0.25)'; // Changé de 0.05 à 0.25
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'rgba(59, 130, 246, 0.12)';
+      // Couleur des chiffres (plus discrète)
+      ctx.fillStyle = 'rgba(59, 130, 246, 0.25)'; // Réduit de 0.15 à 0.25
       ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
 
       for (let i = 0; i < drops.length; i++) {

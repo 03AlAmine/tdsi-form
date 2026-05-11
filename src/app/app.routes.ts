@@ -2,83 +2,116 @@ import { Routes } from '@angular/router';
 import { authGuard, adminGuard } from './core/guard/auth.guard';
 
 export const routes: Routes = [
-  // 🌍 Pages PUBLIQUES (accessibles sans connexion)
+  // 🌍 Pages PUBLIQUES
   {
     path: '',
     loadComponent: () =>
-      import('./features/landing/landing.component')
-        .then(m => m.LandingComponent)
+      import('./features/landing/landing.component').then(
+        (m) => m.LandingComponent,
+      ),
   },
   {
     path: 'thematiques',
     loadComponent: () =>
-      import('./features/public/thematiques/public-thematiques.component')
-        .then(m => m.PublicThematiquesComponent)
+      import('./features/public/thematiques/public-thematiques.component').then(
+        (m) => m.PublicThematiquesComponent,
+      ),
   },
   {
     path: 'workshops',
     loadComponent: () =>
-      import('./features/public/workshops/public-workshops.component')
-        .then(m => m.PublicWorkshopsComponent)
+      import('./features/public/workshops/public-workshops.component').then(
+        (m) => m.PublicWorkshopsComponent,
+      ),
   },
   {
     path: 'workshops/:id/register',
     loadComponent: () =>
-      import('./features/public/register/public-register.component')
-        .then(m => m.PublicRegisterComponent)
+      import('./features/public/register/public-register.component').then(
+        (m) => m.PublicRegisterComponent,
+      ),
   },
 
-  // 🔐 Pages AUTHENTIFIEES
+  // 🔐 Auth
   {
     path: 'connexion',
     loadComponent: () =>
-      import('./features/auth/login/login.component')
-        .then(m => m.LoginComponent)
+      import('./features/auth/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
   },
   {
     path: 'inscription',
     loadComponent: () =>
-      import('./features/auth/register/register.component')
-        .then(m => m.RegisterComponent)
+      import('./features/auth/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
   },
+
+  // 🎓 Espace membre (étudiant)
   {
     path: 'espace-membre',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/student/layout/student-layout.component')
-        .then(m => m.StudentLayoutComponent), // ← Correction: StudentLayoutComponent
+      import('./features/student/layout/student-layout.component').then(
+        (m) => m.StudentLayoutComponent,
+      ),
     children: [
       { path: '', redirectTo: 'thematiques', pathMatch: 'full' },
       {
         path: 'thematiques',
-        loadComponent: () => import('./features/student/themes/themes.component').then(m => m.ThemesComponent) // ← Correction: ThemesComponent
+        loadComponent: () =>
+          import('./features/student/themes/themes.component').then(
+            (m) => m.ThemesComponent,
+          ),
       },
       {
         path: 'workshops',
-        loadComponent: () => import('./features/student/workshops/workshops.component').then(m => m.WorkshopsComponent) // ← Correction: WorkshopsComponent
+        loadComponent: () =>
+          import('./features/student/workshops/workshops.component').then(
+            (m) => m.WorkshopsComponent,
+          ),
       },
       {
         path: 'proposer',
-        loadComponent: () => import('./features/student/propose/propose.component').then(m => m.ProposeComponent)
+        loadComponent: () =>
+          import('./features/student/propose/propose.component').then(
+            (m) => m.ProposeComponent,
+          ),
       },
       {
         path: 'mes-soumissions',
-        loadComponent: () => import('./features/student/submissions/my-submissions.component').then(m => m.MySubmissionsComponent)
+        loadComponent: () =>
+          import('./features/student/submissions/my-submissions.component').then(
+            (m) => m.MySubmissionsComponent,
+          ),
       },
       {
         path: 'profil',
-        loadComponent: () => import('./features/student/profile/profile.component').then(m => m.ProfileComponent)
-      }
-    ]
+        loadComponent: () =>
+          import('./features/student/profile/profile.component').then(
+            (m) => m.ProfileComponent,
+          ),
+      },
+      // ✅ ROUTE PRÉSENCE AJOUTÉE
+      {
+        path: 'presence/:workshopId',
+        loadComponent: () =>
+          import('./features/student/presence/presence.component').then(
+            (m) => m.PresenceComponent,
+          ),
+      },
+    ],
   },
 
-  // 👨‍💼 Pages ADMIN
+  // 👨‍💼 Admin
   {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadComponent: () =>
-      import('./features/admin/layout/admin-layout.component')
-        .then(m => m.AdminLayoutComponent),
+      import('./features/admin/layout/admin-layout.component').then(
+        (m) => m.AdminLayoutComponent,
+      ),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -119,5 +152,11 @@ export const routes: Routes = [
     ],
   },
 
-  { path: '**', redirectTo: '' },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./features/shared/components/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent,
+      ),
+  },
 ];

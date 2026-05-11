@@ -18,11 +18,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  // Vaut false tant que Firebase n'a pas résolu l'état d'auth initial
   private authReady = new BehaviorSubject<boolean>(false);
   readonly authReady$ = this.authReady.asObservable();
 
-  // Flag pour éviter que onAuthStateChanged navigue pendant un login/register manuel
   private manualAuth = false;
 
   constructor(private router: Router) {
@@ -31,24 +29,21 @@ export class AuthService {
         const user = await this.getUserProfile(firebaseUser.uid);
         this.currentUserSubject.next(user);
 
-        // Navigation automatique UNIQUEMENT à l'actualisation (pas lors d'un login manuel)
         if (!this.manualAuth && !this.authReady.value) {
           if (user?.role === 'admin') {
-            this.router.navigate(['/admin']);
+            this.router.navigate(['/admin/dashboard']);
           } else {
-            this.router.navigate(['/etudiant']);
+            this.router.navigate(['/espace-membre/thematiques']);
           }
         }
       } else {
         this.currentUserSubject.next(null);
       }
 
-      // Firebase a répondu — les guards peuvent maintenant décider
       this.authReady.next(true);
     });
   }
 
-  /** Guards utilisent ceci pour attendre Firebase avant de vérifier isLoggedIn */
   waitForAuthReady(): Observable<boolean> {
     return this.authReady$.pipe(
       filter(ready => ready === true),
@@ -57,18 +52,16 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<void> {
-    this.manualAuth = true; // Bloque la navigation de onAuthStateChanged
+    this.manualAuth = true;
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const user = await this.getUserProfile(cred.user.uid);
       this.currentUserSubject.next(user);
 
-
-      // C'est login() qui gère la navigation, pas onAuthStateChanged
       if (user?.role === 'admin') {
         await this.router.navigate(['/admin/dashboard']);
       } else {
-        await this.router.navigate(['/etudiant/themes']);
+        await this.router.navigate(['/espace-membre/thematiques']);
       }
     } finally {
       this.manualAuth = false;
@@ -97,7 +90,7 @@ export class AuthService {
 
       await setDoc(doc(db, 'users', cred.user.uid), user);
       this.currentUserSubject.next(user);
-      await this.router.navigate(['/etudiant/themes']);
+      await this.router.navigate(['/espace-membre/thematiques']);
     } finally {
       this.manualAuth = false;
     }
@@ -123,6 +116,14 @@ export class AuthService {
 
   get currentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  /** Recharge le profil depuis Firestore et met à jour le BehaviorSubject. */
+  async refreshCurrentUser(): Promise<void> {
+    const uid = this.currentUserSubject.value?.uid;
+    if (!uid) return;
+    const user = await this.getUserProfile(uid);
+    this.currentUserSubject.next(user);
   }
 
   get isAdmin(): boolean {

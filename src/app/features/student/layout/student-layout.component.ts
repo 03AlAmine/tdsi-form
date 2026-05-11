@@ -4,12 +4,14 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { TechBackgroundComponent } from "../../shared/components/tech-background/tech-background.component";
+import { PublicFooterComponent } from "../../shared/components/public-footer/public-footer.component";
 
 
 @Component({
   selector: 'app-student-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ToastComponent, ConfirmModalComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TechBackgroundComponent],
   templateUrl: './student-layout.component.html',
   styleUrls: ['./student-layout.component.scss']
 })

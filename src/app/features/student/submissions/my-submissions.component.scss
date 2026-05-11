@@ -186,7 +186,7 @@
   width: 100%;
   max-width: 500px;
   height: 100%;
-  background: var(--bg-secondary);
+  backdrop-filter: blur(12px);
   border-left: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;

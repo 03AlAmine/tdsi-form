@@ -144,7 +144,6 @@
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1.5rem;
     padding: 2rem;
-    background: rgba(21, 30, 45, 0.6);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-2xl);
@@ -472,7 +471,6 @@
 }
 
 .feature-card {
-  background: rgba(21, 30, 45, 0.5);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);

@@ -81,7 +81,6 @@
 }
 
 .workshop-card {
-  background: var(--bg-card);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
@@ -357,3 +356,112 @@
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
+
+// ══ QR Code Modal ══
+
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn .2s ease;
+}
+
+.qr-modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl, 24px);
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+  animation: scaleIn .25s cubic-bezier(.32,.72,0,1);
+
+  &__close {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: .875rem;
+    transition: all .15s;
+    &:hover { background: var(--bg-3); color: var(--text); }
+  }
+
+  &__header { margin-bottom: 1.5rem; }
+  &__title { font-size: 1.125rem; font-weight: 700; margin-top: .25rem; }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+
+    @media (max-width: 480px) { grid-template-columns: 1fr; }
+  }
+
+  &__hint {
+    text-align: center;
+    font-size: .75rem;
+    color: var(--text-3);
+  }
+}
+
+.qr-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 12px);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .625rem;
+  text-align: center;
+
+  &__badge {
+    padding: .2rem .75rem;
+    border-radius: 9999px;
+    font-size: .75rem;
+    font-weight: 600;
+    font-family: var(--font-mono, monospace);
+
+    &--presence {
+      background: rgba(99,102,241,.15);
+      color: var(--accent-bright, #818cf8);
+    }
+    &--public {
+      background: rgba(16,185,129,.15);
+      color: #10b981;
+    }
+  }
+
+  &__img-wrap {
+    background: #fff;
+    border-radius: 8px;
+    padding: .5rem;
+    img { display: block; }
+  }
+
+  &__label {
+    font-size: .875rem;
+    font-weight: 600;
+  }
+
+  &__sub {
+    font-size: .75rem;
+    color: var(--text-2);
+    line-height: 1.4;
+  }
+}
+
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }

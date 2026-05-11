@@ -21,9 +21,9 @@
   --white-dim: #94a3b8;
 
   // Backgrounds
-  --bg-primary: #0a0f1a;
-  --bg-secondary: #0f1622;
-  --bg-tertiary: #151e2d;
+  --bg-primary: #18233e;
+  --bg-secondary: #172236;
+  --bg-tertiary: #1a2538;
   --bg-card: rgba(21, 30, 45, 0.7);
   --bg-card-solid: #151e2d;
 
@@ -776,5 +776,76 @@ a {
     color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.6;
+  }
+}
+.fas{
+  color: white;
+}
+// ===== PAGE TRANSITIONS =====
+.route-container {
+  position: relative;
+}
+
+.page-transition {
+  animation: pageFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Transition pour les composants
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Transition pour les listes
+.list-item-transition {
+  animation: listItemFade 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes listItemFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Stagger animations pour les listes
+.list-stagger > * {
+  animation: listItemFade 0.3s ease-out forwards;
+  opacity: 0;
+
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
   }
 }

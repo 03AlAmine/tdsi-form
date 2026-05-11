@@ -189,6 +189,70 @@
 
             <!-- Actions (for pending submissions) -->
             @if (sub.status === "en attente") {
+
+              <!-- ══ AXE 4 — Analyse IA ══ -->
+              @if (sub.status === 'en attente') {
+                <div class="ai-analyze-zone">
+                  <button type="button" class="btn-ai-analyze"
+                    (click)="analyzeSummary(sub)"
+                    [disabled]="isSummaryLoading(sub.id!)">
+                    @if (isSummaryLoading(sub.id!)) {
+                      <span class="spinner-ai"></span> Analyse en cours…
+                    } @else if (getSummary(sub.id!)) {
+                      ✦ {{ isSummaryExpanded(sub.id!) ? "Masquer l'analyse" : "Voir l'analyse IA" }}
+                    } @else {
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                      </svg>
+                      Analyser avec l'IA
+                    }
+                  </button>
+
+                  @if (getSummaryError(sub.id!)) {
+                    <span class="ai-error">{{ getSummaryError(sub.id!) }}</span>
+                  }
+
+                  @if (getSummary(sub.id!) && isSummaryExpanded(sub.id!)) {
+                    <div class="ai-panel">
+                      <div class="ai-panel__header">
+                        <span class="ai-label">✦ ANALYSE IA</span>
+                        <span class="verdict-badge" [class]="getVerdictClass(getSummary(sub.id!)!.verdict)">
+                          {{ getVerdictIcon(getSummary(sub.id!)!.verdict) }}
+                          Dossier {{ getSummary(sub.id!)!.verdict }}
+                        </span>
+                      </div>
+
+                      <p class="ai-panel__resume">{{ getSummary(sub.id!)!.resume }}</p>
+
+                      <div class="ai-panel__grid">
+                        @if (getSummary(sub.id!)!.points_forts.length > 0) {
+                          <div class="ai-points ai-points--good">
+                            <div class="ai-points__lbl">✓ Points forts</div>
+                            @for (p of getSummary(sub.id!)!.points_forts; track p) {
+                              <div class="ai-points__item">{{ p }}</div>
+                            }
+                          </div>
+                        }
+                        @if (getSummary(sub.id!)!.points_faibles.length > 0) {
+                          <div class="ai-points ai-points--bad">
+                            <div class="ai-points__lbl">⚠ À améliorer</div>
+                            @for (p of getSummary(sub.id!)!.points_faibles; track p) {
+                              <div class="ai-points__item">{{ p }}</div>
+                            }
+                          </div>
+                        }
+                      </div>
+
+                      <div class="ai-panel__comment-hint">
+                        <span class="ai-label">✦ Commentaire suggéré</span>
+                        <span class="ai-hint-sub">pré-rempli ci-dessous — modifiable</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
               <div class="action-section">
                 <div class="comment-input">
                   <label class="form-label">Commentaire (optionnel)</label>

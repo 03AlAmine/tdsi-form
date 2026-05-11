@@ -64,42 +64,33 @@ export class WorkshopDetailComponent {
     }
 
     this.loadingParticipants.set(true);
-    const participantsList: ParticipantInfo[] = [];
+    try {
+      // Tous les getDoc lancés en parallèle — 1 RTT au lieu de N
+      const snaps = await Promise.all(
+        this.workshop.registrations.map(uid => getDoc(doc(db, 'users', uid)))
+      );
 
-    for (const uid of this.workshop.registrations) {
-      try {
-        const userRef = doc(db, 'users', uid);
-        const userSnap = await getDoc(userRef);
-
+      const participantsList: ParticipantInfo[] = snaps.map((userSnap, i) => {
+        const uid = this.workshop!.registrations[i];
         if (userSnap.exists()) {
-          const userData = userSnap.data();
-          participantsList.push({
-            uid: uid,
-            displayName: userData['displayName'] || 'Inconnu',
-            email: userData['email'] || 'Non disponible',
-            promo: userData['promo'] || 'Non spécifié'
-          });
-        } else {
-          participantsList.push({
-            uid: uid,
-            displayName: 'Utilisateur inconnu',
-            email: 'Non disponible',
-            promo: 'Non spécifié'
-          });
+          const d = userSnap.data();
+          return {
+            uid,
+            displayName: d['displayName'] || 'Inconnu',
+            email: d['email'] || 'Non disponible',
+            promo: d['promo'] || 'Non spécifié'
+          };
         }
-      } catch (error) {
-        console.error('Erreur chargement participant:', error);
-        participantsList.push({
-          uid: uid,
-          displayName: 'Erreur chargement',
-          email: 'Non disponible',
-          promo: 'Non spécifié'
-        });
-      }
-    }
+        return { uid, displayName: 'Utilisateur inconnu', email: 'Non disponible', promo: 'Non spécifié' };
+      });
 
-    this.participants.set(participantsList);
-    this.loadingParticipants.set(false);
+      this.participants.set(participantsList);
+    } catch (error) {
+      console.error('Erreur chargement participants:', error);
+      this.participants.set([]);
+    } finally {
+      this.loadingParticipants.set(false);
+    }
   }
 
   async loadGuestRegistrations(): Promise<void> {

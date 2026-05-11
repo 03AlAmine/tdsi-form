@@ -1,20 +1,65 @@
 <!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>
-      Club TDSI — Transmission de Données & Sécurité de l'Information
-    </title>
-    <meta
-      name="description"
-      content="Plateforme de gestion des workshops et thématiques du Club TDSI"
-    />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <meta name="theme-color" content="#09090f" />
-  </head>
-  <body>
-    <app-root></app-root>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <title>Club TDSI Campus</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <style>
+    /* Preloader initial */
+    .initial-preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #0a0f1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      transition: opacity 0.5s ease-out;
+    }
+
+    .initial-preloader.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .preloader-logo {
+      width: 60px;
+      height: 60px;
+      animation: preloaderPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes preloaderPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+  </style>
+</head>
+<body>
+  <div class="initial-preloader" id="initialPreloader">
+    <div class="preloader-logo">
+      <img src="/assets/images/logo.png" alt="TDSI Club" style="width:100%;height:100%" />
+    </div>
+  </div>
+  <app-root></app-root>
+
+  <script>
+    window.addEventListener('load', () => {
+      const preloader = document.getElementById('initialPreloader');
+      if (preloader) {
+        setTimeout(() => {
+          preloader.classList.add('hide');
+          setTimeout(() => {
+            preloader.style.display = 'none';
+          }, 500);
+        }, 500);
+      }
+    });
+  </script>
+</body>
 </html>

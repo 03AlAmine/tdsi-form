@@ -1,6 +1,7 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ThemeService } from '../../../core/services/theme.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeSubmission } from '../../../core/model/models';
@@ -12,22 +13,24 @@ import { ThemeSubmission } from '../../../core/model/models';
   templateUrl: './my-submissions.component.html',
   styleUrls: ['./my-submissions.component.scss']
 })
-export class MySubmissionsComponent implements OnInit {
+export class MySubmissionsComponent {
   private themeService = inject(ThemeService);
-  private authService = inject(AuthService);
+  private authService  = inject(AuthService);
 
-  submissions = signal<ThemeSubmission[]>([]);
-  loading = signal(true);
+  submissions        = signal<ThemeSubmission[]>([]);
+  loading            = signal(true);
   selectedSubmission = signal<ThemeSubmission | null>(null);
-  drawerOpen = signal(false);
+  drawerOpen         = signal(false);
 
-  ngOnInit(): void {
+  constructor() {
     const userId = this.authService.currentUser?.uid;
     if (userId) {
-      this.themeService.getMySubmissions(userId).subscribe(submissions => {
-        this.submissions.set(submissions);
-        this.loading.set(false);
-      });
+      this.themeService.getMySubmissions(userId)
+        .pipe(takeUntilDestroyed())
+        .subscribe(submissions => {
+          this.submissions.set(submissions);
+          this.loading.set(false);
+        });
     }
   }
 
@@ -39,27 +42,13 @@ export class MySubmissionsComponent implements OnInit {
 
   closeDrawer(): void {
     this.drawerOpen.set(false);
-    setTimeout(() => {
-      this.selectedSubmission.set(null);
-      document.body.style.overflow = '';
-    }, 300);
+    setTimeout(() => { this.selectedSubmission.set(null); document.body.style.overflow = ''; }, 300);
   }
 
   getStatusIcon(status: string): string {
-    switch (status) {
-      case 'en attente': return '⏳';
-      case 'approuvé': return '✓';
-      case 'refusé': return '✕';
-      default: return '●';
-    }
+    return ({ 'en attente': '⏳', 'approuvé': '✓', 'refusé': '✕' } as any)[status] ?? '●';
   }
-
   getBadgeClass(status: string): string {
-    switch (status) {
-      case 'en attente': return 'badge--warning';
-      case 'approuvé': return 'badge--success';
-      case 'refusé': return 'badge--danger';
-      default: return 'badge--neutral';
-    }
+    return ({ 'en attente': 'badge--warning', 'approuvé': 'badge--success', 'refusé': 'badge--danger' } as any)[status] ?? 'badge--neutral';
   }
 }
