@@ -5,8 +5,7 @@
   right: 0;
   z-index: 100;
   padding: 1rem 0;
-  background: rgba(var(--bg-primary-rgb, 10, 10, 20), 0.85);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-light, rgba(59, 130, 246, 0.1));
   animation: navSlideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;

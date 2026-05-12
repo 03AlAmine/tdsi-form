@@ -3,7 +3,10 @@
   @if (loading()) {
     <div class="loading-state"><div class="spinner"></div><p>Chargement...</p></div>
   } @else if (!activity()) {
-    <div class="empty-state"><p>Activité introuvable</p><a routerLink="/admin/activites" class="btn btn--ghost">Retour</a></div>
+    <div class="empty-state">
+      <p>Activité introuvable</p>
+      <a routerLink="/admin/activites" class="btn btn--ghost">Retour</a>
+    </div>
   } @else {
 
     <!-- ── En-tête ─────────────────────────────────────────── -->
@@ -22,7 +25,8 @@
         <button class="btn btn--ghost" (click)="exportCsv()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
           Export CSV
         </button>
@@ -50,44 +54,6 @@
       </div>
     </div>
 
-    <!-- ── QR check-in ──────────────────────────────────────── -->
-    <div class="checkin-qr-card">
-      <div class="checkin-qr-card__info">
-        <h3>QR de check-in</h3>
-        <p>Projetez ce QR sur un écran à l'entrée. Les participants scannent avec leur téléphone pour confirmer leur présence.</p>
-        <div class="checkin-status" [class.active]="activity()!.presenceEnabled">
-          @if (activity()!.presenceEnabled) {
-            <span class="dot dot--green"></span> Check-in actif
-          } @else {
-            <span class="dot dot--grey"></span> Check-in inactif — activez-le depuis la liste
-          }
-        </div>
-        <button class="btn btn--ghost btn--sm" (click)="downloadPresenceQr()">
-          Télécharger PNG
-        </button>
-      </div>
-      <div class="checkin-qr-card__qr">
-        <div class="qr-wrap">
-          <img [src]="getPresenceQr(activity()!.id!)" alt="QR check-in" width="150" height="150" />
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Filtres + recherche ──────────────────────────────── -->
-    <div class="toolbar">
-      <div class="toolbar__filters">
-        <button class="filter-btn" [class.active]="filterType() === 'all'" (click)="filterType.set('all')">Tous ({{ stats().total }})</button>
-        <button class="filter-btn" [class.active]="filterType() === 'member'" (click)="filterType.set('member')">Membres ({{ stats().members }})</button>
-        <button class="filter-btn" [class.active]="filterType() === 'guest'" (click)="filterType.set('guest')">Invités ({{ stats().guests }})</button>
-      </div>
-      <input
-        type="text"
-        class="form-input search-input"
-        placeholder="Rechercher par nom, email..."
-        (input)="searchTerm.set($any($event.target).value)"
-      />
-    </div>
-
     <!-- ── Barre de progression ─────────────────────────────── -->
     <div class="progress-bar-wrap">
       <div class="progress-bar">
@@ -96,62 +62,224 @@
       <span class="progress-bar__label">{{ stats().checkedIn }} / {{ stats().total }} présents</span>
     </div>
 
-    <!-- ── Table des inscrits ────────────────────────────────── -->
-    @if (filteredRegistrations().length === 0) {
-      <div class="empty-state"><p>Aucun inscrit pour ce filtre</p></div>
-    } @else {
-      <div class="registrations-table-wrap">
-        <table class="registrations-table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Type</th>
-              <th>Organisation</th>
-              <th>Inscrit le</th>
-              <th>Présence</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (reg of filteredRegistrations(); track reg.id) {
-              <tr [class.row--checkedin]="reg.checkedIn">
-                <td class="td--name">
-                  <div class="participant-name">
-                    <div class="avatar">{{ reg.name.charAt(0).toUpperCase() }}</div>
-                    {{ reg.name }}
-                  </div>
-                </td>
-                <td class="td--email">{{ reg.email }}</td>
-                <td>
-                  <span class="badge" [class.badge--info]="reg.type === 'member'" [class.badge--neutral]="reg.type === 'guest'">
-                    {{ reg.type === 'member' ? 'Membre' : 'Invité' }}
-                  </span>
-                </td>
-                <td class="td--org">{{ reg.organization || '—' }}</td>
-                <td class="td--date">{{ reg.registeredAt | date:'d MMM, HH:mm' }}</td>
-                <td>
-                  @if (reg.checkedIn) {
-                    <div class="checkin-status active">
-                      <span class="dot dot--green"></span>
-                      {{ reg.checkedInAt | date:'HH:mm' }}
-                    </div>
-                  } @else {
-                    <span class="checkin-status"><span class="dot dot--grey"></span> Absent</span>
-                  }
-                </td>
-                <td>
-                  @if (!reg.checkedIn) {
-                    <button class="btn btn--success btn--xs" (click)="checkIn(reg)" title="Marquer présent">
-                      ✓ Check-in
-                    </button>
-                  }
-                </td>
+    <!-- ── Onglets ───────────────────────────────────────────── -->
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab() === 'liste'"
+        (click)="activeTab.set('liste')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        Liste des inscrits
+        <span class="tab-badge">{{ stats().total }}</span>
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'scanner'"
+        (click)="activeTab.set('scanner')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
+        </svg>
+        Scanner QR
+        @if (activity()!.presenceEnabled) {
+          <span class="tab-badge tab-badge--live">
+            <span class="live-dot"></span> Actif
+          </span>
+        }
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- Onglet Liste                                          -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'liste') {
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar__filters">
+          <button class="filter-btn" [class.active]="filterType() === 'all'"
+            (click)="filterType.set('all')">
+            Tous ({{ stats().total }})
+          </button>
+          <button class="filter-btn" [class.active]="filterType() === 'member'"
+            (click)="filterType.set('member')">
+            Membres ({{ stats().members }})
+          </button>
+          <button class="filter-btn" [class.active]="filterType() === 'guest'"
+            (click)="filterType.set('guest')">
+            Invités ({{ stats().guests }})
+          </button>
+        </div>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Rechercher par nom, email..."
+          (input)="searchTerm.set($any($event.target).value)"
+        />
+      </div>
+
+      @if (filteredRegistrations().length === 0) {
+        <div class="empty-state"><p>Aucun inscrit pour ce filtre</p></div>
+      } @else {
+        <div class="registrations-table-wrap">
+          <table class="registrations-table">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Type</th>
+                <th>Organisation</th>
+                <th>Inscrit le</th>
+                <th>Présence</th>
+                <th></th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (reg of filteredRegistrations(); track reg.id) {
+                <tr [class.row--checkedin]="reg.checkedIn">
+                  <td class="td--name">
+                    <div class="participant-name">
+                      <div class="avatar">{{ reg.name.charAt(0).toUpperCase() }}</div>
+                      {{ reg.name }}
+                    </div>
+                  </td>
+                  <td class="td--email">{{ reg.email }}</td>
+                  <td>
+                    <span class="badge"
+                      [class.badge--info]="reg.type === 'member'"
+                      [class.badge--neutral]="reg.type === 'guest'">
+                      {{ reg.type === 'member' ? 'Membre' : 'Invité' }}
+                    </span>
+                  </td>
+                  <td class="td--org">{{ reg.organization || '—' }}</td>
+                  <td class="td--date">{{ reg.registeredAt | date:'d MMM, HH:mm' }}</td>
+                  <td>
+                    @if (reg.checkedIn) {
+                      <div class="checkin-status active">
+                        <span class="dot dot--green"></span>
+                        {{ reg.checkedInAt | date:'HH:mm' }}
+                      </div>
+                    } @else {
+                      <span class="checkin-status">
+                        <span class="dot dot--grey"></span> Absent
+                      </span>
+                    }
+                  </td>
+                  <td>
+                    @if (!reg.checkedIn) {
+                      <button class="btn btn--success btn--xs"
+                        (click)="checkIn(reg)" title="Marquer présent">
+                        ✓ Check-in
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- Onglet Scanner                                        -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    @if (activeTab() === 'scanner') {
+      <div class="scanner-section animate-fade-in">
+
+        <!-- Statut check-in -->
+        <div class="checkin-status-banner"
+          [class.banner--active]="activity()!.presenceEnabled"
+          [class.banner--inactive]="!activity()!.presenceEnabled">
+          @if (activity()!.presenceEnabled) {
+            <div class="banner__indicator">
+              <span class="dot dot--green"></span>
+              Check-in activé — les participants peuvent scanner
+            </div>
+          } @else {
+            <div class="banner__indicator">
+              <span class="dot dot--grey"></span>
+              Check-in inactif — activez-le depuis la liste d'activités
+            </div>
+          }
+        </div>
+
+        <div class="scanner-layout">
+
+          <!-- Scanner principal -->
+          <div class="scanner-panel">
+            <h3 class="scanner-panel__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
+              </svg>
+              Scanner le QR d'un participant
+            </h3>
+            <p class="scanner-panel__sub">
+              Utilisez la caméra de cet appareil pour scanner le QR code
+              du reçu de confirmation de chaque participant.
+            </p>
+
+            <!-- Composant scanner -->
+            <app-qr-scanner
+              [activityId]="activity()!.id!"
+              (checkedIn)="onScannerCheckIn($event)"
+            />
+          </div>
+
+          <!-- QR de check-in côté participant -->
+          <div class="checkin-qr-panel">
+            <h3 class="scanner-panel__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+              QR de check-in à projeter
+            </h3>
+            <p class="scanner-panel__sub">
+              Projetez ce QR sur un écran à l'entrée — les participants
+              scannent eux-mêmes pour confirmer leur présence.
+            </p>
+
+            <div class="qr-display">
+              <div class="qr-display__img-wrap">
+                <img [src]="getPresenceQr(activity()!.id!)"
+                     alt="QR check-in"
+                     width="160" height="160" />
+              </div>
+              <p class="qr-display__url font-mono">
+                /activites/{{ activity()!.id }}/check-in
+              </p>
+              <button class="btn btn--ghost btn--sm"
+                (click)="downloadPresenceQr()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Télécharger PNG
+              </button>
+            </div>
+
+            <!-- Stats temps réel -->
+            <div class="realtime-stats">
+              <div class="realtime-stat">
+                <div class="realtime-stat__value">{{ stats().checkedIn }}</div>
+                <div class="realtime-stat__label">Présents</div>
+              </div>
+              <div class="realtime-stat realtime-stat--muted">
+                <div class="realtime-stat__value">{{ stats().total - stats().checkedIn }}</div>
+                <div class="realtime-stat__label">Manquants</div>
+              </div>
+              <div class="realtime-stat realtime-stat--accent">
+                <div class="realtime-stat__value">{{ stats().rate }}%</div>
+                <div class="realtime-stat__label">Taux</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     }
+
   }
 </div>

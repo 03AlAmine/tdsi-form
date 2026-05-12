@@ -40,7 +40,6 @@
 .error-state {
   text-align: center;
   padding: 3rem 2rem;
-  background: var(--bg-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
 
@@ -64,7 +63,6 @@
 .success-card {
   text-align: center;
   padding: 2.5rem;
-  background: var(--bg-card);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);

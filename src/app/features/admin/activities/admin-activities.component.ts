@@ -120,8 +120,14 @@ export class AdminActivitiesComponent implements OnDestroy {
       this.form.reset({ type: 'conference', isOnline: false, time: '09:00' });
       this.showForm.set(false);
       this.toast.success('Activité créée — elle est en brouillon');
-    } catch {
-      this.toast.error('Erreur lors de la création');
+    } catch (e: any) {
+      console.error('[Activity] Erreur création:', e);
+      const msg = e?.code === 'permission-denied'
+        ? 'Permission refusée — vérifiez les règles Firestore'
+        : e?.code === 'failed-precondition'
+        ? 'Index Firestore manquant — voir la console Firebase'
+        : (e?.message ?? 'Erreur inconnue');
+      this.toast.error(msg);
     } finally {
       this.saving.set(false);
     }

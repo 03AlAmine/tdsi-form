@@ -164,7 +164,7 @@
                   @if (activity.maxParticipants) {
                     <span class="meta-item">
                       <i class="fas fa-users"></i>
-                      {{ activity.maxParticipants - (activity.registrations?.length ?? 0) - (activity.guestCount ?? 0) }} places restantes
+                      {{ activity.maxParticipants - (activity.registrations.length ?? 0) - (activity.guestCount ?? 0) }} places restantes
                     </span>
                   }
                 </div>

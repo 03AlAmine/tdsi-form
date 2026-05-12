@@ -1,29 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  Timestamp,
-  arrayUnion,
-  arrayRemove,
-  onSnapshot,
-  query,
-  where,
-  orderBy,
-  getDoc,
-  getDocs,
-  writeBatch,
-  increment,
+  collection, addDoc, updateDoc, deleteDoc, doc,
+  Timestamp, arrayUnion, arrayRemove, onSnapshot,
+  query, where, orderBy, getDoc, getDocs, writeBatch,
+  increment, WithFieldValue, DocumentData
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { AuthService } from './auth.service';
 import {
-  Activity,
-  ActivityRegistration,
-  ActivityStatus,
+  Activity, ActivityRegistration, ActivityStatus
 } from '../model/activity.model';
 
 @Injectable({ providedIn: 'root' })
@@ -36,64 +22,62 @@ export class ActivityService {
     return {
       ...d,
       id,
-      date: d['date']?.toDate?.() ?? new Date(),
-      endDate: d['endDate']?.toDate?.() ?? undefined,
+      date:      d['date']?.toDate?.()      ?? new Date(),
+      endDate:   d['endDate']?.toDate?.()   ?? undefined,
       createdAt: d['createdAt']?.toDate?.() ?? new Date(),
       updatedAt: d['updatedAt']?.toDate?.() ?? undefined,
     } as Activity;
   }
 
-  private toFirestore(activity: Partial<Activity>): Record<string, any> {
-    const payload: Record<string, any> = { ...activity };
+  private toFirestore(activity: Partial<Activity>): WithFieldValue<DocumentData> {
+    const payload: Record<string, unknown> = { ...activity };
 
-    if (activity.date) payload['date'] = Timestamp.fromDate(activity.date);
-    if (activity.endDate)
-      payload['endDate'] = Timestamp.fromDate(activity.endDate);
-    if (activity.createdAt)
-      payload['createdAt'] = Timestamp.fromDate(activity.createdAt);
+    // Convertir les Date en Timestamp Firestore
+    if (activity.date)      payload['date']      = Timestamp.fromDate(activity.date);
+    if (activity.endDate)   payload['endDate']   = Timestamp.fromDate(activity.endDate);
+    if (activity.createdAt) payload['createdAt'] = Timestamp.fromDate(activity.createdAt);
+    if (activity.updatedAt) payload['updatedAt'] = Timestamp.fromDate(activity.updatedAt);
+
+    // Supprimer les champs undefined — Firestore les rejette
+    Object.keys(payload).forEach(k => {
+      if (payload[k] === undefined) delete payload[k];
+    });
 
     delete payload['id'];
     return payload;
   }
+
   // ── Lecture ───────────────────────────────────────────────
 
   /** Toutes les activités publiées — pour les pages publiques */
   getPublishedActivities(): Observable<Activity[]> {
-    return new Observable((observer) => {
+    return new Observable(observer => {
+      // where seul — tri côté client pour éviter l'index composite
       const q = query(
         collection(db, 'activities'),
-        where('status', 'in', ['published', 'ongoing']),
-        orderBy('date', 'asc'),
+        where('status', 'in', ['published', 'ongoing'])
       );
-      return onSnapshot(
-        q,
-        (snap) => {
-          observer.next(
-            snap.docs.map((d) =>
-              this.fromFirestore(d.id, d.data() as Record<string, any>),
-            ),
-          );
-        },
-        (err) => observer.error(err),
-      );
+      return onSnapshot(q, snap => {
+        const list = snap.docs
+          .map(d => this.fromFirestore(d.id, d.data() as Record<string, any>))
+          .sort((a, b) => a.date.getTime() - b.date.getTime()); // tri client ASC
+        observer.next(list);
+      }, err => observer.error(err));
     });
   }
 
   /** Toutes les activités — pour l'admin */
   getAllActivities(): Observable<Activity[]> {
-    return new Observable((observer) => {
-      const q = query(collection(db, 'activities'), orderBy('date', 'desc'));
-      return onSnapshot(
-        q,
-        (snap) => {
-          observer.next(
-            snap.docs.map((d) =>
-              this.fromFirestore(d.id, d.data() as Record<string, any>),
-            ),
-          );
-        },
-        (err) => observer.error(err),
-      );
+    return new Observable(observer => {
+      // Pas de orderBy seul pour éviter l'exigence d'index composite
+      // Le tri se fait côté client
+      const q = query(collection(db, 'activities'));
+      return onSnapshot(q, snap => {
+        const list = snap.docs
+          .map(d => this.fromFirestore(d.id, d.data() as Record<string, any>))
+          .sort((a, b) => b.date.getTime() - a.date.getTime()); // tri client
+        observer.next(list);
+      }, err => observer.error(err));
     });
   }
 
@@ -109,7 +93,7 @@ export class ActivityService {
   async createActivity(activity: Omit<Activity, 'id'>): Promise<string> {
     const ref = await addDoc(
       collection(db, 'activities'),
-      this.toFirestore(activity),
+      this.toFirestore(activity)
     );
     return ref.id;
   }
@@ -135,17 +119,13 @@ export class ActivityService {
 
   async registerMember(activityId: string, userId: string): Promise<void> {
     const actRef = doc(db, 'activities', activityId);
-    const snap = await getDoc(actRef);
+    const snap   = await getDoc(actRef);
     if (!snap.exists()) throw new Error('Activité introuvable');
 
-    const activity = this.fromFirestore(
-      snap.id,
-      snap.data() as Record<string, any>,
-    );
+    const activity = this.fromFirestore(snap.id, snap.data() as Record<string, any>);
 
     // Vérif capacité
-    const total =
-      (activity.registrations?.length ?? 0) + (activity.guestCount ?? 0);
+    const total = (activity.registrations?.length ?? 0) + (activity.guestCount ?? 0);
     if (activity.maxParticipants && total >= activity.maxParticipants) {
       throw new Error('Plus de places disponibles');
     }
@@ -157,9 +137,10 @@ export class ActivityService {
   }
 
   async unregisterMember(activityId: string, userId: string): Promise<void> {
-    await updateDoc(doc(db, 'activities', activityId), {
-      registrations: arrayRemove(userId),
-    });
+    await updateDoc(
+      doc(db, 'activities', activityId),
+      { registrations: arrayRemove(userId) }
+    );
   }
 
   // ── Inscriptions invités (publique, sans compte) ──────────
@@ -171,15 +152,15 @@ export class ActivityService {
       email: string;
       phone?: string;
       organization?: string;
-    },
+    }
   ): Promise<string> {
     // Vérifier que l'email n'est pas déjà inscrit
     const existing = await getDocs(
       query(
         collection(db, 'activityRegistrations'),
         where('activityId', '==', activityId),
-        where('email', '==', data.email),
-      ),
+        where('email', '==', data.email)
+      )
     );
     if (!existing.empty) throw new Error('Cet email est déjà inscrit');
 
@@ -224,8 +205,8 @@ export class ActivityService {
         collection(db, 'activityRegistrations'),
         where('activityId', '==', activityId),
         where('userId', '==', userId),
-        where('checkedIn', '==', true),
-      ),
+        where('checkedIn', '==', true)
+      )
     );
     if (!existing.empty) throw new Error('Présence déjà enregistrée');
 
@@ -258,30 +239,20 @@ export class ActivityService {
   // ── Lecture inscriptions (admin) ──────────────────────────
 
   getRegistrations(activityId: string): Observable<ActivityRegistration[]> {
-    return new Observable((observer) => {
+    return new Observable(observer => {
       const q = query(
         collection(db, 'activityRegistrations'),
         where('activityId', '==', activityId),
-        orderBy('registeredAt', 'desc'),
+        orderBy('registeredAt', 'desc')
       );
-      return onSnapshot(
-        q,
-        (snap) => {
-          observer.next(
-            snap.docs.map(
-              (d) =>
-                ({
-                  ...d.data(),
-                  id: d.id,
-                  registeredAt:
-                    d.data()['registeredAt']?.toDate?.() ?? new Date(),
-                  checkedInAt: d.data()['checkedInAt']?.toDate?.() ?? undefined,
-                }) as ActivityRegistration,
-            ),
-          );
-        },
-        (err) => observer.error(err),
-      );
+      return onSnapshot(q, snap => {
+        observer.next(snap.docs.map(d => ({
+          ...d.data(),
+          id: d.id,
+          registeredAt: d.data()['registeredAt']?.toDate?.() ?? new Date(),
+          checkedInAt:  d.data()['checkedInAt']?.toDate?.()  ?? undefined,
+        }) as ActivityRegistration));
+      }, err => observer.error(err));
     });
   }
 
@@ -296,15 +267,15 @@ export class ActivityService {
     const snap = await getDocs(
       query(
         collection(db, 'activityRegistrations'),
-        where('activityId', '==', activityId),
-      ),
+        where('activityId', '==', activityId)
+      )
     );
-    const regs = snap.docs.map((d) => d.data());
+    const regs = snap.docs.map(d => d.data());
     return {
-      total: regs.length,
-      members: regs.filter((r) => r['type'] === 'member').length,
-      guests: regs.filter((r) => r['type'] === 'guest').length,
-      checkedIn: regs.filter((r) => r['checkedIn']).length,
+      total:     regs.length,
+      members:   regs.filter(r => r['type'] === 'member').length,
+      guests:    regs.filter(r => r['type'] === 'guest').length,
+      checkedIn: regs.filter(r => r['checkedIn']).length,
     };
   }
 }

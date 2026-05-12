@@ -1,12 +1,13 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivityService } from '../../../core/services/activity.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmationPdfService } from '../../../core/services/confirmation-pdf.service';
 import { TechBackgroundComponent } from '../../shared/components/tech-background/tech-background.component';
-import { Activity } from '../../../core/model/activity.model';
+import { Activity, ActivityRegistration } from '../../../core/model/activity.model';
 
 @Component({
   selector: 'app-activity-register',
@@ -17,18 +18,23 @@ import { Activity } from '../../../core/model/activity.model';
 })
 export class ActivityRegisterComponent implements OnInit {
   private route           = inject(ActivatedRoute);
-  private router          = inject(Router);
   private fb              = inject(FormBuilder);
   private activityService = inject(ActivityService);
   private authService     = inject(AuthService);
   private toast           = inject(ToastService);
+  private pdfService      = inject(ConfirmationPdfService);
 
-  activity         = signal<Activity | null>(null);
-  loading          = signal(true);
-  submitting       = signal(false);
-  success          = signal(false);
+  activity          = signal<Activity | null>(null);
+  loading           = signal(true);
+  submitting        = signal(false);
+  downloadingPdf    = signal(false);
+  success           = signal(false);
   alreadyRegistered = signal(false);
-  error            = signal('');
+  error             = signal('');
+
+  // L'inscription créée — pour le téléchargement PDF
+  private createdRegistration: ActivityRegistration | null = null;
+  registrationId = signal('');
 
   isLoggedIn = this.authService.isLoggedIn;
 
@@ -49,15 +55,12 @@ export class ActivityRegisterComponent implements OnInit {
       return;
     }
 
-    // Pré-remplir si membre connecté
     const user = this.authService.currentUser;
     if (user) {
       this.form.patchValue({
         name:  user.displayName ?? '',
         email: user.email ?? '',
       });
-
-      // Vérifier si déjà inscrit
       if (activity.registrations?.includes(user.uid)) {
         this.alreadyRegistered.set(true);
       }
@@ -72,9 +75,9 @@ export class ActivityRegisterComponent implements OnInit {
     this.submitting.set(true);
     this.error.set('');
 
-    const v          = this.form.value;
-    const activity   = this.activity()!;
-    const user       = this.authService.currentUser;
+    const v        = this.form.value;
+    const activity = this.activity()!;
+    const user     = this.authService.currentUser;
 
     try {
       if (user && activity.registrations?.includes(user.uid)) {
@@ -83,24 +86,72 @@ export class ActivityRegisterComponent implements OnInit {
       }
 
       if (user) {
-        // Membre connecté — inscription directe
+        // Membre connecté
         await this.activityService.registerMember(activity.id!, user.uid);
+        // Construire un objet registration local pour le PDF
+        this.createdRegistration = {
+          activityId:        activity.id!,
+          type:              'member',
+          userId:            user.uid,
+          name:              user.displayName ?? v.name!,
+          email:             user.email ?? v.email!,
+          organization:      v.organization || undefined,
+          phone:             v.phone || undefined,
+          registeredAt:      new Date(),
+          confirmationToken: `${activity.id}-${user.uid}-${Date.now()}`,
+          checkedIn:         false,
+        };
       } else {
         // Invité sans compte
-        await this.activityService.registerGuest(activity.id!, {
+        const regId = await this.activityService.registerGuest(activity.id!, {
           name:         v.name!,
           email:        v.email!,
           phone:        v.phone || undefined,
           organization: v.organization || undefined,
         });
+        this.registrationId.set(regId);
+        this.createdRegistration = {
+          id:                regId,
+          activityId:        activity.id!,
+          type:              'guest',
+          name:              v.name!,
+          email:             v.email!,
+          organization:      v.organization || undefined,
+          phone:             v.phone || undefined,
+          registeredAt:      new Date(),
+          confirmationToken: `${activity.id}-${regId}`,
+          checkedIn:         false,
+        };
       }
 
       this.success.set(true);
       this.toast.success('Inscription confirmée !');
+
+      // Lancer le téléchargement PDF automatiquement
+      await this.downloadPdf();
+
     } catch (e: any) {
       this.error.set(e.message ?? 'Une erreur est survenue. Réessayez.');
     } finally {
       this.submitting.set(false);
+    }
+  }
+
+  async downloadPdf(): Promise<void> {
+    if (!this.createdRegistration || !this.activity()) return;
+    this.downloadingPdf.set(true);
+    try {
+      await this.pdfService.generateAndDownload(
+        this.createdRegistration,
+        this.activity()!
+        // qrDataUrl optionnel — peut être ajouté plus tard avec le token signé
+      );
+      this.toast.success('Reçu PDF téléchargé');
+    } catch (e) {
+      console.error('[PDF]', e);
+      this.toast.error('Impossible de générer le PDF');
+    } finally {
+      this.downloadingPdf.set(false);
     }
   }
 

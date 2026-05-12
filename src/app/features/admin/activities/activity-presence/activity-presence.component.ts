@@ -6,11 +6,12 @@ import { ActivityService } from '../../../../core/services/activity.service';
 import { QrService } from '../../../../core/services/qr.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Activity, ActivityRegistration } from '../../../../core/model/activity.model';
+import { QrScannerComponent } from '../qr-scanner/qr-scanner.component';
 
 @Component({
   selector: 'app-activity-presence',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, QrScannerComponent],
   templateUrl: './activity-presence.component.html',
   styleUrls: ['./activity-presence.component.scss'],
 })
@@ -25,6 +26,7 @@ export class ActivityPresenceComponent implements OnInit, OnDestroy {
   loading       = signal(true);
   filterType    = signal<'all' | 'member' | 'guest'>('all');
   searchTerm    = signal('');
+  activeTab     = signal<'liste' | 'scanner'>('liste');
 
   private sub = new Subscription();
 
@@ -57,12 +59,9 @@ export class ActivityPresenceComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.params['id'];
-
-    // Charger l'activité
     const activity = await this.activityService.getActivity(id);
     this.activity.set(activity);
 
-    // Écouter les inscriptions en temps réel
     this.sub.add(
       this.activityService.getRegistrations(id).subscribe(regs => {
         this.registrations.set(regs);
@@ -71,11 +70,9 @@ export class ActivityPresenceComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-  }
+  ngOnDestroy(): void { this.sub.unsubscribe(); }
 
-  // ── Check-in manuel ───────────────────────────────────────
+  // ── Check-in manuel depuis la table ──────────────────────
   async checkIn(reg: ActivityRegistration): Promise<void> {
     try {
       await this.activityService.checkInGuest(reg.id!);
@@ -83,6 +80,12 @@ export class ActivityPresenceComponent implements OnInit, OnDestroy {
     } catch (e: any) {
       this.toast.error(e.message ?? 'Erreur lors du check-in');
     }
+  }
+
+  // ── Callback du scanner ───────────────────────────────────
+  onScannerCheckIn(reg: ActivityRegistration): void {
+    // La liste se met à jour automatiquement via l'onSnapshot Firestore
+    this.toast.success(`✓ ${reg.name ?? 'Participant'} checké`);
   }
 
   // ── Export CSV ────────────────────────────────────────────
@@ -100,12 +103,12 @@ export class ActivityPresenceComponent implements OnInit, OnDestroy {
       ])
     ];
 
-    const csv     = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob    = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url     = URL.createObjectURL(blob);
-    const a       = document.createElement('a');
-    a.href        = url;
-    a.download    = `presences-${this.activity()?.title ?? 'activite'}.csv`;
+    const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `presences-${this.activity()?.title ?? 'activite'}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
