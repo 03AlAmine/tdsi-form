@@ -1,221 +1,327 @@
+<!-- public-register.component.html -->
 <div class="public-register">
   <app-tech-background />
+
+  <!-- Hero Section -->
+  <section class="register-hero">
+    <div class="container">
+      <div class="register-hero__content">
+        <div class="register-hero__badge">
+          <span class="badge-glow"></span>
+          <span>🎯 INSCRIPTION GRATUITE</span>
+        </div>
+        <h1 class="register-hero__title">
+          Inscription au
+          <span class="gradient-text">workshop</span>
+        </h1>
+        <p class="register-hero__subtitle">
+          Rejoignez notre communauté et participez aux sessions exclusives
+        </p>
+      </div>
+    </div>
+  </section>
+
   <div class="container">
-    <div class="register-container">
+    <div class="register-wrapper">
+
+      <!-- Back Link -->
       <a routerLink="/workshops" class="back-link">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        Retour aux workshops
+        <i class="fas fa-arrow-left"></i>
+        <span>Retour aux workshops</span>
       </a>
 
       @if (loading()) {
+        <!-- Loading State -->
         <div class="loading-state">
-          <div class="spinner"></div>
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring-inner"></div>
+          </div>
+          <p class="loading-text">Chargement du workshop...</p>
         </div>
       } @else if (error()) {
-        <div class="error-state">
-          <div class="error-state__icon">❌</div>
+        <!-- Error State -->
+        <div class="error-card">
+          <div class="error-card__icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
           <h3>Workshop indisponible</h3>
           <p>{{ error() }}</p>
-          <a routerLink="/workshops" class="btn btn--primary"
-            >Voir les workshops disponibles</a
-          >
+          <div class="error-card__actions">
+            <a routerLink="/workshops" class="btn btn--primary">
+              <i class="fas fa-calendar-alt"></i>
+              Voir les workshops disponibles
+            </a>
+          </div>
         </div>
       } @else if (registered()) {
-        <div class="success-card">
-          <div class="success-card__icon">✅</div>
+        <!-- Success State -->
+        <div class="success-card animate-slide-up">
+          <div class="success-card__icon">
+            <i class="fas fa-party-horn"></i>
+          </div>
           <h2>Inscription confirmée !</h2>
-          <p>
-            Vous êtes inscrit au workshop
-            <strong>{{ workshop()?.themeTitle }}</strong>
-          </p>
+          <p>Vous êtes inscrit au workshop <strong>{{ workshop()?.themeTitle }}</strong></p>
+
           <div class="success-card__info">
             <div class="info-item">
-              <span>📅 Date</span>
-              <strong>{{
-                workshop()?.date | date: "EEEE dd MMMM yyyy à HH:mm"
-              }}</strong>
+              <div class="info-label">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Date</span>
+              </div>
+              <div class="info-value">
+                {{ workshop()?.date | date: 'EEEE dd MMMM yyyy à HH:mm' }}
+              </div>
             </div>
             <div class="info-item">
-              <span>📍 Lieu</span>
-              <strong>{{
-                workshop()?.location === "en ligne"
-                  ? "💻 En ligne"
-                  : "🏛️ Présentiel"
-              }}</strong>
+              <div class="info-label">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Lieu</span>
+              </div>
+              <div class="info-value">
+                @if (workshop()?.location === 'en ligne') {
+                  <i class="fas fa-video"></i> En ligne
+                } @else {
+                  <i class="fas fa-building"></i> Présentiel
+                }
+              </div>
             </div>
-            @if (workshop()?.meetLink && workshop()?.location === "en ligne") {
+            @if (workshop()?.meetLink && workshop()?.location === 'en ligne') {
               <div class="info-item">
-                <span>🔗 Lien</span>
-                <a [href]="workshop()?.meetLink" target="_blank"
-                  >Accéder à la session</a
-                >
+                <div class="info-label">
+                  <i class="fas fa-link"></i>
+                  <span>Lien de connexion</span>
+                </div>
+                <div class="info-value">
+                  <a [href]="workshop()?.meetLink" target="_blank" class="meet-link">
+                    Accéder à la session <i class="fas fa-external-link-alt"></i>
+                  </a>
+                </div>
               </div>
             }
           </div>
-          <p class="success-card__note">
-            Un email de confirmation vous a été envoyé. Pensez à vérifier vos
-            spams.
-          </p>
+
+          <div class="success-card__note">
+            <i class="fas fa-envelope"></i>
+            <span>Un email de confirmation vous a été envoyé. Pensez à vérifier vos spams.</span>
+          </div>
+
           <div class="success-card__actions">
             <a routerLink="/workshops" class="btn btn--outline">
+              <i class="fas fa-search"></i>
               Découvrir d'autres workshops
+            </a>
+            <a routerLink="/thematiques" class="btn btn--primary">
+              <i class="fas fa-layer-group"></i>
+              Explorer les thématiques
             </a>
           </div>
         </div>
       } @else if (alreadyRegistered()) {
-        <div class="warning-card">
-          <div class="warning-card__icon">⚠️</div>
+        <!-- Already Registered State -->
+        <div class="warning-card animate-slide-up">
+          <div class="warning-card__icon">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
           <h3>Déjà inscrit</h3>
-          <p>
-            L'adresse email <strong>{{ form.value.email }}</strong> est déjà
-            inscrite à ce workshop.
-          </p>
+          <p>L'adresse email <strong>{{ form.value.email }}</strong> est déjà inscrite à ce workshop.</p>
           <div class="warning-card__actions">
             <button class="btn btn--outline" (click)="resetForm()">
+              <i class="fas fa-redo"></i>
               S'inscrire avec un autre email
             </button>
             <a routerLink="/workshops" class="btn btn--primary">
+              <i class="fas fa-calendar-alt"></i>
               Voir autres workshops
             </a>
           </div>
         </div>
       } @else {
-        <div class="form-header">
-          <div class="form-header__badge">
-            <span class="badge badge--primary">INSCRIPTION GRATUITE</span>
+        <!-- Registration Form -->
+        <div class="register-card">
+
+          <!-- Workshop Info -->
+          <div class="workshop-info">
+            <div class="workshop-info__badge">
+              <span class="badge badge--primary">
+                <i class="fas fa-graduation-cap"></i>
+                WORKSHOP TDSI
+              </span>
+            </div>
+            <h2 class="workshop-info__title">{{ workshop()?.themeTitle }}</h2>
+            <div class="workshop-info__meta">
+              <span class="meta-chip">
+                <i class="fas fa-chalkboard-user"></i>
+                {{ workshop()?.presenter }}
+              </span>
+              <span class="meta-chip">
+                <i class="fas fa-hourglass-half"></i>
+                {{ workshop()?.duration }} min
+              </span>
+              <span class="meta-chip">
+                <i class="fas fa-calendar-alt"></i>
+                {{ workshop()?.date | date: 'dd/MM/yyyy' }}
+              </span>
+            </div>
+            <p class="workshop-info__desc">
+              Rejoignez ce workshop exclusif et développez vos compétences tech
+            </p>
           </div>
-          <h1 class="form-header__title">{{ workshop()?.themeTitle }}</h1>
-          <p class="form-header__subtitle">
-            Remplissez le formulaire ci-dessous pour participer à ce workshop.
-          </p>
+
+          <!-- Form -->
+          <form [formGroup]="form" (ngSubmit)="submit()" class="register-form">
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-user"></i>
+                Nom complet
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  formControlName="fullName"
+                  class="form-input"
+                  [class.error]="isInvalid('fullName')"
+                  placeholder="Votre prénom et nom"
+                />
+                <div class="input-border"></div>
+                <i class="fas fa-user input-icon"></i>
+              </div>
+              @if (isInvalid('fullName')) {
+                <span class="form-error">
+                  <i class="fas fa-exclamation-circle"></i>
+                  Nom complet requis (minimum 3 caractères)
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-envelope"></i>
+                Email
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="email"
+                  formControlName="email"
+                  class="form-input"
+                  [class.error]="isInvalid('email')"
+                  placeholder="votre@email.com"
+                />
+                <div class="input-border"></div>
+                <i class="fas fa-envelope input-icon"></i>
+              </div>
+              @if (isInvalid('email')) {
+                <span class="form-error">
+                  <i class="fas fa-exclamation-circle"></i>
+                  Email valide requis
+                </span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-university"></i>
+                  Établissement
+                </label>
+                <div class="select-wrapper">
+                  <select
+                    formControlName="establishment"
+                    class="form-select"
+                    [class.error]="isInvalid('establishment')"
+                  >
+                    <option value="" disabled>Sélectionner votre établissement</option>
+                    @for (est of establishments; track est) {
+                      <option [value]="est">{{ est }}</option>
+                    }
+                  </select>
+                  <i class="fas fa-chevron-down select-icon"></i>
+                  <div class="select-border"></div>
+                </div>
+                @if (isInvalid('establishment')) {
+                  <span class="form-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Veuillez sélectionner un établissement
+                  </span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-chart-line"></i>
+                  Niveau
+                </label>
+                <div class="select-wrapper">
+                  <select
+                    formControlName="level"
+                    class="form-select"
+                    [class.error]="isInvalid('level')"
+                  >
+                    <option value="" disabled>Sélectionner votre niveau</option>
+                    @for (level of studyLevels; track level) {
+                      <option [value]="level">{{ level }}</option>
+                    }
+                  </select>
+                  <i class="fas fa-chevron-down select-icon"></i>
+                  <div class="select-border"></div>
+                </div>
+                @if (isInvalid('level')) {
+                  <span class="form-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Veuillez sélectionner un niveau
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-phone-alt"></i>
+                Téléphone (optionnel)
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="tel"
+                  formControlName="phone"
+                  class="form-input"
+                  placeholder="+221 77 123 45 67"
+                />
+                <div class="input-border"></div>
+                <i class="fas fa-phone-alt input-icon"></i>
+              </div>
+            </div>
+
+            @if (error()) {
+              <div class="alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ error() }}</span>
+                <button class="alert-close" (click)="error.set('')">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary btn--full" [disabled]="submitting()">
+                @if (submitting()) {
+                  <div class="btn-loader"></div>
+                  <span>Inscription en cours...</span>
+                } @else {
+                  <i class="fas fa-check-circle"></i>
+                  <span>M'inscrire gratuitement</span>
+                  <i class="fas fa-arrow-right"></i>
+                }
+              </button>
+            </div>
+
+            <div class="form-footer">
+              <i class="fas fa-shield-alt"></i>
+              <span>En vous inscrivant, vous acceptez de recevoir des emails de confirmation et des rappels concernant ce workshop.</span>
+            </div>
+          </form>
         </div>
-
-        <form [formGroup]="form" (ngSubmit)="submit()" class="register-form">
-          <div class="form-group">
-            <label class="form-label form-label--required">Nom complet</label>
-            <input
-              type="text"
-              formControlName="fullName"
-              class="form-input"
-              [class.form-input--error]="isInvalid('fullName')"
-              placeholder="Votre prénom et nom"
-            />
-            @if (isInvalid("fullName")) {
-              <span class="form-error">Nom complet requis</span>
-            }
-          </div>
-
-          <div class="form-group">
-            <label class="form-label form-label--required">Email</label>
-            <input
-              type="email"
-              formControlName="email"
-              class="form-input"
-              [class.form-input--error]="isInvalid('email')"
-              placeholder="votre@email.com"
-            />
-            @if (isInvalid("email")) {
-              <span class="form-error">Email valide requis</span>
-            }
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label form-label--required"
-                >Établissement</label
-              >
-              <select
-                formControlName="establishment"
-                class="form-select"
-                [class.form-select--error]="isInvalid('establishment')"
-              >
-                <option value="">Sélectionner votre établissement</option>
-                @for (est of establishments; track est) {
-                  <option [value]="est">{{ est }}</option>
-                }
-              </select>
-              @if (isInvalid("establishment")) {
-                <span class="form-error"
-                  >Veuillez sélectionner un établissement</span
-                >
-              }
-            </div>
-
-            <div class="form-group">
-              <label class="form-label form-label--required">Niveau</label>
-              <select
-                formControlName="level"
-                class="form-select"
-                [class.form-select--error]="isInvalid('level')"
-              >
-                <option value="">Sélectionner votre niveau</option>
-                @for (level of studyLevels; track level) {
-                  <option [value]="level">{{ level }}</option>
-                }
-              </select>
-              @if (isInvalid("level")) {
-                <span class="form-error">Veuillez sélectionner un niveau</span>
-              }
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Téléphone (optionnel)</label>
-            <input
-              type="tel"
-              formControlName="phone"
-              class="form-input"
-              placeholder="+221 77 123 45 67"
-            />
-          </div>
-
-          <!-- Correction ici : utiliser error() au lieu de submitError() -->
-          @if (error()) {
-            <div class="alert alert--error">
-              {{ error() }}
-            </div>
-          }
-
-          <div class="form-actions">
-            <button
-              type="submit"
-              class="btn btn--primary"
-              [disabled]="submitting()"
-            >
-              @if (submitting()) {
-                <span class="spinner"></span>
-                Inscription en cours...
-              } @else {
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                M'inscrire gratuitement
-              }
-            </button>
-          </div>
-
-          <p class="form-footer">
-            En vous inscrivant, vous acceptez de recevoir des emails de
-            confirmation et des rappels concernant ce workshop.
-          </p>
-        </form>
       }
+
     </div>
   </div>
 </div>

@@ -1,0 +1,32 @@
+<!-- global-loader.component.html -->
+@if (loadingService.isLoading()) {
+  <div class="global-loader-overlay">
+    <div class="loader-wrapper">
+      <!-- Animated rings -->
+      <div class="loader-rings">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+      </div>
+
+      <!-- Center logo -->
+      <div class="loader-logo">
+        <img src="/assets/images/logo.png" alt="TDSI Club" />
+        <div class="logo-glow"></div>
+      </div>
+    </div>
+
+    <!-- Animated text -->
+    <div class="loader-content">
+      <div class="loader-text">{{ loadingService.getMessage() }}</div>
+      <div class="loader-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="loader-progress">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+}

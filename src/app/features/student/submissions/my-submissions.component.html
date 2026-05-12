@@ -1,264 +1,340 @@
+<!-- my-submissions.component.html -->
 <div class="submissions-page">
-  <div class="container">
-    <!-- Header -->
-    <div class="page-header">
-      <div>
-        <h1 class="page-header__title">Mes soumissions</h1>
-        <p class="page-header__subtitle">Suivi de tes propositions de thématiques</p>
-      </div>
-      <a routerLink="/etudiant/proposer" class="btn btn--primary btn--sm">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Nouvelle proposition
-      </a>
-    </div>
 
+  <!-- Hero Section -->
+  <section class="submissions-hero">
+    <div class="container">
+      <div class="submissions-hero__content">
+        <div class="submissions-hero__badge">
+          <span class="badge-glow"></span>
+          <span>📋 MES PROPOSITIONS</span>
+        </div>
+        <h1 class="submissions-hero__title">
+          Suivi des
+          <span class="gradient-text">soumissions</span>
+        </h1>
+        <p class="submissions-hero__subtitle">
+          Gérez et suivez l'avancement de vos propositions de thématiques
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- Stats Dashboard -->
+    @if (submissions().length > 0) {
+      <div class="stats-dashboard">
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-card__value">{{ getStats().pending }}</div>
+          <div class="stat-card__label">En attente</div>
+        </div>
+        <div class="stat-card stat-card--success">
+          <div class="stat-card__icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-card__value">{{ getStats().approved }}</div>
+          <div class="stat-card__label">Approuvées</div>
+        </div>
+        <div class="stat-card stat-card--danger">
+          <div class="stat-card__icon"><i class="fas fa-times-circle"></i></div>
+          <div class="stat-card__value">{{ getStats().refused }}</div>
+          <div class="stat-card__label">Refusées</div>
+        </div>
+      </div>
+    }
+
+    <!-- Loading State -->
     @if (loading()) {
-      <div class="skeleton-list">
-        @for (n of [1,2,3]; track n) {
-          <div class="skeleton-card"></div>
-        }
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
+        </div>
+        <p class="loading-text">Chargement de vos soumissions...</p>
       </div>
     } @else if (submissions().length === 0) {
-      <div class="empty-state">
-        <div class="empty-state__icon">📝</div>
+      <!-- Empty State -->
+      <div class="empty-state-enhanced">
+        <div class="empty-state-enhanced__icon">
+          <i class="fas fa-file-alt"></i>
+        </div>
         <h3>Aucune soumission</h3>
-        <p>Vous n'avez encore rien soumis</p>
-        <a routerLink="/etudiant/proposer" class="btn btn--primary btn--sm">
-          Proposer une thématique
-        </a>
+        <p>Vous n'avez encore proposé aucune thématique</p>
+        <div class="empty-state-enhanced__actions">
+          <a routerLink="/espace-membre/proposer" class="btn btn--primary">
+            <i class="fas fa-plus"></i>
+            Proposer une thématique
+          </a>
+          <a routerLink="/thematiques" class="btn btn--outline">
+            <i class="fas fa-layer-group"></i>
+            Explorer les thématiques
+          </a>
+        </div>
       </div>
     } @else {
+      <!-- Submissions List -->
       <div class="submissions-list">
         @for (sub of submissions(); track sub.id) {
           <div class="submission-card"
-               [class.submission-card--pending]="sub.status === 'en attente'"
-               [class.submission-card--approved]="sub.status === 'approuvé'"
-               [class.submission-card--refused]="sub.status === 'refusé'"
+               [class.status-pending]="sub.status === 'en attente'"
+               [class.status-approved]="sub.status === 'approuvé'"
+               [class.status-refused]="sub.status === 'refusé'"
                (click)="openSubmissionDetail(sub)">
-            <div class="submission-card__status">
-              <span class="status-icon" [class]="'status-icon--' + sub.status">
-                {{ getStatusIcon(sub.status) }}
-              </span>
-            </div>
+
+            <!-- Status Badge Left Border -->
+            <div class="submission-card__status-bar"></div>
+
             <div class="submission-card__content">
               <div class="submission-card__header">
                 <h3 class="submission-card__title">{{ sub.proposedTitle }}</h3>
-                <span class="badge" [class]="getBadgeClass(sub.status)">
-                  {{ sub.status }}
-                </span>
+                <div class="submission-card__badges">
+                  <span class="badge" [class]="'badge--' + getBadgeClass(sub.status)">
+                    <i class="fas {{ getStatusIconClass(sub.status) }}"></i>
+                    {{ sub.status }}
+                  </span>
+                  <span class="badge badge--primary">
+                    <i class="fas fa-tag"></i>
+                    {{ sub.category }}
+                  </span>
+                </div>
               </div>
-              <p class="submission-card__description">{{ sub.description | slice:0:100 }}{{ sub.description.length > 100 ? '...' : '' }}</p>
+
+              <p class="submission-card__description">
+                {{ sub.description | slice:0:120 }}{{ sub.description.length > 120 ? '...' : '' }}
+              </p>
+
               <div class="submission-card__footer">
                 <div class="submission-card__meta">
-                  <span class="meta">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="3" y="4" width="18" height="18" rx="2"/>
-                      <line x1="8" y1="2" x2="8" y2="6"/>
-                      <line x1="16" y1="2" x2="16" y2="6"/>
-                      <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
+                  <span class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
                     {{ sub.submittedAt | date:'dd MMM yyyy' }}
                   </span>
-                  <span class="meta">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <polyline points="12 6 12 12 16 14"/>
-                    </svg>
+                  <span class="meta-item">
+                    <i class="fas fa-hourglass-half"></i>
                     {{ sub.estimatedDuration }} min
                   </span>
-                  <span class="badge badge--sm badge--primary">{{ sub.category }}</span>
+                  <span class="meta-item">
+                    <i class="fas fa-chart-line"></i>
+                    {{ getDifficultyLabel(sub.difficulty || '') }}
+                  </span>
                 </div>
                 @if (sub.adminComment) {
-                  <div class="submission-card__comment-indicator">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    Commentaire administrateur
+                  <div class="submission-card__comment">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Commentaire reçu</span>
                   </div>
                 }
               </div>
             </div>
+
             <div class="submission-card__arrow">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
+              <i class="fas fa-chevron-right"></i>
             </div>
           </div>
         }
       </div>
     }
+
   </div>
 </div>
 
 <!-- Submission Detail Drawer -->
 @if (selectedSubmission()) {
-  <div class="drawer-overlay" (click)="closeDrawer()">
+  <div class="drawer-overlay" [class.drawer-overlay--open]="drawerOpen()" (click)="closeDrawer()">
     <div class="drawer" [class.drawer--open]="drawerOpen()" (click)="$event.stopPropagation()">
-      <div class="drawer__header">
+
+      <!-- Header with status color -->
+      <div class="drawer__header" [class]="'drawer__header--' + getBadgeClass(selectedSubmission()?.status || '')">
         <div class="drawer__badges">
-          <span class="badge" [class]="getBadgeClass(selectedSubmission()?.status || '')">
+          <span class="badge" [class]="'badge--' + getBadgeClass(selectedSubmission()?.status || '')">
+            <i class="fas {{ getStatusIconClass(selectedSubmission()?.status || '') }}"></i>
             {{ selectedSubmission()?.status }}
           </span>
-          <span class="badge badge--primary">{{ selectedSubmission()?.category }}</span>
+          <span class="badge badge--primary">
+            <i class="fas fa-tag"></i>
+            {{ selectedSubmission()?.category }}
+          </span>
         </div>
         <button class="drawer__close" (click)="closeDrawer()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
+          <i class="fas fa-times"></i>
         </button>
       </div>
 
       <div class="drawer__content">
         <h2 class="drawer__title">{{ selectedSubmission()?.proposedTitle }}</h2>
 
-        <div class="submission-meta">
-          <div class="meta-item">
-            <span class="meta-item__label">Soumis le</span>
-            <span class="meta-item__value">{{ selectedSubmission()?.submittedAt | date:'EEEE dd MMMM yyyy à HH:mm' }}</span>
+        <!-- Meta Cards -->
+        <div class="meta-grid">
+          <div class="meta-card">
+            <i class="fas fa-calendar-alt"></i>
+            <div>
+              <span class="meta-label">Soumis le</span>
+              <span class="meta-value">{{ selectedSubmission()?.submittedAt | date:'dd MMMM yyyy' }}</span>
+            </div>
           </div>
-          <div class="meta-item">
-            <span class="meta-item__label">Durée estimée</span>
-            <span class="meta-item__value">{{ selectedSubmission()?.estimatedDuration }} minutes</span>
+          <div class="meta-card">
+            <i class="fas fa-clock"></i>
+            <div>
+              <span class="meta-label">À</span>
+              <span class="meta-value">{{ selectedSubmission()?.submittedAt | date:'HH:mm' }}</span>
+            </div>
           </div>
-          <div class="meta-item">
-            <span class="meta-item__label">Promotion</span>
-            <span class="meta-item__value">{{ selectedSubmission()?.promo }}</span>
+          <div class="meta-card">
+            <i class="fas fa-hourglass-half"></i>
+            <div>
+              <span class="meta-label">Durée estimée</span>
+              <span class="meta-value">{{ selectedSubmission()?.estimatedDuration }} minutes</span>
+            </div>
+          </div>
+          <div class="meta-card">
+            <i class="fas fa-chart-line"></i>
+            <div>
+              <span class="meta-label">Difficulté</span>
+              <span class="meta-value">{{ getDifficultyLabel(selectedSubmission()?.difficulty || '') }}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Admin Comment (prominent if exists) -->
+        <!-- Author Info -->
+        <div class="author-card">
+          <div class="author-avatar">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+          <div class="author-info">
+            <span class="author-label">Proposé par</span>
+            <span class="author-name">{{ selectedSubmission()?.studentName }}</span>
+            <span class="author-promo">{{ selectedSubmission()?.promo }}</span>
+          </div>
+        </div>
+
+        <!-- Admin Comment (if exists) -->
         @if (selectedSubmission()?.adminComment) {
           <div class="admin-comment"
                [class.admin-comment--approved]="selectedSubmission()?.status === 'approuvé'"
                [class.admin-comment--refused]="selectedSubmission()?.status === 'refusé'">
             <div class="admin-comment__header">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
+              <i class="fas fa-user-shield"></i>
               <span>Réponse de l'administrateur</span>
+              <span class="admin-comment__date">{{ selectedSubmission()?.updatedAt | date:'dd MMM yyyy' }}</span>
             </div>
             <p class="admin-comment__text">{{ selectedSubmission()?.adminComment }}</p>
           </div>
         }
 
-        <!-- Details Chips (Duration + Difficulty + Student) -->
-        <div class="detail-chips">
-          <div class="detail-chip">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <div>
-              <div class="detail-chip__val font-mono">{{ selectedSubmission()?.estimatedDuration }} min</div>
-              <div class="detail-chip__lbl">Durée estimée</div>
-            </div>
-          </div>
-
-          <div class="detail-chip">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-            <div>
-              <div class="detail-chip__val font-mono">
-                @switch (selectedSubmission()?.difficulty) {
-                  @case ('débutant') { <span>🌱 Débutant</span> }
-                  @case ('intermédiaire') { <span>📘 Intermédiaire</span> }
-                  @case ('avancé') { <span>⚡ Avancé</span> }
-                  @default { <span>📍 Non spécifiée</span> }
-                }
-              </div>
-              <div class="detail-chip__lbl">Niveau requis</div>
-            </div>
-          </div>
-
-          <div class="detail-chip">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            <div>
-              <div class="detail-chip__val font-mono">{{ selectedSubmission()?.studentName }}</div>
-              <div class="detail-chip__lbl">{{ selectedSubmission()?.promo }}</div>
-            </div>
-          </div>
-        </div>
-
         <!-- Description -->
         <div class="detail-section">
-          <h4>Description</h4>
+          <h4><i class="fas fa-align-left"></i> Description</h4>
           <p>{{ selectedSubmission()?.description }}</p>
         </div>
 
         <!-- Objectives -->
-        <div class="detail-section">
-          <h4>Objectifs pédagogiques</h4>
-          <p>{{ selectedSubmission()?.objectives }}</p>
+        <div class="detail-section detail-section--highlight">
+          <h4><i class="fas fa-graduation-cap"></i> Objectifs pédagogiques</h4>
+          <div class="objectives-list">
+            @for (obj of parseObjectives(selectedSubmission()?.objectives || ''); track $index) {
+              <div class="objective-item">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ obj }}</span>
+              </div>
+            }
+          </div>
         </div>
 
         <!-- Prerequisites -->
         @if (selectedSubmission()?.prerequisites) {
           <div class="detail-section">
-            <h4>Prérequis</h4>
-            <p>{{ selectedSubmission()?.prerequisites }}</p>
+            <h4><i class="fas fa-clipboard-list"></i> Prérequis</h4>
+            <div class="prerequisites-list">
+              @for (preq of parsePrerequisites(selectedSubmission()?.prerequisites || ''); track $index) {
+                <span class="pill">
+                  <i class="fas fa-chevron-right"></i>
+                  {{ preq }}
+                </span>
+              }
+            </div>
           </div>
         }
 
         <!-- Materials -->
         @if (selectedSubmission()?.materialsNeeded) {
           <div class="detail-section">
-            <h4>Matériels & outils</h4>
-            <p>{{ selectedSubmission()?.materialsNeeded }}</p>
+            <h4><i class="fas fa-tools"></i> Matériel nécessaire</h4>
+            <div class="materials-list">
+              @for (mat of parseMaterials(selectedSubmission()?.materialsNeeded || ''); track $index) {
+                <span class="pill pill--tech">
+                  <i class="fas fa-laptop-code"></i>
+                  {{ mat }}
+                </span>
+              }
+            </div>
           </div>
         }
 
-        <!-- Update date -->
-        @if (selectedSubmission()?.updatedAt) {
-          <div class="update-info">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Dernière mise à jour : {{ selectedSubmission()?.updatedAt | date:'dd MMMM yyyy' }}
+        <!-- Timeline -->
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon">
+              <i class="fas fa-paper-plane"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-title">Soumission</div>
+              <div class="timeline-date">{{ selectedSubmission()?.submittedAt | date:'dd MMMM yyyy à HH:mm' }}</div>
+            </div>
           </div>
-        }
+
+          @if (selectedSubmission()?.updatedAt) {
+            <div class="timeline-line"></div>
+            <div class="timeline-item">
+              <div class="timeline-icon" [class]="'timeline-icon--' + getBadgeClass(selectedSubmission()?.status || '')">
+                @if (selectedSubmission()?.status === 'approuvé') {
+                  <i class="fas fa-check"></i>
+                } @else if (selectedSubmission()?.status === 'refusé') {
+                  <i class="fas fa-times"></i>
+                } @else {
+                  <i class="fas fa-clock"></i>
+                }
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-title">Traitement</div>
+                <div class="timeline-date">{{ selectedSubmission()?.updatedAt | date:'dd MMMM yyyy à HH:mm' }}</div>
+              </div>
+            </div>
+          }
+        </div>
       </div>
 
+      <!-- Drawer Actions -->
       <div class="drawer__actions">
         @if (selectedSubmission()?.status === 'refusé') {
-          <a routerLink="/etudiant/proposer" class="btn btn--primary btn--full" (click)="closeDrawer()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+          <a routerLink="/espace-membre/proposer" class="btn btn--primary btn--full" (click)="closeDrawer()">
+            <i class="fas fa-plus"></i>
             Proposer une nouvelle thématique
+            <i class="fas fa-arrow-right"></i>
           </a>
         }
 
         @if (selectedSubmission()?.status === 'en attente') {
-          <div class="pending-note">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            Ta proposition est en cours d'examen par l'administrateur.
+          <div class="info-note info-note--warning">
+            <i class="fas fa-hourglass-half"></i>
+            <span>Votre proposition est en cours d'examen par l'administrateur.</span>
           </div>
         }
 
         @if (selectedSubmission()?.status === 'approuvé') {
-          <div class="approved-note">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            Félicitations ! Ta proposition a été acceptée et publiée.
+          <div class="info-note info-note--success">
+            <i class="fas fa-trophy"></i>
+            <span>Félicitations ! Votre proposition a été acceptée et publiée.</span>
           </div>
+          <a routerLink="/thematiques" class="btn btn--secondary btn--full" (click)="closeDrawer()">
+            <i class="fas fa-eye"></i>
+            Voir la thématique
+          </a>
         }
 
-        <button class="btn btn--ghost btn--full" (click)="closeDrawer()">Fermer</button>
+        <button class="btn btn--ghost btn--full" (click)="closeDrawer()">
+          <i class="fas fa-times"></i>
+          Fermer
+        </button>
       </div>
     </div>
   </div>

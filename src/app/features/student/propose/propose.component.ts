@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnDestroy } from '@angular/core';
+// propose.component.ts - Version améliorée
+import { Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -8,6 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { AiService } from '../../../core/services/ai.service';
 import { ThemeCategory } from '../../../core/model/models';
 import { LoadingService } from '../../../core/services/loading.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 const CATEGORIES: ThemeCategory[] = [
   'Sécurité Réseau',
@@ -20,17 +22,9 @@ const CATEGORIES: ThemeCategory[] = [
 ];
 
 const DIFFICULTIES = [
-  { value: 'débutant', label: '🌱 Débutant', desc: 'Accessible à tous' },
-  {
-    value: 'intermédiaire',
-    label: '📘 Intermédiaire',
-    desc: 'Connaissances de base requises',
-  },
-  {
-    value: 'avancé',
-    label: '⚡ Avancé',
-    desc: 'Bonnes connaissances techniques',
-  },
+  { value: 'débutant', label: 'Débutant', desc: 'Accessible à tous', icon: '🌱' },
+  { value: 'intermédiaire', label: 'Intermédiaire', desc: 'Connaissances de base requises', icon: '📘' },
+  { value: 'avancé', label: 'Avancé', desc: 'Bonnes connaissances techniques', icon: '⚡' },
 ];
 
 @Component({
@@ -40,13 +34,15 @@ const DIFFICULTIES = [
   templateUrl: './propose.component.html',
   styleUrls: ['./propose.component.scss'],
 })
-export class ProposeComponent implements OnDestroy {
+export class ProposeComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private themeService = inject(ThemeService);
   private authService = inject(AuthService);
   private aiService = inject(AiService);
-  private destroy$ = new Subject<void>();
   private loadingService = inject(LoadingService);
+  private toastService = inject(ToastService);
+
+  private destroy$ = new Subject<void>();
 
   categories = CATEGORIES;
   difficulties = DIFFICULTIES;
@@ -67,74 +63,72 @@ export class ProposeComponent implements OnDestroy {
     proposedTitle: ['', [Validators.required, Validators.maxLength(80)]],
     category: ['', Validators.required],
     difficulty: ['intermédiaire', Validators.required],
-    estimatedDuration: [
-      60,
-      [Validators.required, Validators.min(30), Validators.max(480)],
-    ],
+    estimatedDuration: [90, [Validators.required, Validators.min(30), Validators.max(480)]],
     description: ['', [Validators.required, Validators.minLength(50)]],
     objectives: ['', Validators.required],
     prerequisites: [''],
     materialsNeeded: [''],
   });
 
-  constructor() {
+  ngOnInit(): void {
     this.titleInput$
       .pipe(
-        debounceTime(1500), // ✅ 600 → 1500ms
+        debounceTime(1200),
         distinctUntilChanged(),
         takeUntil(this.destroy$),
       )
       .subscribe((val) => this.fetchSuggestions(val));
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  onTitleInput(event: Event) {
+  getDifficultyIcon(value: string): string {
+    return this.difficulties.find(d => d.value === value)?.icon || '📚';
+  }
+
+  onTitleInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.titleInput$.next(val);
-    if (val.length < 5) {
-      // ✅ 3 → 5
+    if (val.length < 4) {
       this.suggestions.set([]);
       this.showSuggestions.set(false);
     }
   }
 
-  private async fetchSuggestions(title: string) {
-    if (title.length < 5) return; // ✅ 4 → 5
+  private async fetchSuggestions(title: string): Promise<void> {
+    if (title.length < 4) return;
     this.suggestLoading.set(true);
     try {
       const category = this.form.value.category ?? '';
       const results = await this.aiService.suggestTitles(title, category);
-      this.suggestions.set(
-        results.filter((s) => s.toLowerCase() !== title.toLowerCase()),
-      );
+      this.suggestions.set(results.filter(s => s.toLowerCase() !== title.toLowerCase()));
       this.showSuggestions.set(this.suggestions().length > 0);
     } catch {
-      // silencieux
+      // Silencieux
     } finally {
       this.suggestLoading.set(false);
     }
   }
 
-  pickSuggestion(title: string) {
+  pickSuggestion(title: string): void {
     this.form.patchValue({ proposedTitle: title });
     this.showSuggestions.set(false);
     this.suggestions.set([]);
   }
 
-  hideSuggestions() {
+  hideSuggestions(): void {
     setTimeout(() => this.showSuggestions.set(false), 200);
   }
 
-  async autoComplete() {
+  async autoComplete(): Promise<void> {
     const title = this.form.value.proposedTitle?.trim() ?? '';
     const category = this.form.value.category ?? '';
 
     if (!title) {
-      this.aiError.set("Saisis d'abord un titre pour générer le contenu.");
+      this.aiError.set("Saisissez d'abord un titre pour générer le contenu.");
       setTimeout(() => this.aiError.set(''), 3000);
       return;
     }
@@ -159,28 +153,30 @@ export class ProposeComponent implements OnDestroy {
       });
 
       this.aiUsed.set(true);
+      this.toastService.success('✨ Contenu généré par IA avec succès !');
     } catch {
-      this.aiError.set('Erreur IA. Vérifie ta connexion et réessaie.');
+      this.aiError.set('Erreur IA. Vérifiez votre connexion et réessayez.');
     } finally {
       this.aiLoading.set(false);
     }
   }
 
   isInvalid(field: string): boolean {
-    const c = this.form.get(field);
-    return !!c?.invalid && !!c?.touched;
+    const control = this.form.get(field);
+    return control ? control.invalid && control.touched : false;
   }
 
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.toastService.error('Veuillez corriger les erreurs dans le formulaire');
       return;
     }
 
     this.loading.set(true);
     this.error.set('');
     const user = this.authService.currentUser!;
-    this.loadingService.show('Envoi de ta proposition...');
+    this.loadingService.show('Envoi de votre proposition...');
 
     try {
       await this.themeService.submitTheme({
@@ -191,10 +187,7 @@ export class ProposeComponent implements OnDestroy {
         proposedTitle: this.form.value.proposedTitle!,
         description: this.form.value.description!,
         category: this.form.value.category as ThemeCategory,
-        difficulty: this.form.value.difficulty as
-          | 'débutant'
-          | 'intermédiaire'
-          | 'avancé',
+        difficulty: this.form.value.difficulty as 'débutant' | 'intermédiaire' | 'avancé',
         objectives: this.form.value.objectives!,
         prerequisites: this.form.value.prerequisites ?? '',
         estimatedDuration: this.form.value.estimatedDuration!,
@@ -204,17 +197,22 @@ export class ProposeComponent implements OnDestroy {
       });
       this.loadingService.hide();
       this.success.set(true);
-    } catch (error) {
+      this.toastService.success('Proposition soumise avec succès !');
+    } catch {
       this.loadingService.hide();
-      this.error.set('Erreur lors de la soumission');
+      this.error.set('Erreur lors de la soumission. Veuillez réessayer.');
+      this.toastService.error('Erreur lors de la soumission');
+    } finally {
+      this.loading.set(false);
     }
   }
 
   resetForm(): void {
     this.success.set(false);
     this.aiUsed.set(false);
-    this.form.reset({ estimatedDuration: 60, difficulty: 'intermédiaire' });
+    this.form.reset({ estimatedDuration: 90, difficulty: 'intermédiaire' });
     this.form.markAsPristine();
     this.form.markAsUntouched();
+    this.toastService.info('Formulaire réinitialisé');
   }
 }

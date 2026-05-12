@@ -1,360 +1,372 @@
+<!-- login.component.html -->
 <div class="auth-wrapper">
-  <!-- Tech Background -->
   <app-tech-background />
 
-  <!-- Particules flottantes -->
-  <div class="auth-particles">
-    <div class="particle particle-1"></div>
-    <div class="particle particle-2"></div>
-    <div class="particle particle-3"></div>
-    <div class="particle particle-4"></div>
-    <div class="particle particle-5"></div>
-    <div class="particle particle-6"></div>
+  <!-- Animated Background Grid -->
+  <div class="auth-grid"></div>
+
+  <!-- Floating Tech Orbs -->
+  <div class="auth-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
   </div>
 
-  <!-- Lignes de circuit décoratives -->
-  <div class="auth-circuit-lines">
-    <svg class="circuit-line circuit-1" viewBox="0 0 200 200" fill="none">
-      <path d="M0 100 L80 100 L100 80 L150 80 L180 50" stroke="rgba(59,130,246,0.15)" stroke-width="1"/>
-      <circle cx="180" cy="50" r="3" fill="rgba(59,130,246,0.3)"/>
-      <circle cx="0" cy="100" r="3" fill="rgba(59,130,246,0.3)"/>
-    </svg>
-    <svg class="circuit-line circuit-2" viewBox="0 0 200 200" fill="none">
-      <path d="M200 150 L120 150 L100 130 L50 130 L20 100" stroke="rgba(59,130,246,0.1)" stroke-width="1"/>
-      <circle cx="20" cy="100" r="3" fill="rgba(59,130,246,0.2)"/>
-    </svg>
-  </div>
+  <!-- Scanning Line Effect -->
+  <div class="scan-line"></div>
 
   <div class="auth-container" [class.auth-switched]="showRegister">
-    <!-- Form Box - Login -->
+
+    <!-- Login Form -->
     <div class="auth-form-box auth-form-login">
       <div class="auth-form-content">
         <a routerLink="/" class="auth-back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Retour
+          <i class="fas fa-arrow-left"></i>
+          <span>Retour à l'accueil</span>
         </a>
 
         <div class="auth-header">
-          <app-logo size="md"></app-logo>
-          <h1 class="auth-title">
-            <span class="auth-title-text">Connexion</span>
-            <span class="auth-title-dot"></span>
-          </h1>
-          <p class="auth-subtitle">Accède à ton espace TDSI</p>
+          <app-logo size="md" [glow]="true" [showBadge]="true"></app-logo>
+          <div class="auth-title-wrapper">
+            <h1 class="auth-title">
+              <span class="auth-title-text">Connexion</span>
+              <span class="auth-title-cursor"></span>
+            </h1>
+            <div class="auth-title-line"></div>
+          </div>
+          <p class="auth-subtitle">Accédez à votre espace TDSI</p>
         </div>
 
         @if (error()) {
           <div class="auth-alert animate-fade-in">
-            <div class="auth-alert-glow"></div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            {{ error() }}
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ error() }}</span>
+            <button class="alert-close" (click)="error.set('')">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
         }
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form" novalidate>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
           <div class="form-group">
-            <label for="email" class="form-label form-label--required">
-              <span class="form-label-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="4" width="20" height="16" rx="2"/>
-                  <path d="M22 4L12 13 2 4"/>
-                </svg>
-              </span>
-              Email institutionnel
+            <label class="form-label">
+              <i class="fas fa-envelope"></i>
+              <span>Email institutionnel</span>
             </label>
-            <div class="form-input-wrapper">
-              <input
-                id="email" type="email" formControlName="email"
-                class="form-input" [class.form-input--error]="isInvalid('email')"
-                placeholder="prenom.nom@esp.sn" autocomplete="email"
-              />
-              <div class="form-input-border"></div>
+            <div class="input-wrapper">
+              <input type="email" formControlName="email" placeholder="prenom.nom@esp.sn"
+                     [class.error]="isInvalid('email')" autocomplete="email" />
+              <div class="input-border"></div>
+              <i class="fas fa-envelope input-icon"></i>
+              <div class="input-shine"></div>
             </div>
-            @if (isInvalid("email")) {
-              <span class="form-error">Veuillez entrer un email valide</span>
+            @if (isInvalid('email')) {
+              <span class="form-error">
+                <i class="fas fa-circle-exclamation"></i>
+                Veuillez entrer un email valide
+              </span>
             }
           </div>
 
           <div class="form-group">
-            <label for="password" class="form-label form-label--required">
-              <span class="form-label-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/>
-                  <path d="M7 11V7a5 5 0 0110 0v4"/>
-                </svg>
-              </span>
-              Mot de passe
+            <label class="form-label">
+              <i class="fas fa-lock"></i>
+              <span>Mot de passe</span>
             </label>
-            <div class="form-input-wrapper">
-              <div class="auth-password-wrapper">
-                <input
-                  id="password"
-                  [type]="showPassword() ? 'text' : 'password'"
-                  formControlName="password"
-                  class="form-input auth-password-input"
-                  [class.form-input--error]="isInvalid('password')"
-                  placeholder="••••••••"
-                  autocomplete="current-password"
-                />
-                <button type="button" class="auth-password-toggle" (click)="togglePassword()">
-                  @if (!showPassword()) {
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  } @else {
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  }
-                </button>
-              </div>
-              <div class="form-input-border"></div>
+            <div class="input-wrapper">
+              <input [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+                     placeholder="••••••••" [class.error]="isInvalid('password')"
+                     autocomplete="current-password" />
+              <div class="input-border"></div>
+              <i class="fas input-icon" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"
+                 (click)="togglePassword()"></i>
+              <div class="input-shine"></div>
             </div>
-            @if (isInvalid("password")) {
-              <span class="form-error">Mot de passe requis (min. 6 caractères)</span>
+            @if (isInvalid('password')) {
+              <span class="form-error">
+                <i class="fas fa-circle-exclamation"></i>
+                Mot de passe requis (minimum 6 caractères)
+              </span>
             }
           </div>
 
-          <button type="submit" class="btn btn--primary btn--full btn--lg" [disabled]="loading()">
+          <div class="form-options">
+            <label class="checkbox-wrapper">
+              <input type="checkbox" class="checkbox-input" />
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">Se souvenir de moi</span>
+            </label>
+            <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn--primary" [disabled]="loading()">
             @if (loading()) {
-              <span class="spinner" aria-hidden="true"></span>
-              Connexion...
+              <div class="btn-loader"></div>
+              <span>Connexion en cours...</span>
             } @else {
-              <span>Connexion</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
+              <span>Se connecter</span>
+              <i class="fas fa-arrow-right"></i>
+              <div class="btn-shine"></div>
             }
           </button>
         </form>
 
-        <div class="auth-footer-links">
-          <a routerLink="/forgot-password" class="auth-footer-link">Mot de passe oublié ?</a>
+        <div class="auth-divider">
+          <span>Ou continuer avec</span>
+        </div>
+
+        <div class="social-login">
+          <button class="social-btn social-btn--google">
+            <i class="fab fa-google"></i>
+            <span>Google</span>
+          </button>
+          <button class="social-btn social-btn--github">
+            <i class="fab fa-github"></i>
+            <span>GitHub</span>
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Toggle Panel -->
     <div class="auth-toggle-box">
-      <!-- Left Panel - Welcome -->
-      <div class="auth-toggle-panel auth-toggle-left">
-        <div class="auth-toggle-glow"></div>
-        <div class="auth-toggle-content">
-          <div class="auth-toggle-badge">
-            <span class="badge-dot"></span>
-            TDSI Platform
-          </div>
-          <h2 class="auth-toggle-title">
-            Content de<br />vous revoir sur
-            <span class="auth-toggle-brand">TDSI</span>
-          </h2>
-          <p class="auth-toggle-desc">Votre communauté tech — Apprenez, Partagez, Innovez</p>
-          <div class="auth-toggle-features">
-            <div class="feature-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Workshops pratiques</span>
+      <div class="auth-toggle-inner">
+        <!-- Welcome Back Panel -->
+        <div class="auth-toggle-panel auth-toggle-left">
+          <div class="toggle-bg"></div>
+          <div class="toggle-content">
+            <div class="toggle-badge">
+              <span class="badge-dot"></span>
+              <span>Bienvenue</span>
             </div>
-            <div class="feature-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Projets collaboratifs</span>
-            </div>
-            <div class="feature-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Réseau professionnel</span>
-            </div>
-          </div>
-          <p class="auth-toggle-question">Pas encore de compte ?</p>
-          <button type="button" class="auth-toggle-btn" (click)="switchToRegister()">
-            <span>S'inscrire</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+            <h2 class="toggle-title">
+              Content de vous<br />revoir sur
+              <span class="gradient-text">TDSI</span>
+            </h2>
+            <p class="toggle-desc">Votre communauté tech — Apprenez, Partagez, Innovez</p>
 
-      <!-- Right Panel - Welcome Back -->
-      <div class="auth-toggle-panel auth-toggle-right">
-        <div class="auth-toggle-glow"></div>
-        <div class="auth-toggle-content">
-          <div class="auth-toggle-badge">
-            <span class="badge-dot"></span>
-            TDSI Platform
-          </div>
-          <h2 class="auth-toggle-title">
-            Bienvenue sur<br />
-            <span class="auth-toggle-brand">TDSI</span>
-          </h2>
-          <p class="auth-toggle-desc">Rejoins ta communauté — Apprends, Partage, Innove</p>
-          <div class="auth-toggle-features">
-            <div class="feature-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Accès aux workshops</span>
+            <div class="toggle-stats">
+              <div class="stat">
+                <div class="stat-value">12+</div>
+                <div class="stat-label">Thématiques</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value">48+</div>
+                <div class="stat-label">Membres</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value">8+</div>
+                <div class="stat-label">Workshops</div>
+              </div>
             </div>
-            <div class="feature-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Soumissions de projets</span>
-            </div>
-            <div class="feature-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Certifications</span>
+
+            <div class="toggle-action">
+              <p>Pas encore de compte ?</p>
+              <button class="toggle-btn" (click)="switchToRegister()">
+                <span>S'inscrire</span>
+                <i class="fas fa-arrow-right"></i>
+                <div class="btn-glow"></div>
+              </button>
             </div>
           </div>
-          <p class="auth-toggle-question">Déjà un compte ?</p>
-          <button type="button" class="auth-toggle-btn" (click)="switchToLogin()">
-            <span>Se connecter</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
+        </div>
+
+        <!-- Welcome Panel -->
+        <div class="auth-toggle-panel auth-toggle-right">
+          <div class="toggle-bg"></div>
+          <div class="toggle-content">
+            <div class="toggle-badge">
+              <span class="badge-dot"></span>
+              <span>Nouveau</span>
+            </div>
+            <h2 class="toggle-title">
+              Rejoignez<br />la révolution
+              <span class="gradient-text">tech</span>
+            </h2>
+            <p class="toggle-desc">Devenez membre de la première communauté tech de l'ESP</p>
+
+            <div class="toggle-features">
+              <div class="feature">
+                <i class="fas fa-check-circle"></i>
+                <span>Workshops exclusifs</span>
+              </div>
+              <div class="feature">
+                <i class="fas fa-check-circle"></i>
+                <span>Projets collaboratifs</span>
+              </div>
+              <div class="feature">
+                <i class="fas fa-check-circle"></i>
+                <span>Certifications reconnues</span>
+              </div>
+              <div class="feature">
+                <i class="fas fa-check-circle"></i>
+                <span>Réseau professionnel</span>
+              </div>
+            </div>
+
+            <div class="toggle-action">
+              <p>Déjà membre ?</p>
+              <button class="toggle-btn" (click)="switchToLogin()">
+                <span>Se connecter</span>
+                <i class="fas fa-arrow-right"></i>
+                <div class="btn-glow"></div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Form Box - Register -->
+    <!-- Register Form -->
     <div class="auth-form-box auth-form-register">
       <div class="auth-form-content">
         <a routerLink="/" class="auth-back-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-          Retour
+          <i class="fas fa-arrow-left"></i>
+          <span>Retour à l'accueil</span>
         </a>
 
         <div class="auth-header">
-          <app-logo size="md"></app-logo>
-          <h1 class="auth-title">
-            <span class="auth-title-text">Inscription</span>
-            <span class="auth-title-dot"></span>
-          </h1>
-          <p class="auth-subtitle">Rejoins la communauté TDSI</p>
+          <app-logo size="md" [glow]="true" [showBadge]="true"></app-logo>
+          <div class="auth-title-wrapper">
+            <h1 class="auth-title">
+              <span class="auth-title-text">Inscription</span>
+              <span class="auth-title-cursor"></span>
+            </h1>
+            <div class="auth-title-line"></div>
+          </div>
+          <p class="auth-subtitle">Créez votre compte TDSI</p>
         </div>
 
         @if (registerError()) {
           <div class="auth-alert animate-fade-in">
-            <div class="auth-alert-glow"></div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            {{ registerError() }}
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>{{ registerError() }}</span>
+            <button class="alert-close" (click)="registerError.set('')">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
         }
 
-        <form [formGroup]="registerForm" (ngSubmit)="registerSubmit()" class="auth-form" novalidate>
+        <form [formGroup]="registerForm" (ngSubmit)="registerSubmit()" class="auth-form">
           <div class="form-row">
             <div class="form-group">
-              <label for="displayName" class="form-label form-label--required">Prénom & Nom</label>
-              <div class="form-input-wrapper">
-                <input id="displayName" type="text" formControlName="displayName"
-                  class="form-input" [class.form-input--error]="isRegInvalid('displayName')"
-                  placeholder="Fatou Diallo" autocomplete="name" />
-                <div class="form-input-border"></div>
+              <label class="form-label">
+                <i class="fas fa-user"></i>
+                <span>Nom complet</span>
+              </label>
+              <div class="input-wrapper">
+                <input type="text" formControlName="displayName" placeholder="Fatou Diallo"
+                       [class.error]="isRegInvalid('displayName')" autocomplete="name" />
+                <div class="input-border"></div>
+                <i class="fas fa-user input-icon"></i>
+                <div class="input-shine"></div>
               </div>
-              @if (isRegInvalid("displayName")) {
-                <span class="form-error">Nom complet requis (min. 3 caractères)</span>
+              @if (isRegInvalid('displayName')) {
+                <span class="form-error">Nom complet requis (minimum 3 caractères)</span>
               }
             </div>
+
             <div class="form-group">
-              <label for="promo" class="form-label form-label--required">Promotion</label>
-              <div class="form-input-wrapper">
-                <select id="promo" formControlName="promo" class="form-select"
-                  [class.form-input--error]="isRegInvalid('promo')">
-                  <option value="">Sélectionner</option>
-                  @for (p of promos; track p) { <option [value]="p">{{ p }}</option> }
+              <label class="form-label">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Promotion</span>
+              </label>
+              <div class="input-wrapper">
+                <select formControlName="promo" [class.error]="isRegInvalid('promo')">
+                  <option value="" disabled selected>Sélectionnez votre promo</option>
+                  @for (p of promos; track p) {
+                    <option [value]="p">{{ p }}</option>
+                  }
                 </select>
-                <div class="form-input-border"></div>
+                <div class="input-border"></div>
+                <i class="fas fa-chevron-down input-icon"></i>
+                <div class="input-shine"></div>
               </div>
-              @if (isRegInvalid("promo")) {
+              @if (isRegInvalid('promo')) {
                 <span class="form-error">Veuillez sélectionner une promotion</span>
               }
             </div>
           </div>
 
           <div class="form-group">
-            <label for="regEmail" class="form-label form-label--required">Email institutionnel</label>
-            <div class="form-input-wrapper">
-              <input id="regEmail" type="email" formControlName="email"
-                class="form-input" [class.form-input--error]="isRegInvalid('email')"
-                placeholder="prenom.nom@esp.sn" autocomplete="email" />
-              <div class="form-input-border"></div>
+            <label class="form-label">
+              <i class="fas fa-envelope"></i>
+              <span>Email institutionnel</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="email" formControlName="email" placeholder="prenom.nom@esp.sn"
+                     [class.error]="isRegInvalid('email')" autocomplete="email" />
+              <div class="input-border"></div>
+              <i class="fas fa-envelope input-icon"></i>
+              <div class="input-shine"></div>
             </div>
-            @if (isRegInvalid("email")) {
-              <span class="form-error">Email invalide</span>
+            @if (isRegInvalid('email')) {
+              <span class="form-error">Veuillez entrer un email valide (&#64;esp.sn)</span>
             }
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="regPassword" class="form-label form-label--required">Mot de passe</label>
-              <div class="form-input-wrapper">
-                <div class="auth-password-wrapper">
-                  <input id="regPassword"
-                    [type]="showRegPassword() ? 'text' : 'password'"
-                    formControlName="password"
-                    class="form-input auth-password-input"
-                    [class.form-input--error]="isRegInvalid('password')"
-                    placeholder="Min. 6 caractères" autocomplete="new-password" />
-                  <button type="button" class="auth-password-toggle" (click)="toggleRegPassword()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </button>
-                </div>
-                <div class="form-input-border"></div>
+              <label class="form-label">
+                <i class="fas fa-lock"></i>
+                <span>Mot de passe</span>
+              </label>
+              <div class="input-wrapper">
+                <input [type]="showRegPassword() ? 'text' : 'password'" formControlName="password"
+                       placeholder="Minimum 6 caractères" [class.error]="isRegInvalid('password')"
+                       autocomplete="new-password" />
+                <div class="input-border"></div>
+                <i class="fas input-icon" [class.fa-eye]="!showRegPassword()" [class.fa-eye-slash]="showRegPassword()"
+                   (click)="toggleRegPassword()"></i>
+                <div class="input-shine"></div>
               </div>
-              @if (isRegInvalid("password")) {
-                <span class="form-error">Min. 6 caractères</span>
+              @if (isRegInvalid('password')) {
+                <span class="form-error">Minimum 6 caractères</span>
               }
             </div>
+
             <div class="form-group">
-              <label for="confirm" class="form-label form-label--required">Confirmer</label>
-              <div class="form-input-wrapper">
-                <input id="confirm"
-                  [type]="showRegPassword() ? 'text' : 'password'"
-                  formControlName="confirm"
-                  class="form-input" [class.form-input--error]="passwordMismatch"
-                  placeholder="Répéter le mot de passe" autocomplete="new-password" />
-                <div class="form-input-border"></div>
+              <label class="form-label">
+                <i class="fas fa-check-circle"></i>
+                <span>Confirmer</span>
+              </label>
+              <div class="input-wrapper">
+                <input [type]="showRegPassword() ? 'text' : 'password'" formControlName="confirm"
+                       placeholder="Répéter le mot de passe" [class.error]="passwordMismatch"
+                       autocomplete="new-password" />
+                <div class="input-border"></div>
+                <i class="fas fa-check input-icon" [class.text-success]="!passwordMismatch && registerForm.get('confirm')?.value"></i>
+                <div class="input-shine"></div>
               </div>
             </div>
           </div>
 
           @if (passwordMismatch) {
-            <div class="form-error">Les mots de passe ne correspondent pas</div>
+            <div class="form-error form-error--block">
+              <i class="fas fa-times-circle"></i>
+              Les mots de passe ne correspondent pas
+            </div>
           }
 
-          <button type="submit" class="btn btn--primary btn--full btn--lg" [disabled]="regLoading()">
+          <div class="terms-checkbox">
+            <label class="checkbox-wrapper">
+              <input type="checkbox" class="checkbox-input" required />
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                J'accepte les <a href="#" class="terms-link">conditions d'utilisation</a>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn--primary" [disabled]="regLoading()">
             @if (regLoading()) {
-              <span class="spinner" aria-hidden="true"></span>
-              Création...
+              <div class="btn-loader"></div>
+              <span>Création du compte...</span>
             } @else {
               <span>Créer mon compte</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
+              <i class="fas fa-arrow-right"></i>
+              <div class="btn-shine"></div>
             }
           </button>
         </form>

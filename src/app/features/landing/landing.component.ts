@@ -1,24 +1,25 @@
-import { Component, HostListener, inject, signal, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, inject, signal, AfterViewInit, OnDestroy, Renderer2, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { TechBackgroundComponent } from "../shared/components/tech-background/tech-background.component";
-import { PublicNavbarComponent } from "../shared/components/public-navbar/public-navbar.component";
-import { PublicFooterComponent } from "../shared/components/public-footer/public-footer.component";
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, CommonModule, TechBackgroundComponent, PublicNavbarComponent, PublicFooterComponent],
+  imports: [RouterLink, CommonModule, TechBackgroundComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss']
 })
 export class LandingComponent implements AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
+  private renderer = inject(Renderer2);
 
   userMenuOpen = signal(false);
   private observer: IntersectionObserver | null = null;
   private typingInterval: any = null;
+  private scrollObservers: IntersectionObserver[] = [];
+  private mouseMoveHandler: (() => void) | null = null;
 
   get user() {
     return this.authService.currentUser;
@@ -51,6 +52,9 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.initCounters();
     this.initTypingAnimation();
+    this.initMouseGlow();
+    this.initScrollReveal();
+    this.initParticlesAnimation();
   }
 
   ngOnDestroy(): void {
@@ -60,24 +64,53 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     if (this.typingInterval) {
       clearInterval(this.typingInterval);
     }
+    this.scrollObservers.forEach(obs => obs.disconnect());
+    if (this.mouseMoveHandler) {
+      this.mouseMoveHandler();
+    }
   }
 
   private initTypingAnimation(): void {
-    const text = "Club TDSI Campus";
-    const typingElement = document.getElementById('typing-text');
+    const texts = [
+      "Club TDSI Campus",
+      "Tech Community",
+      "Cyber Security Hub",
+      "AI Innovation Lab"
+    ];
+
+    let textIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    const typingElement = document.getElementById('typingText');
     if (!typingElement) return;
 
-    let i = 0;
-    typingElement.textContent = '';
+    const type = () => {
+      const currentText = texts[textIndex];
 
-    this.typingInterval = setInterval(() => {
-      if (i < text.length) {
-        typingElement.textContent += text.charAt(i);
-        i++;
+      if (isDeleting) {
+        typingElement.textContent = currentText.substring(0, charIndex - 1);
+        charIndex--;
       } else {
-        clearInterval(this.typingInterval);
+        typingElement.textContent = currentText.substring(0, charIndex + 1);
+        charIndex++;
       }
-    }, 100);
+
+      if (!isDeleting && charIndex === currentText.length) {
+        isDeleting = true;
+        setTimeout(type, 2000);
+        return;
+      }
+
+      if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        textIndex = (textIndex + 1) % texts.length;
+      }
+
+      const speed = isDeleting ? 50 : 100;
+      setTimeout(type, speed);
+    };
+
+    setTimeout(type, 500);
   }
 
   private initCounters(): void {
@@ -88,11 +121,13 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
           counters.forEach((counter) => {
             const target = parseInt(counter.getAttribute('data-target') || '0', 10);
             let current = 0;
-            const increment = target / 50;
+            const duration = 2000;
+            const step = target / (duration / 16);
+
             const updateCounter = () => {
-              current += increment;
+              current += step;
               if (current < target) {
-                counter.textContent = Math.ceil(current).toString();
+                counter.textContent = Math.floor(current).toString();
                 requestAnimationFrame(updateCounter);
               } else {
                 counter.textContent = target.toString();
@@ -103,11 +138,60 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
           this.observer?.disconnect();
         }
       });
-    });
+    }, { threshold: 0.3 });
 
-    const statsSection = document.querySelector('.hero__stats');
+    const statsSection = document.querySelector('.stats-grid');
     if (statsSection) {
       this.observer.observe(statsSection);
     }
+  }
+
+  private initMouseGlow(): void {
+    const glow = document.getElementById('mouseGlow');
+    if (!glow) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      glow.style.transform = `translate(${x}px, ${y}px)`;
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    this.mouseMoveHandler = () => document.removeEventListener('mousemove', handleMouseMove);
+  }
+
+  private initScrollReveal(): void {
+    const revealElements = document.querySelectorAll('.feature-card, .stat-card, .showcase__content, .showcase__image');
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '50px' });
+
+    revealElements.forEach(el => {
+      el.classList.add('reveal');
+      revealObserver.observe(el);
+    });
+
+    this.scrollObservers.push(revealObserver);
+  }
+
+  private initParticlesAnimation(): void {
+    const particles = document.querySelectorAll('.particle');
+    particles.forEach((particle, index) => {
+      const randomX = Math.random() * 100;
+      const randomY = Math.random() * 100;
+      const randomDelay = Math.random() * 2;
+      const randomDuration = 3 + Math.random() * 2;
+
+      (particle as HTMLElement).style.left = `${randomX}%`;
+      (particle as HTMLElement).style.top = `${randomY}%`;
+      (particle as HTMLElement).style.animationDelay = `${randomDelay}s`;
+      (particle as HTMLElement).style.animationDuration = `${randomDuration}s`;
+    });
   }
 }

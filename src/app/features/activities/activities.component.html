@@ -1,0 +1,357 @@
+<!-- activities.component.html -->
+<div class="activities-page">
+
+  <!-- Hero Section -->
+  <section class="activities-hero">
+    <div class="container">
+      <div class="activities-hero__content">
+        <div class="activities-hero__badge">
+          <span class="badge-glow"></span>
+          <span>🎪 ÉVÉNEMENTS TDSI</span>
+        </div>
+        <h1 class="activities-hero__title">
+          Événements <span class="gradient-text">Club TDSI</span>
+        </h1>
+        <p class="activities-hero__subtitle">
+          Conférences, hackathons, journées techniques — rejoignez la communauté
+        </p>
+
+        <div class="activities-hero__search">
+          <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Rechercher un événement, un tag..."
+              (input)="searchTerm.set($any($event.target).value)"
+              [value]="searchTerm()"
+            />
+            @if (searchTerm()) {
+              <button class="search-clear" (click)="searchTerm.set('')">
+                <i class="fas fa-times"></i>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- Type Filters -->
+    <div class="filters-section">
+      <div class="filters-scroll">
+        @for (t of types; track t) {
+          <button
+            class="filter-chip"
+            [class.active]="filterType() === t"
+            (click)="filterType.set(t)"
+          >
+            <i class="fas {{ getTypeIcon(t) }}"></i>
+            {{ getTypeLabel(t) }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- My Registrations Section (Members only) -->
+    @if (isLoggedIn() && myActivities().length > 0) {
+      <section class="my-registrations-section">
+        <div class="section-header">
+          <div class="section-header__icon">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <div>
+            <h2 class="section-header__title">Mes inscriptions</h2>
+            <p class="section-header__subtitle">{{ myActivities().length }} événement{{ myActivities().length > 1 ? 's' : '' }}</p>
+          </div>
+        </div>
+
+        <div class="my-activities-list">
+          @for (activity of myActivities(); track activity.id) {
+            <div class="my-activity-card" [class.live]="activity.status === 'ongoing'">
+              <div class="my-activity-card__status-bar"></div>
+
+              <div class="my-activity-card__header">
+                <div class="my-activity-card__badges">
+                  <span class="type-badge type-badge--{{ activity.type }}">
+                    <i class="fas {{ getActivityTypeIcon(activity.type) }}"></i>
+                    {{ typeLabels[activity.type] }}
+                  </span>
+                  @if (activity.status === 'ongoing') {
+                    <span class="live-badge">
+                      <span class="live-dot"></span>
+                      En cours
+                    </span>
+                  } @else if (isUpcoming(activity)) {
+                    <span class="upcoming-badge">
+                      <i class="fas fa-clock"></i> À venir
+                    </span>
+                  } @else {
+                    <span class="past-badge">
+                      <i class="fas fa-check-circle"></i> Terminé
+                    </span>
+                  }
+                  <span class="registered-badge-small">
+                    <i class="fas fa-check"></i> Inscrit
+                  </span>
+                </div>
+                <div class="my-activity-card__date">
+                  <i class="fas fa-calendar-alt"></i>
+                  {{ activity.date | date:'dd MMM yyyy, HH:mm' }}
+                </div>
+              </div>
+
+              <h3 class="my-activity-card__title">{{ activity.title }}</h3>
+              <p class="my-activity-card__desc">{{ activity.description | slice:0:100 }}...</p>
+
+              <div class="my-activity-card__meta">
+                <span class="meta-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  {{ activity.location }}
+                </span>
+                @if (activity.isOnline) {
+                  <span class="meta-item online">
+                    <i class="fas fa-wifi"></i> En ligne
+                  </span>
+                }
+                <span class="meta-item">
+                  <i class="fas fa-users"></i>
+                  {{ (activity.registrations?.length ?? 0) + (activity.guestCount ?? 0) }} inscrits
+                </span>
+              </div>
+
+              <div class="my-activity-card__actions">
+                @if (activity.isOnline && activity.status === 'ongoing') {
+                  <a [routerLink]="['/activites', activity.id]" class="btn btn--success btn--sm">
+                    <i class="fas fa-video"></i>
+                    Rejoindre
+                  </a>
+                }
+                @if (activity.presenceEnabled && activity.status === 'ongoing') {
+                  <a [routerLink]="['/espace-membre/presence', activity.id]" class="btn btn--primary btn--sm">
+                    <i class="fas fa-qrcode"></i>
+                    Confirmer
+                  </a>
+                }
+                <a [routerLink]="['/activites', activity.id]" class="btn btn--ghost btn--sm">
+                  Détails
+                </a>
+                @if (isUpcoming(activity)) {
+                  <button
+                    class="btn btn--ghost btn--sm btn--danger"
+                    (click)="unregister(activity)"
+                    [disabled]="isProcessing(activity)"
+                  >
+                    @if (unregistering() === activity.id) {
+                      <i class="fas fa-spinner fa-spin"></i>
+                    } @else {
+                      <i class="fas fa-times"></i>
+                    }
+                    Désinscrire
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Main Activities Grid -->
+    <section class="activities-section">
+      @if (isLoggedIn() && myActivities().length > 0) {
+        <div class="section-divider">
+          <span>À découvrir</span>
+        </div>
+      }
+
+      <!-- Loading State -->
+      @if (loading()) {
+        <div class="loading-grid">
+          @for (n of [1,2,3,4,5,6]; track n) {
+            <div class="skeleton-card">
+              <div class="skeleton-header"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line short"></div>
+              <div class="skeleton-line medium"></div>
+            </div>
+          }
+        </div>
+      } @else if (filteredActivities().length === 0) {
+        <!-- Empty State -->
+        <div class="empty-state">
+          <div class="empty-state__icon">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <h3>Aucun événement trouvé</h3>
+          <p>
+            @if (searchTerm()) {
+              Aucun résultat pour "{{ searchTerm() }}"
+            } @else {
+              Aucun événement à venir pour le moment
+            }
+          </p>
+          @if (searchTerm()) {
+            <button class="btn btn--outline" (click)="searchTerm.set('')">
+              <i class="fas fa-undo"></i>
+              Voir tous les événements
+            </button>
+          }
+        </div>
+      } @else {
+        <!-- Activities Grid -->
+        <div class="activities-grid">
+          @for (activity of filteredActivities(); track activity.id) {
+            <div class="activity-card" [class.full]="isFull(activity)">
+              <div class="activity-card__badges">
+                <span class="type-badge type-badge--{{ activity.type }}">
+                  <i class="fas {{ getActivityTypeIcon(activity.type) }}"></i>
+                  {{ typeLabels[activity.type] }}
+                </span>
+                <div class="activity-card__flags">
+                  @if (isSoon(activity)) {
+                    <span class="flag soon">
+                      <i class="fas fa-hourglass-half"></i> Bientôt
+                    </span>
+                  }
+                  @if (activity.isOnline) {
+                    <span class="flag online">
+                      <i class="fas fa-wifi"></i> En ligne
+                    </span>
+                  }
+                  @if (isFull(activity)) {
+                    <span class="flag full">
+                      <i class="fas fa-ban"></i> Complet
+                    </span>
+                  }
+                  @if (isLoggedIn() && isRegistered(activity)) {
+                    <span class="flag registered">
+                      <i class="fas fa-check-circle"></i> Inscrit
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <h3 class="activity-card__title">{{ activity.title }}</h3>
+              <p class="activity-card__desc">{{ activity.description | slice:0:100 }}...</p>
+
+              <!-- Speakers -->
+              @if (activity.speakers?.length) {
+                <div class="activity-card__speakers">
+                  @for (speaker of activity.speakers!.slice(0, 2); track speaker.id) {
+                    <div class="speaker-chip">
+                      @if (speaker.photoUrl) {
+                        <img [src]="speaker.photoUrl" [alt]="speaker.name" class="speaker-avatar" />
+                      } @else {
+                        <div class="speaker-avatar placeholder">{{ speaker.name.charAt(0) }}</div>
+                      }
+                      <span>{{ speaker.name }}</span>
+                    </div>
+                  }
+                  @if (activity.speakers!.length > 2) {
+                    <span class="speakers-more">+{{ activity.speakers!.length - 2 }}</span>
+                  }
+                </div>
+              }
+
+              <!-- Meta Info -->
+              <div class="activity-card__meta">
+                <span class="meta-item">
+                  <i class="fas fa-calendar-alt"></i>
+                  {{ activity.date | date:'EEEE d MMMM yyyy' }} à {{ activity.date | date:'HH:mm' }}
+                </span>
+                <span class="meta-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  {{ activity.location }}
+                </span>
+                @if (activity.maxParticipants) {
+                  <span class="meta-item" [class.warning]="isFull(activity)">
+                    <i class="fas fa-users"></i>
+                    @if (isFull(activity)) {
+                      Complet
+                    } @else {
+                      {{ spotsLeft(activity) }} place{{ spotsLeft(activity) > 1 ? 's' : '' }} restante{{ spotsLeft(activity) > 1 ? 's' : '' }}
+                    }
+                  </span>
+                }
+              </div>
+
+              <!-- Tags -->
+              @if (activity.tags.length) {
+                <div class="activity-card__tags">
+                  @for (tag of activity.tags.slice(0, 3); track tag) {
+                    <span class="tag">#{{ tag }}</span>
+                  }
+                  @if (activity.tags.length > 3) {
+                    <span class="tag more">+{{ activity.tags.length - 3 }}</span>
+                  }
+                </div>
+              }
+
+              <!-- Actions -->
+              <div class="activity-card__footer">
+                <a [routerLink]="['/activites', activity.id]" class="btn btn--ghost btn--sm">
+                  <i class="fas fa-eye"></i>
+                  Détails
+                </a>
+
+                @if (isLoggedIn()) {
+                  <!-- Member actions -->
+                  @if (isRegistered(activity)) {
+                    @if (isUpcoming(activity)) {
+                      <button
+                        class="btn btn--ghost btn--sm btn--danger"
+                        (click)="unregister(activity)"
+                        [disabled]="isProcessing(activity)"
+                      >
+                        @if (unregistering() === activity.id) {
+                          <i class="fas fa-spinner fa-spin"></i>
+                        } @else {
+                          <i class="fas fa-times"></i>
+                        }
+                        Désinscrire
+                      </button>
+                    }
+                  } @else if (!isFull(activity) && isUpcoming(activity)) {
+                    <button
+                      class="btn btn--primary btn--sm"
+                      (click)="register(activity)"
+                      [disabled]="isProcessing(activity)"
+                    >
+                      @if (registering() === activity.id) {
+                        <i class="fas fa-spinner fa-spin"></i>
+                      } @else {
+                        <i class="fas fa-calendar-check"></i>
+                      }
+                      S'inscrire
+                    </button>
+                  } @else if (isFull(activity)) {
+                    <span class="btn btn--disabled btn--sm">
+                      <i class="fas fa-ban"></i> Complet
+                    </span>
+                  }
+                } @else {
+                  <!-- Guest actions -->
+                  @if (!isFull(activity)) {
+                    <a [routerLink]="['/activites', activity.id, 'inscription']" class="btn btn--primary btn--sm">
+                      <i class="fas fa-ticket-alt"></i>
+                      S'inscrire
+                      <i class="fas fa-arrow-right"></i>
+                    </a>
+                  } @else {
+                    <span class="btn btn--disabled btn--sm">
+                      <i class="fas fa-ban"></i> Complet
+                    </span>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+  </div>
+</div>

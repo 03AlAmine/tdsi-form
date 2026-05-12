@@ -1,11 +1,6 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-  AbstractControl,
-  ValidationErrors,
-} from '@angular/forms';
+// login.component.ts
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
@@ -14,9 +9,8 @@ import { TechBackgroundComponent } from '../../shared/components/tech-background
 
 const PROMOS = ['L1', 'L2', 'L3', 'M1', 'M2', 'Doctorat', 'Professionnel'];
 
-function passwordMatchValidator(
-  control: AbstractControl,
-): ValidationErrors | null {
+// Password match validator
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
   const confirm = control.get('confirm')?.value;
   return password === confirm ? null : { mismatch: true };
@@ -35,16 +29,24 @@ function passwordMatchValidator(
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
   private location = inject(Location);
 
-  // ── Switch State ──────────────────────────────────────
+  // Particles configuration
+  particles = Array(20).fill(0).map(() => ({
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: 2 + Math.random() * 4,
+    delay: Math.random() * 5
+  }));
+
+  // Switch State
   showRegister = false;
 
-  // ── Login State ───────────────────────────────────────
+  // Login State
   loading = signal(false);
   error = signal('');
   showPassword = signal(false);
@@ -54,7 +56,7 @@ export class LoginComponent implements OnInit {
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  // ── Register State ────────────────────────────────────
+  // Register State
   promos = PROMOS;
   regLoading = signal(false);
   registerError = signal('');
@@ -68,7 +70,7 @@ export class LoginComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirm: ['', [Validators.required]],
     },
-    { validators: passwordMatchValidator },
+    { validators: passwordMatchValidator }
   );
 
   get passwordMismatch(): boolean {
@@ -78,41 +80,63 @@ export class LoginComponent implements OnInit {
     );
   }
 
-  // ── Login Methods ─────────────────────────────────────
+  ngOnInit(): void {
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('/inscription')) {
+      this.showRegister = true;
+    }
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', this.handleKeydown);
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('keydown', this.handleKeydown);
+  }
+
+  private handleKeydown = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') {
+      this.error.set('');
+      this.registerError.set('');
+    }
+  };
+
+  // Validation helpers
   isInvalid(field: string): boolean {
     const control = this.form.get(field);
     return control ? control.invalid && control.touched : false;
   }
 
+  isRegInvalid(field: string): boolean {
+    const control = this.registerForm.get(field);
+    return control ? control.invalid && control.touched : false;
+  }
+
+  // Password visibility toggles
   togglePassword(): void {
-    this.showPassword.update((v) => !v);
+    this.showPassword.update(v => !v);
   }
 
-  ngOnInit(): void {
-    // Détecte l'URL actuelle
-    const currentUrl = this.router.url;
-
-    if (currentUrl.includes('/inscription')) {
-      this.showRegister = true;
-    }
+  toggleRegPassword(): void {
+    this.showRegPassword.update(v => !v);
   }
 
-  // ── Switch avec animation + changement d'URL ──────────
+  // Switch between forms
   switchToRegister(): void {
     this.showRegister = true;
-    // Change l'URL SANS recharger le composant
     this.location.replaceState('/inscription');
   }
 
   switchToLogin(): void {
     this.showRegister = false;
-    // Change l'URL SANS recharger le composant
     this.location.replaceState('/connexion');
   }
 
+  // Login submission
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.animateErrorShake();
       return;
     }
 
@@ -123,29 +147,24 @@ export class LoginComponent implements OnInit {
       await this.auth.login(this.form.value.email!, this.form.value.password!);
     } catch (e: any) {
       let msg = 'Erreur de connexion. Veuillez réessayer.';
-      if (e.code === 'auth/invalid-credential')
+      if (e.code === 'auth/invalid-credential') {
         msg = 'Email ou mot de passe incorrect.';
-      else if (e.code === 'auth/too-many-requests')
+      } else if (e.code === 'auth/too-many-requests') {
         msg = 'Trop de tentatives. Réessayez plus tard.';
+      } else if (e.code === 'auth/user-disabled') {
+        msg = 'Ce compte a été désactivé.';
+      }
       this.error.set(msg);
     } finally {
       this.loading.set(false);
     }
   }
 
-  // ── Register Methods ──────────────────────────────────
-  isRegInvalid(field: string): boolean {
-    const control = this.registerForm.get(field);
-    return control ? control.invalid && control.touched : false;
-  }
-
-  toggleRegPassword(): void {
-    this.showRegPassword.update((v) => !v);
-  }
-
+  // Register submission
   async registerSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.animateErrorShake();
       return;
     }
 
@@ -162,13 +181,24 @@ export class LoginComponent implements OnInit {
       });
     } catch (e: any) {
       let msg = 'Erreur lors de la création du compte.';
-      if (e.code === 'auth/email-already-in-use')
+      if (e.code === 'auth/email-already-in-use') {
         msg = 'Cet email est déjà utilisé.';
-      else if (e.code === 'auth/weak-password')
+      } else if (e.code === 'auth/weak-password') {
         msg = 'Mot de passe trop faible (min. 6 caractères).';
+      } else if (e.code === 'auth/invalid-email') {
+        msg = 'Email invalide.';
+      }
       this.registerError.set(msg);
     } finally {
       this.regLoading.set(false);
+    }
+  }
+
+  private animateErrorShake(): void {
+    const form = document.querySelector('.auth-form');
+    if (form) {
+      form.classList.add('shake');
+      setTimeout(() => form.classList.remove('shake'), 500);
     }
   }
 }

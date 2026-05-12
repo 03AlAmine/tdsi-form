@@ -1,0 +1,551 @@
+<!-- thematiques.component.html -->
+<div class="themes-page">
+
+  <!-- Hero Section -->
+  <section class="themes-hero">
+    <div class="container">
+      <div class="themes-hero__content">
+        <div class="themes-hero__badge">
+          <span class="badge-glow"></span>
+          <span>📚 CATALOGUE DES THÉMATIQUES</span>
+        </div>
+        <h1 class="themes-hero__title">
+          Explorez nos
+          <span class="gradient-text">connaissances</span>
+        </h1>
+        <p class="themes-hero__subtitle">
+          Découvrez l'ensemble des sujets proposés par la communauté TDSI
+        </p>
+
+        <!-- Search Bar intégrée -->
+        <div class="themes-hero__search">
+          <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              placeholder="Rechercher une thématique..."
+              (input)="searchTerm.set($any($event.target).value)"
+              [value]="searchTerm()"
+            />
+            @if (searchTerm()) {
+              <button class="search-clear" (click)="searchTerm.set('')">
+                <i class="fas fa-times"></i>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- Loading State Principal -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
+        </div>
+        <p class="loading-text">Chargement des thématiques...</p>
+      </div>
+    } @else {
+
+      <!-- Recommandations IA (membres uniquement) -->
+      @if (isLoggedIn() && showRecommendations() && recommendations().length > 0 && !loading()) {
+        <div class="reco-section animate-slide-up">
+          <div class="reco-header">
+            <div class="reco-header__left">
+              <div class="reco-icon">✨</div>
+              <div>
+                <h2 class="reco-header__title">Recommandé pour vous</h2>
+                <p class="reco-header__sub">Basé sur votre profil et historique</p>
+              </div>
+            </div>
+            <div class="reco-header__actions">
+              @if (!recoLoading()) {
+                <button class="reco-refresh" (click)="refreshRecommendations()" title="Actualiser">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+              }
+              <button class="reco-close" (click)="showRecommendations.set(false)" title="Masquer">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          @if (recoLoading()) {
+            <div class="reco-loading">
+              <div class="reco-skeleton-grid">
+                @for (n of [1,2,3]; track n) {
+                  <div class="reco-skeleton-card">
+                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-line medium"></div>
+                    <div class="skeleton-line long"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else if (recoError()) {
+            <div class="reco-error">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>{{ recoError() }}</span>
+              <button class="retry-btn" (click)="refreshRecommendations()">Réessayer</button>
+            </div>
+          } @else {
+            <div class="reco-grid">
+              @for (reco of recommendations(); track reco.id) {
+                <div class="reco-card" (click)="openThemeDetail(reco)">
+                  <div class="reco-card__badge">
+                    <span class="badge badge--primary">{{ reco.category }}</span>
+                    <span class="reco-score" [class]="'reco-score--' + getScoreColor(reco.aiScore)">
+                      {{ reco.aiScore }}% match
+                    </span>
+                  </div>
+                  <h3 class="reco-card__title">{{ reco.title }}</h3>
+                  <p class="reco-card__reason">
+                    <i class="fas fa-magic"></i>
+                    {{ reco.aiReason }}
+                  </p>
+                  <div class="reco-card__footer">
+                    <span class="difficulty-badge" [class]="'difficulty--' + getDifficultyClass(reco.difficulty)">
+                      <i [class]="'fas ' + getDifficultyIconClass(reco.difficulty)"></i>
+                      {{ reco.difficulty }}
+                    </span>
+                    @if (reco.linkedWorkshop) {
+                      <span class="workshop-tag">
+                        <i class="fas fa-calendar-alt"></i>
+                        Workshop dispo
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (recommendations().length > 0) {
+          <div class="section-divider">
+            <span>Toutes les thématiques</span>
+          </div>
+        }
+      }
+
+      <!-- Filtres -->
+      <div class="filters-section">
+        <div class="filters-header">
+          <div class="filters-stats">
+            <span class="stats-value">{{ filteredThemes().length }}</span>
+            <span class="stats-label">thématique{{ filteredThemes().length > 1 ? 's' : '' }}</span>
+            @if (activeCategory()) {
+              <span class="active-filter-badge">
+                {{ activeCategory() }}
+                <button (click)="activeCategory.set(null)" class="remove-filter">
+                  <i class="fas fa-times"></i>
+                </button>
+              </span>
+            }
+          </div>
+          <div class="filters-scroll">
+            <button
+              class="filter-chip"
+              [class.active]="!activeCategory()"
+              (click)="activeCategory.set(null)"
+            >
+              <i class="fas fa-th-large"></i>
+              Tous
+            </button>
+            @for (cat of categories; track cat) {
+              <button
+                class="filter-chip"
+                [class.active]="activeCategory() === cat"
+                (click)="activeCategory.set(cat)"
+              >
+                {{ cat }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Grille des thématiques -->
+      @if (filteredThemes().length === 0 && !loading()) {
+        <div class="empty-state">
+          <div class="empty-state__icon">
+            <i class="fas fa-compass"></i>
+          </div>
+          <h3 class="empty-state__title">
+            @if (searchTerm()) {
+              Aucun résultat pour "{{ searchTerm() }}"
+            } @else if (activeCategory()) {
+              Aucune thématique dans "{{ activeCategory() }}"
+            } @else {
+              Aucune thématique disponible
+            }
+          </h3>
+          <p class="empty-state__description">
+            @if (searchTerm()) {
+              Essayez d'autres mots-clés ou parcourez toutes les thématiques.
+            } @else if (isLoggedIn()) {
+              Soyez le premier à proposer une idée de workshop !
+            } @else {
+              Revenez bientôt — de nouvelles thématiques arrivent régulièrement.
+            }
+          </p>
+          @if (searchTerm()) {
+            <button class="btn btn--outline" (click)="searchTerm.set('')">
+              <i class="fas fa-undo"></i>
+              Voir toutes les thématiques
+            </button>
+          } @else if (isLoggedIn()) {
+            <div class="empty-state__actions">
+              <a routerLink="/espace-membre/proposer" class="btn btn--primary">
+                <i class="fas fa-lightbulb"></i>
+                Proposer une thématique
+              </a>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="themes-grid">
+          @for (theme of filteredThemes(); track theme.id) {
+            <div class="theme-card" (click)="openThemeDetail(theme)">
+              <!-- Image/Icon décorative -->
+              <div class="theme-card__icon">
+                <i class="fas fa-microchip"></i>
+              </div>
+
+              <div class="theme-card__content">
+                <div class="theme-card__badges">
+                  <span class="badge badge--primary">{{ theme.category }}</span>
+                  <span
+                    class="badge"
+                    [class.badge--success]="theme.status === 'ouvert'"
+                    [class.badge--warning]="theme.status === 'complet'"
+                    [class.badge--danger]="theme.status === 'fermé'"
+                  >
+                    @if (theme.status === 'ouvert') { <i class="fas fa-circle"></i> }
+                    {{ theme.status }}
+                  </span>
+                </div>
+
+                <h3 class="theme-card__title">{{ theme.title }}</h3>
+                <p class="theme-card__description">
+                  {{ theme.description | slice:0:120 }}{{ theme.description.length > 120 ? '...' : '' }}
+                </p>
+
+                <div class="theme-card__footer">
+                  <div class="theme-card__meta">
+                    <span class="difficulty" [class]="'difficulty--' + getDifficultyClass(theme.difficulty)">
+                      <i [class]="'fas ' + getDifficultyIconClass(theme.difficulty)"></i>
+                      {{ theme.difficulty }}
+                    </span>
+                    @if (isLoggedIn() && theme.currentParticipants !== undefined) {
+                      <span class="participants">
+                        <i class="fas fa-users"></i>
+                        {{ theme.currentParticipants }}/{{ theme.maxParticipants }}
+                      </span>
+                    }
+                  </div>
+                  @if (isLoggedIn() && theme.linkedWorkshop) {
+                    <div class="workshop-badge">
+                      <i class="fas fa-calendar-check"></i>
+                      <span>Workshop</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Hover effect overlay -->
+              <div class="theme-card__overlay">
+                <span>Détails <i class="fas fa-arrow-right"></i></span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Section "À venir" (membres uniquement) -->
+        @if (isLoggedIn() && filteredThemes().length > 0) {
+          <div class="coming-soon">
+            <div class="coming-soon__content">
+              <div class="coming-soon__icon">
+                <i class="fas fa-rocket"></i>
+              </div>
+              <div>
+                <h3>Vous avez une idée de thématique ?</h3>
+                <p>Proposez un sujet qui vous passionne et partagez vos connaissances</p>
+              </div>
+              <a routerLink="/espace-membre/proposer" class="btn btn--outline">
+                <i class="fas fa-lightbulb"></i>
+                Proposer une thématique
+              </a>
+            </div>
+          </div>
+        }
+      }
+    }
+  </div>
+</div>
+
+<!-- Drawer Détail -->
+@if (selectedTheme()) {
+  <div class="drawer-overlay" [class.drawer-overlay--open]="drawerOpen()" (click)="closeDrawer()">
+    <div class="drawer" [class.drawer--open]="drawerOpen()" (click)="$event.stopPropagation()">
+
+      <!-- Drawer Header avec gradient -->
+      <div class="drawer__header" [style.border-top-color]="getDifficultyColor(selectedTheme()?.difficulty || '')">
+        <div class="drawer__badges">
+          <span class="badge badge--primary">{{ selectedTheme()?.category }}</span>
+          <span
+            class="badge"
+            [class.badge--success]="selectedTheme()?.status === 'ouvert'"
+            [class.badge--warning]="selectedTheme()?.status === 'complet'"
+            [class.badge--danger]="selectedTheme()?.status === 'fermé'"
+          >
+            {{ selectedTheme()?.status }}
+          </span>
+        </div>
+        <button class="drawer__close" (click)="closeDrawer()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="drawer__content">
+        <!-- Title with gradient line -->
+        <div class="drawer__title-wrapper">
+          <h2 class="drawer__title">{{ selectedTheme()?.title }}</h2>
+          <div class="title-gradient-line"></div>
+        </div>
+
+        <!-- Meta badges -->
+        <div class="drawer__meta-badges">
+          <span class="meta-badge difficulty-badge" [class]="'difficulty-badge--' + getDifficultyClass(selectedTheme()?.difficulty || '')">
+            <i [class]="'fas ' + getDifficultyIconClass(selectedTheme()?.difficulty || '')"></i>
+            {{ selectedTheme()?.difficulty }}
+          </span>
+          @if (selectedTheme()?.estimatedDuration) {
+            <span class="meta-badge duration-badge">
+              <i class="fas fa-hourglass-half"></i>
+              {{ selectedTheme()?.estimatedDuration }} min
+            </span>
+          }
+          @if (selectedTheme()?.createdAt) {
+            <span class="meta-badge date-badge">
+              <i class="fas fa-calendar-alt"></i>
+              {{ selectedTheme()?.createdAt | date:'dd MMM yyyy' }}
+            </span>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="drawer__section">
+          <h4><i class="fas fa-align-left"></i> Description</h4>
+          <p>{{ selectedTheme()?.description }}</p>
+        </div>
+
+        <!-- AI Loading -->
+        @if (isLoggedIn() && loadingEnriched()) {
+          <div class="ai-loading">
+            <div class="ai-loading__spinner"></div>
+            <div class="ai-loading__content">
+              <span>Génération du contenu pédagogique...</span>
+              <div class="ai-loading__bar"></div>
+            </div>
+          </div>
+        }
+
+        <!-- Objectifs -->
+        @if (selectedTheme()?.objectives || enrichedThemeData()?.objectives) {
+          <div class="drawer__section drawer__section--highlight">
+            <h4>
+              <i class="fas fa-graduation-cap"></i> Objectifs pédagogiques
+              @if (!selectedTheme()?.objectives && enrichedThemeData()?.objectives) {
+                <span class="ai-badge">
+                  <i class="fas fa-magic"></i> Généré par IA
+                </span>
+              }
+            </h4>
+            <div class="list-grid objectives-grid">
+              @for (obj of selectedTheme()?.objectives
+                ? parseObjectives(selectedTheme()?.objectives || '')
+                : enrichedThemeData()?.objectives; track $index) {
+                <div class="list-item objective-item">
+                  <div class="item-icon">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                  <span>{{ obj }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Prérequis -->
+        @if (selectedTheme()?.prerequisites || enrichedThemeData()?.prerequisites) {
+          <div class="drawer__section">
+            <h4>
+              <i class="fas fa-clipboard-list"></i> Prérequis
+              @if (!selectedTheme()?.prerequisites && enrichedThemeData()?.prerequisites) {
+                <span class="ai-badge ai-badge--sm">
+                  <i class="fas fa-magic"></i> IA
+                </span>
+              }
+            </h4>
+            <div class="list-pills prerequisites-pills">
+              @for (preq of selectedTheme()?.prerequisites
+                ? parsePrerequisites(selectedTheme()?.prerequisites || '')
+                : enrichedThemeData()?.prerequisites; track $index) {
+                <span class="pill">
+                  <i class="fas fa-chevron-right"></i>
+                  {{ preq }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Matériel -->
+        @if (selectedTheme()?.materialsNeeded || enrichedThemeData()?.materials) {
+          <div class="drawer__section">
+            <h4>
+              <i class="fas fa-tools"></i> Matériel nécessaire
+              @if (!selectedTheme()?.materialsNeeded && enrichedThemeData()?.materials) {
+                <span class="ai-badge ai-badge--sm">
+                  <i class="fas fa-magic"></i> IA
+                </span>
+              }
+            </h4>
+            <div class="list-pills materials-pills">
+              @for (mat of selectedTheme()?.materialsNeeded
+                ? parseMaterials(selectedTheme()?.materialsNeeded || '')
+                : enrichedThemeData()?.materials; track $index) {
+                <span class="pill pill--tech">
+                  <i class="fas fa-laptop-code"></i>
+                  {{ mat }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Compétences (membres) -->
+        @if (isLoggedIn() && enrichedThemeData()?.skills) {
+          <div class="drawer__section drawer__section--bonus">
+            <h4><i class="fas fa-trophy"></i> Compétences acquises</h4>
+            <div class="skills-list">
+              @for (skill of enrichedThemeData()?.skills; track $index) {
+                <span class="skill-badge">
+                  <i class="fas fa-star"></i>
+                  {{ skill }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Tags -->
+        @if (selectedTheme()?.tags && selectedTheme()?.tags?.length) {
+          <div class="drawer__section">
+            <h4><i class="fas fa-tags"></i> Tags</h4>
+            <div class="tags-list">
+              @for (tag of selectedTheme()?.tags; track tag) {
+                <span class="tag">#{{ tag }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Info auteur -->
+        @if (selectedTheme()?.fromStudentName) {
+          <div class="drawer__author">
+            <i class="fas fa-user-graduate"></i>
+            <div>
+              <span>Proposé par</span>
+              <strong>{{ selectedTheme()?.fromStudentName }}</strong>
+              @if (selectedTheme()?.fromStudentPromo) {
+                <span class="promo">({{ selectedTheme()?.fromStudentPromo }})</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Workshop associé -->
+        @if (isLoggedIn() && selectedTheme()?.linkedWorkshop) {
+          <div class="workshop-card">
+            <div class="workshop-card__header">
+              <i class="fas fa-chalkboard-user"></i>
+              <span>Workshop associé</span>
+            </div>
+            <div class="workshop-card__body">
+              <div class="workshop-info">
+                <div class="workshop-info__row">
+                  <i class="fas fa-calendar-alt"></i>
+                  <span>{{ selectedTheme()?.linkedWorkshop?.date | date:'EEEE dd MMMM yyyy' }}</span>
+                </div>
+                <div class="workshop-info__row">
+                  <i class="fas fa-clock"></i>
+                  <span>{{ selectedTheme()?.linkedWorkshop?.date | date:'HH:mm' }} -
+                    {{ getEndTime(selectedTheme()?.linkedWorkshop?.date, selectedTheme()?.linkedWorkshop?.duration) }}
+                  </span>
+                </div>
+                <div class="workshop-info__row">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>{{ getLocationText(selectedTheme()?.linkedWorkshop?.location || '') }}</span>
+                </div>
+                @if (selectedTheme()?.linkedWorkshop?.presenter) {
+                  <div class="workshop-info__row">
+                    <i class="fas fa-chalkboard-user"></i>
+                    <span>Animé par {{ selectedTheme()?.linkedWorkshop?.presenter }}</span>
+                  </div>
+                }
+              </div>
+              <div class="workshop-card__actions">
+                @if (selectedTheme()?.linkedWorkshop?.presenceFormEnabled) {
+                  <a
+                    [routerLink]="['/espace-membre/presence', selectedTheme()?.linkedWorkshop?.id]"
+                    class="btn btn--primary btn--full"
+                    (click)="closeDrawer()"
+                  >
+                    <i class="fas fa-check-circle"></i>
+                    Confirmer ma présence
+                  </a>
+                }
+                @if (selectedTheme()?.linkedWorkshop?.meetLink && selectedTheme()?.linkedWorkshop?.status === 'en cours') {
+                  <a
+                    [href]="selectedTheme()?.linkedWorkshop?.meetLink"
+                    target="_blank"
+                    class="btn btn--secondary btn--full"
+                  >
+                    <i class="fas fa-video"></i>
+                    Rejoindre la session
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- CTA connexion (visiteurs) -->
+        @if (!isLoggedIn()) {
+          <div class="drawer__cta">
+            <div class="cta-icon">
+              <i class="fas fa-lock"></i>
+            </div>
+            <p>Connectez-vous pour accéder au contenu pédagogique complet et vous inscrire aux workshops.</p>
+            <div class="cta-buttons">
+              <a routerLink="/connexion" class="btn btn--primary" (click)="closeDrawer()">
+                <i class="fas fa-sign-in-alt"></i>
+                Se connecter
+              </a>
+              <a routerLink="/inscription" class="btn btn--outline" (click)="closeDrawer()">
+                <i class="fas fa-user-plus"></i>
+                Créer un compte
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

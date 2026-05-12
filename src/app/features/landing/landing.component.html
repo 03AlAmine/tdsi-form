@@ -1,234 +1,332 @@
 <div class="landing">
-<app-tech-background/>
-<app-public-navbar/>
+  <app-tech-background />
 
-<!-- Hero Section -->
+  <!-- Hero Section avec particules et effet 3D -->
   <section class="hero">
     <div class="container hero__container">
-      <div class="hero__grid">
-        <!-- Left side - Text content -->
-        <div class="hero__content">
-          <div class="hero__badge">
-            <span class="badge-glow"></span>
-            <span class="hero__badge-text"
-              >TECH COMMUNITY · UCAD · DAKAR · AFRIQUE</span
-            >
-            <span class="blink-dot"></span>
-          </div>
+      <!-- Mouse follower glow -->
+      <div class="mouse-glow" id="mouseGlow"></div>
 
-          <div class="hero__title">
-            <span class="hero__title-static">Bienvenue sur</span>
-            <span class="hero__title-animated">
-              <span class="typing-text" id="typing-text"></span>
-              <span class="cursor">_</span>
-            </span>
+      <div class="hero__wrapper stagger-children">
+        <!-- Badge -->
+        <div class="hero__badge">
+          <div class="hero__badge-icon">
+            <i class="fas fa-terminal"></i>
           </div>
-
-          <p class="hero__subtitle">
-            L'écosystème collaboratif de la tech africaine
-          </p>
-          <p class="hero__description">
-            Rejoignez la première communauté sénégalaise dédiée à la
-            cybersécurité et aux technologies de l'information. Proposez des
-            workshops, partagez vos connaissances et développez votre réseau.
-          </p>
-
-          <div class="hero__cta">
-            <a
-              routerLink="/workshops"
-              class="btn btn--primary btn--lg hero__btn-primary"
-            >
-              <span class="btn-content">
-                <i class="fas fa-calendar-alt"></i>
-                Explorer les workshops
-                <i class="fas fa-arrow-right"></i>
-              </span>
-              <span class="btn-bg"></span>
-            </a>
-            <a routerLink="/thematiques" class="btn btn--outline btn--lg">
-              <i class="fas fa-th-large"></i>
-              Découvrir les thématiques
-            </a>
-          </div>
+          <span class="hero__badge-text">
+            TECH COMMUNITY · ESP DAKAR · SÉNÉGAL
+          </span>
+          <div class="hero__badge-pulse"></div>
         </div>
 
-        <!-- Right side - Animated Logo -->
-        <div class="hero__logo">
-          <div class="logo-animation">
-            <div class="logo-3d">
-              <img
-                src="/assets/images/logo.png"
-                alt="Club TDSI"
-                class="logo-img"
-              />
-              <div class="logo-glow-ring"></div>
-            </div>
-            <div class="logo-particles">
-              <span class="particle"></span>
-              <span class="particle"></span>
-              <span class="particle"></span>
-              <span class="particle"></span>
-              <span class="particle"></span>
-            </div>
-            <div class="logo-text-animated">
-              <span>C</span><span>T</span><span>C</span>
-            </div>
-          </div>
+        <!-- Main Title avec effet de machine à écrire amélioré -->
+        <div class="hero__title-wrapper">
+          <h1 class="hero__title">
+            <span class="hero__title-static">Bienvenue sur</span>
+            <span class="hero__title-animated">
+              <span class="typing-wrapper">
+                <span class="typing-text" id="typingText"></span>
+                <span class="cursor">_</span>
+              </span>
+            </span>
+          </h1>
+        </div>
+
+        <!-- Subtitle -->
+        <p class="hero__subtitle">
+          L'écosystème collaboratif de la tech africaine
+        </p>
+
+        <!-- Description -->
+        <p class="hero__description">
+          Rejoignez la première communauté sénégalaise dédiée à la cybersécurité,
+          à l'intelligence artificielle et aux technologies de l'information.
+          Proposez des workshops, partagez vos connaissances et développez votre réseau.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="hero__buttons">
+          <a routerLink="/workshops" class="btn btn--primary btn--lg">
+            <i class="fas fa-calendar-alt"></i>
+            Explorer les workshops
+            <i class="fas fa-arrow-right btn-arrow"></i>
+          </a>
+          <a routerLink="/thematiques" class="btn btn--outline btn--lg">
+            <i class="fas fa-th-large"></i>
+            Découvrir les thématiques
+          </a>
         </div>
       </div>
 
-      <!-- Stats Section -->
-      <div class="hero__stats">
-        <div class="stat-card">
-          <div class="stat-card__value">
-            <span class="counter" data-target="12">0</span>+
+      <!-- Animated Logo Section -->
+      <div class="hero__logo-section">
+        <div class="hero__logo-container">
+          <!-- Orbiting rings -->
+          <div class="orbiting-ring ring-1"></div>
+          <div class="orbiting-ring ring-2"></div>
+          <div class="orbiting-ring ring-3"></div>
+
+          <!-- Central Logo -->
+          <div class="logo-3d-wrapper">
+            <div class="logo-shine"></div>
+            <img src="/assets/images/logo.png" alt="Club TDSI" class="hero__logo-img">
+            <div class="logo-pulse-ring"></div>
           </div>
-          <div class="stat-card__label">Thématiques</div>
-          <div class="stat-card__icon">
-            <i class="fas fa-book-open"></i>
+
+          <!-- Floating particles -->
+          <div class="floating-particles">
+            <div class="particle p1"><i class="fas fa-code"></i></div>
+            <div class="particle p2"><i class="fas fa-shield-alt"></i></div>
+            <div class="particle p3"><i class="fas fa-robot"></i></div>
+            <div class="particle p4"><i class="fas fa-cloud"></i></div>
+            <div class="particle p5"><i class="fas fa-database"></i></div>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">
-            <span class="counter" data-target="48">0</span>
-          </div>
-          <div class="stat-card__label">Membres actifs</div>
-          <div class="stat-card__icon">
-            <i class="fas fa-users"></i>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">
-            <span class="counter" data-target="8">0</span>
-          </div>
-          <div class="stat-card__label">Workshops</div>
-          <div class="stat-card__icon">
-            <i class="fas fa-chalkboard"></i>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card__value">
-            <span class="counter" data-target="4">0</span>
-          </div>
-          <div class="stat-card__label">Experts</div>
-          <div class="stat-card__icon">
-            <i class="fas fa-user-graduate"></i>
+
+          <!-- Logo text -->
+          <div class="logo-text">
+            <span>C</span><span>T</span><span>D</span><span>S</span><span>I</span>
           </div>
         </div>
       </div>
     </div>
   </section>
-  <!-- Features Section -->
+
+  <!-- Floating Stats Section -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card stat-card--1" data-delay="0">
+          <div class="stat-card__icon">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__value">
+              <span class="counter" data-target="12">0</span>
+              <span class="stat-card__plus">+</span>
+            </div>
+            <div class="stat-card__label">Thématiques</div>
+          </div>
+          <div class="stat-card__glow"></div>
+        </div>
+
+        <div class="stat-card stat-card--2" data-delay="0.1">
+          <div class="stat-card__icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__value">
+              <span class="counter" data-target="48">0</span>
+            </div>
+            <div class="stat-card__label">Membres actifs</div>
+          </div>
+          <div class="stat-card__glow"></div>
+        </div>
+
+        <div class="stat-card stat-card--3" data-delay="0.2">
+          <div class="stat-card__icon">
+            <i class="fas fa-chalkboard"></i>
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__value">
+              <span class="counter" data-target="8">0</span>
+            </div>
+            <div class="stat-card__label">Workshops</div>
+          </div>
+          <div class="stat-card__glow"></div>
+        </div>
+
+        <div class="stat-card stat-card--4" data-delay="0.3">
+          <div class="stat-card__icon">
+            <i class="fas fa-user-graduate"></i>
+          </div>
+          <div class="stat-card__content">
+            <div class="stat-card__value">
+              <span class="counter" data-target="4">0</span>
+            </div>
+            <div class="stat-card__label">Experts</div>
+          </div>
+          <div class="stat-card__glow"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section avec cartes modernes -->
   <section class="features">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">
           <i class="fas fa-question-circle"></i>
-          Pourquoi TDSI ?
+          Pourquoi nous rejoindre ?
         </span>
         <h2 class="section-title">
-          Une communauté qui
-          <span class="gradient-text">innove</span>
+          Une communauté qui <span class="gradient-text">innove</span>
         </h2>
         <p class="section-subtitle">
-          Découvrez les avantages de rejoindre le club TDSI
+          Découvrez les avantages de rejoindre le club TDSI et propulsez votre carrière tech
         </p>
       </div>
 
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-card__icon">
+            <div class="icon-bg"></div>
             <i class="fas fa-lightbulb"></i>
-            <div class="icon-glow"></div>
           </div>
           <h3 class="feature-card__title">Proposer une thématique</h3>
           <p class="feature-card__desc">
-            Soumets une idée de workshop. L'admin valide, programme et configure
-            le formulaire de présence.
+            Soumets une idée de workshop. L'admin valide, programme et configure le formulaire de présence.
           </p>
           <div class="feature-card__link">
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
+          <div class="feature-card__gradient"></div>
         </div>
 
         <div class="feature-card">
           <div class="feature-card__icon">
+            <div class="icon-bg"></div>
             <i class="fas fa-microphone-alt"></i>
-            <div class="icon-glow"></div>
           </div>
           <h3 class="feature-card__title">Workshops interactifs</h3>
           <p class="feature-card__desc">
-            Participe aux sessions en direct. Confirme ta présence via un
-            formulaire personnalisé par l'admin.
+            Participe aux sessions en direct. Confirme ta présence via un formulaire personnalisé.
           </p>
           <div class="feature-card__link">
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
+          <div class="feature-card__gradient"></div>
         </div>
 
         <div class="feature-card">
           <div class="feature-card__icon">
+            <div class="icon-bg"></div>
             <i class="fas fa-shield-alt"></i>
-            <div class="icon-glow"></div>
           </div>
           <h3 class="feature-card__title">Sécurité & Réseaux</h3>
           <p class="feature-card__desc">
-            Cryptographie, pentest, protocoles de transmission — explore les
-            domaines clés du numérique moderne.
+            Cryptographie, pentest, protocoles de transmission — explore les domaines clés du numérique moderne.
           </p>
           <div class="feature-card__link">
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
+          <div class="feature-card__gradient"></div>
         </div>
 
         <div class="feature-card">
           <div class="feature-card__icon">
+            <div class="icon-bg"></div>
             <i class="fas fa-robot"></i>
-            <div class="icon-glow"></div>
           </div>
           <h3 class="feature-card__title">Intelligence Artificielle</h3>
           <p class="feature-card__desc">
-            Découvre les applications de l'IA dans la cybersécurité et la
-            transmission de données.
+            Découvre les applications de l'IA dans la cybersécurité et la transmission de données.
           </p>
           <div class="feature-card__link">
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
+          <div class="feature-card__gradient"></div>
         </div>
 
         <div class="feature-card">
           <div class="feature-card__icon">
+            <div class="icon-bg"></div>
             <i class="fas fa-cloud-upload-alt"></i>
-            <div class="icon-glow"></div>
           </div>
           <h3 class="feature-card__title">Cloud & DevOps</h3>
           <p class="feature-card__desc">
-            Apprends les bonnes pratiques de sécurité dans les environnements
-            cloud modernes.
+            Apprends les bonnes pratiques de sécurité dans les environnements cloud modernes.
           </p>
           <div class="feature-card__link">
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
+          <div class="feature-card__gradient"></div>
         </div>
 
         <div class="feature-card">
           <div class="feature-card__icon">
+            <div class="icon-bg"></div>
             <i class="fas fa-code"></i>
-            <div class="icon-glow"></div>
           </div>
           <h3 class="feature-card__title">Développement Web</h3>
           <p class="feature-card__desc">
-            Maîtrise les frameworks modernes et les bonnes pratiques de sécurité
-            web.
+            Maîtrise les frameworks modernes et les bonnes pratiques de sécurité web.
           </p>
           <div class="feature-card__link">
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="feature-card__gradient"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase Section -->
+  <section class="showcase">
+    <div class="container">
+      <div class="showcase__wrapper">
+        <div class="showcase__content">
+          <span class="section-badge">
+            <i class="fas fa-video"></i>
+            Live Experience
+          </span>
+          <h2 class="showcase__title">
+            Une expérience <span class="gradient-text">immersive</span>
+          </h2>
+          <p class="showcase__desc">
+            Participez à des workshops en direct, interagissez avec des experts
+            et développez vos compétences dans un environnement collaboratif unique.
+          </p>
+          <div class="showcase__features">
+            <div class="showcase-feature">
+              <i class="fas fa-check-circle"></i>
+              <span>Sessions en direct</span>
+            </div>
+            <div class="showcase-feature">
+              <i class="fas fa-check-circle"></i>
+              <span>Certificats de participation</span>
+            </div>
+            <div class="showcase-feature">
+              <i class="fas fa-check-circle"></i>
+              <span>Networking avec des experts</span>
+            </div>
+            <div class="showcase-feature">
+              <i class="fas fa-check-circle"></i>
+              <span>Accès aux ressources exclusives</span>
+            </div>
+          </div>
+        </div>
+        <div class="showcase__image">
+          <div class="showcase__card">
+            <div class="showcase__card-header">
+              <div class="showcase__card-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span>workshop_live.tsx</span>
+            </div>
+            <div class="showcase__card-body">
+              <div class="code-line">
+                <span class="keyword">import</span> &#123; useState &#125; <span class="keyword">from</span> 'react';
+              </div>
+              <div class="code-line">
+                <span class="keyword">const</span> WorkshopLive = <span class="function">()</span> =&gt; &#123;
+              </div>
+              <div class="code-line code-indent">
+                <span class="keyword">const</span> [participants, setParticipants] = useState();
+              </div>
+              <div class="code-line code-indent">
+                <span class="comment">// Rejoignez l'aventure TDSI !</span>
+              </div>
+              <div class="code-line">
+                &#125;;
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -236,9 +334,10 @@
   </section>
 
   <!-- CTA Section -->
-  <section class="cta">
+  <section class="cta-section">
     <div class="container">
       <div class="cta-card">
+        <div class="cta-card__glow"></div>
         <div class="cta-card__content">
           <span class="cta-badge">
             <i class="fas fa-rocket"></i>
@@ -248,16 +347,13 @@
             Rejoins l'aventure <span class="gradient-text">TDSI</span>
           </h2>
           <p class="cta-description">
-            Intègre une communauté dynamique et participe à des workshops
-            exclusifs
+            Intègre une communauté dynamique et participe à des workshops exclusifs
           </p>
           <div class="cta-buttons">
             <a routerLink="/inscription" class="btn btn--primary btn--lg">
-              <span class="btn-content">
-                <i class="fas fa-user-plus"></i>
-                Créer mon compte
-                <i class="fas fa-arrow-right"></i>
-              </span>
+              <i class="fas fa-user-plus"></i>
+              Créer mon compte
+              <i class="fas fa-arrow-right"></i>
             </a>
             <a routerLink="/workshops" class="btn btn--outline btn--lg">
               <i class="fas fa-calendar-alt"></i>
@@ -265,11 +361,40 @@
             </a>
           </div>
         </div>
-        <div class="cta-card__bg"></div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-<app-public-footer/>
+  <!-- Partners Section -->
+  <section class="partners">
+    <div class="container">
+      <div class="partners__header">
+        <span class="section-badge">
+          <i class="fas fa-handshake"></i>
+          Nos partenaires
+        </span>
+        <h3 class="partners__title">
+          Ils nous <span class="gradient-text">font confiance</span>
+        </h3>
+      </div>
+      <div class="partners__grid">
+        <div class="partner-logo">
+          <i class="fas fa-university"></i>
+          <span>ESP Dakar</span>
+        </div>
+        <div class="partner-logo">
+          <i class="fas fa-chart-line"></i>
+          <span>TechHub Sénégal</span>
+        </div>
+        <div class="partner-logo">
+          <i class="fas fa-shield-alt"></i>
+          <span>CyberSec Africa</span>
+        </div>
+        <div class="partner-logo">
+          <i class="fas fa-cloud"></i>
+          <span>Cloud Senegal</span>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

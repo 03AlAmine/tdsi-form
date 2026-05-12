@@ -1,0 +1,194 @@
+<!-- shell-navbar.component.html -->
+<nav class="navbar" [class.navbar--scrolled]="isScrolled">
+  <div class="container navbar__container">
+
+    <!-- Brand avec effet de glow -->
+    <a [routerLink]="isLoggedIn() ? '/espace-membre' : '/'" class="navbar__brand">
+      <div class="navbar__brand-glow"></div>
+      <div class="navbar__brand-logo">
+        <img src="/assets/images/logo.png" alt="Club TDSI" />
+        <div class="logo-pulse"></div>
+      </div>
+      <div class="navbar__brand-text">
+        <span class="brand-main">Club TDSI</span>
+        <span class="brand-sub">· Campus</span>
+      </div>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="navbar__links desktop-nav">
+      <a routerLink="/thematiques" routerLinkActive="active" class="navbar__link">
+        <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+        <span class="link-text">Thématiques</span>
+        <span class="link-indicator"></span>
+      </a>
+      <a routerLink="/workshops" routerLinkActive="active" class="navbar__link">
+        <span class="link-icon"><i class="fas fa-chalkboard-user"></i></span>
+        <span class="link-text">Workshops</span>
+        <span class="link-indicator"></span>
+      </a>
+      <a routerLink="/activites" routerLinkActive="active" class="navbar__link">
+        <span class="link-icon"><i class="fas fa-calendar-alt"></i></span>
+        <span class="link-text">Événements</span>
+        <span class="link-indicator"></span>
+      </a>
+
+      @if (isLoggedIn()) {
+        <a routerLink="/espace-membre/proposer" routerLinkActive="active" class="navbar__link navbar__link--special">
+          <span class="link-icon"><i class="fas fa-lightbulb"></i></span>
+          <span class="link-text">Proposer</span>
+          <span class="link-badge">Nouveau</span>
+        </a>
+        <a routerLink="/espace-membre/mes-soumissions" routerLinkActive="active" class="navbar__link">
+          <span class="link-icon"><i class="fas fa-file-alt"></i></span>
+          <span class="link-text">Mes dépôts</span>
+        </a>
+      }
+    </nav>
+
+    <!-- Actions -->
+    <div class="navbar__actions">
+      @if (!isLoggedIn()) {
+        <a routerLink="/connexion" class="btn btn--ghost">
+          <i class="fas fa-key"></i>
+          <span>Connexion</span>
+        </a>
+        <a routerLink="/inscription" class="btn btn--primary">
+          <span class="btn-glow"></span>
+          <i class="fas fa-user-plus"></i>
+          <span>Rejoindre</span>
+          <i class="fas fa-arrow-right btn-arrow"></i>
+        </a>
+      } @else {
+        <div class="user-menu">
+          <button class="user-menu__trigger" (click)="toggleUserMenu()">
+            <div class="user-avatar-wrapper">
+              <div class="user-avatar">
+                <span>{{ userInitial }}</span>
+              </div>
+              <div class="user-status online"></div>
+            </div>
+            <span class="user-name">{{ user?.displayName?.split(' ')?.[0] }}</span>
+            <i class="fas fa-chevron-down" [class.rotated]="userMenuOpen()"></i>
+          </button>
+
+          @if (userMenuOpen()) {
+            <div class="user-menu__dropdown">
+              <div class="user-menu__header">
+                <div class="user-menu__avatar">
+                  {{ userInitial }}
+                </div>
+                <div class="user-menu__info">
+                  <div class="user-menu__name">{{ user?.displayName }}</div>
+                  <div class="user-menu__email">{{ user?.email }}</div>
+                  <div class="user-menu__badge">
+                    <i class="fas fa-graduation-cap"></i>
+                    {{ user?.promo }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="user-menu__divider"></div>
+
+              <a routerLink="/espace-membre/profil" class="user-menu__item" (click)="userMenuOpen.set(false)">
+                <i class="fas fa-user-circle"></i>
+                <span>Mon profil</span>
+                <i class="fas fa-arrow-right item-arrow"></i>
+              </a>
+
+              <a routerLink="/espace-membre/thematiques" class="user-menu__item" (click)="userMenuOpen.set(false)">
+                <i class="fas fa-compass"></i>
+                <span>Explorer</span>
+                <i class="fas fa-arrow-right item-arrow"></i>
+              </a>
+
+              <div class="user-menu__divider"></div>
+
+              <button class="user-menu__logout" (click)="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Mobile menu button -->
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()" [class.active]="mobileMenuOpen()">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  @if (mobileMenuOpen()) {
+    <div class="mobile-nav" @mobileMenuAnimation>
+      <div class="mobile-nav__header">
+        @if (isLoggedIn()) {
+          <div class="mobile-user-info">
+            <div class="mobile-avatar">{{ userInitial }}</div>
+            <div>
+              <div class="mobile-user-name">{{ user?.displayName }}</div>
+              <div class="mobile-user-email">{{ user?.email }}</div>
+            </div>
+          </div>
+        } @else {
+          <div class="mobile-guest-info">
+            <i class="fas fa-user-astronaut"></i>
+            <span>Invited Guest</span>
+          </div>
+        }
+      </div>
+
+      <div class="mobile-nav__links">
+        <a routerLink="/thematiques" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">
+          <i class="fas fa-layer-group"></i>
+          <span>Thématiques</span>
+        </a>
+        <a routerLink="/workshops" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">
+          <i class="fas fa-chalkboard-user"></i>
+          <span>Workshops</span>
+        </a>
+        <a routerLink="/activites" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Événements</span>
+        </a>
+
+        @if (isLoggedIn()) {
+          <a routerLink="/espace-membre/proposer" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">
+            <i class="fas fa-lightbulb"></i>
+            <span>Proposer</span>
+          </a>
+          <a routerLink="/espace-membre/mes-soumissions" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">
+            <i class="fas fa-file-alt"></i>
+            <span>Mes dépôts</span>
+          </a>
+          <a routerLink="/espace-membre/profil" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">
+            <i class="fas fa-user-circle"></i>
+            <span>Mon profil</span>
+          </a>
+        }
+      </div>
+
+      @if (!isLoggedIn()) {
+        <div class="mobile-nav__actions">
+          <a routerLink="/connexion" class="btn btn--outline btn--full" (click)="mobileMenuOpen.set(false)">
+            <i class="fas fa-key"></i>
+            Connexion
+          </a>
+          <a routerLink="/inscription" class="btn btn--primary btn--full" (click)="mobileMenuOpen.set(false)">
+            <i class="fas fa-user-plus"></i>
+            Rejoindre
+          </a>
+        </div>
+      } @else {
+        <button class="mobile-logout-btn" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Déconnexion
+        </button>
+      }
+    </div>
+  }
+</nav>

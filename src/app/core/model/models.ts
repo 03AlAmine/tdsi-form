@@ -21,7 +21,6 @@ export interface Theme {
   createdAt: Date;
   createdBy: string;
   imageUrl?: string;
-  // ✅ Champs issus d'une soumission approuvée
   objectives?: string;
   prerequisites?: string;
   materialsNeeded?: string;
@@ -73,6 +72,7 @@ export interface Workshop {
   presenceFormEnabled: boolean;
   presenceFormConfig?: PresenceFormConfig;
   registrations: string[];
+  maxParticipants: number;
   createdAt: Date;
 }
 

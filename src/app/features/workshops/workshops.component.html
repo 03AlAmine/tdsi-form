@@ -1,0 +1,531 @@
+<!-- workshops.component.html -->
+<div class="workshops-page">
+
+  <!-- Hero Section -->
+  <section class="workshops-hero">
+    <div class="container">
+      <div class="workshops-hero__content">
+        <div class="workshops-hero__badge">
+          <span class="badge-glow"></span>
+          <span>🎯 SESSIONS INTERACTIVES</span>
+        </div>
+        <h1 class="workshops-hero__title">
+          Workshops
+          <span class="gradient-text">TDSI</span>
+        </h1>
+        <p class="workshops-hero__subtitle">
+          Des sessions pratiques animées par des experts pour développer vos compétences tech
+        </p>
+
+        @if (!isLoggedIn()) {
+          <div class="workshops-hero__cta">
+            <a routerLink="/inscription" class="btn btn--primary btn--lg">
+              <i class="fas fa-user-plus"></i>
+              Rejoindre la communauté
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a routerLink="/thematiques" class="btn btn--outline btn--lg">
+              <i class="fas fa-layer-group"></i>
+              Explorer les thématiques
+            </a>
+          </div>
+        }
+
+        @if (isLoggedIn()) {
+          <div class="workshops-hero__search">
+            <div class="search-wrapper">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                placeholder="Rechercher un workshop..."
+                (input)="searchTerm.set($any($event.target).value)"
+                [value]="searchTerm()"
+              />
+              @if (searchTerm()) {
+                <button class="search-clear" (click)="searchTerm.set('')">
+                  <i class="fas fa-times"></i>
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- Stats Dashboard -->
+    @if (workshops().length > 0) {
+      <div class="stats-dashboard">
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-card__value">{{ upcomingCount() }}</div>
+          <div class="stat-card__label">À venir</div>
+        </div>
+        <div class="stat-card stat-card--live">
+          <div class="stat-card__icon"><i class="fas fa-circle"></i></div>
+          <div class="stat-card__value">{{ ongoingCount() }}</div>
+          <div class="stat-card__label">En cours</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-users"></i></div>
+          <div class="stat-card__value">{{ getTotalRegistrations() }}</div>
+          <div class="stat-card__label">Participants</div>
+        </div>
+        @if (isLoggedIn()) {
+          <div class="stat-card">
+            <div class="stat-card__icon"><i class="fas fa-user-check"></i></div>
+            <div class="stat-card__value">{{ myRegistrationsCount() }}</div>
+            <div class="stat-card__label">Mes inscriptions</div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
+        </div>
+        <p class="loading-text">Chargement des workshops...</p>
+      </div>
+    } @else if (filteredWorkshops().length === 0) {
+      <!-- Empty State -->
+      <div class="empty-state-enhanced">
+        <div class="empty-state-enhanced__icon">
+          <i class="fas fa-chalkboard-user"></i>
+        </div>
+        <h3 class="empty-state-enhanced__title">
+          @if (searchTerm()) {
+            Aucun résultat pour "{{ searchTerm() }}"
+          } @else {
+            Aucun workshop pour le moment
+          }
+        </h3>
+        <p class="empty-state-enhanced__description">
+          @if (searchTerm()) {
+            Essayez d'autres mots-clés ou parcourez tous les workshops.
+          } @else if (isLoggedIn()) {
+            Les workshops sont créés à partir des thématiques proposées par les membres.<br />
+            Proposez une idée et devenez animateur !
+          } @else {
+            Rejoignez la communauté TDSI pour accéder aux workshops exclusifs<br />
+            et être informé des prochaines sessions.
+          }
+        </p>
+        <div class="empty-state-enhanced__actions">
+          @if (isLoggedIn()) {
+            <a routerLink="/espace-membre/proposer" class="btn btn--primary">
+              <i class="fas fa-lightbulb"></i>
+              Proposer une thématique
+            </a>
+            <a routerLink="/thematiques" class="btn btn--outline">
+              <i class="fas fa-layer-group"></i>
+              Explorer les thématiques
+            </a>
+          } @else {
+            <a routerLink="/inscription" class="btn btn--primary">
+              <i class="fas fa-user-plus"></i>
+              Rejoindre le club
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a routerLink="/thematiques" class="btn btn--outline">
+              <i class="fas fa-layer-group"></i>
+              Voir les thématiques
+            </a>
+          }
+        </div>
+      </div>
+    } @else {
+      <!-- Workshops Grid -->
+      <div class="workshops-grid">
+        @for (workshop of filteredWorkshops(); track workshop.id) {
+          <div
+            class="workshop-card"
+            [class.workshop-card--live]="workshop.status === 'en cours'"
+            [class.workshop-card--registered]="isLoggedIn() && isRegistered(workshop)"
+            (click)="openWorkshopDetail(workshop)"
+          >
+            <!-- Live indicator -->
+            @if (workshop.status === 'en cours') {
+              <div class="live-indicator">
+                <span class="live-dot"></span>
+                LIVE NOW
+              </div>
+            }
+
+            <div class="workshop-card__header">
+              <div class="workshop-card__badges">
+                <span class="status-badge" [class]="'status-badge--' + getStatusClass(workshop.status)">
+                  {{ getStatusIcon(workshop.status) }} {{ workshop.status }}
+                </span>
+                <span class="location-badge">
+                  {{ getLocationIcon(workshop.location) }}
+                  {{ workshop.location }}
+                </span>
+              </div>
+              <div class="workshop-card__date">
+                <i class="fas fa-calendar-alt"></i>
+                {{ workshop.date | date: "dd/MM/yyyy" }}
+              </div>
+            </div>
+
+            <h3 class="workshop-card__title">{{ workshop.themeTitle }}</h3>
+
+            <div class="workshop-card__presenter">
+              <div class="presenter-avatar-small">
+                <i class="fas fa-chalkboard-user"></i>
+              </div>
+              <span>{{ workshop.presenter }}</span>
+            </div>
+
+            <div class="workshop-card__stats">
+              <div class="stat">
+                <i class="fas fa-hourglass-half"></i>
+                <span>{{ formatDuration(workshop.duration) }}</span>
+              </div>
+              <div class="stat">
+                <i class="fas fa-users"></i>
+                <span>{{ workshop.registrations.length || 0 }} inscrits</span>
+              </div>
+              <div class="stat">
+                <i class="fas fa-clock"></i>
+                <span>{{ workshop.date | date: "HH:mm" }}</span>
+              </div>
+            </div>
+
+            <!-- Progress bar for registrations -->
+            @if (workshop.maxParticipants) {
+              <div class="workshop-card__progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="getRegistrationPercent(workshop)"></div>
+                </div>
+                <span class="progress-text">{{ workshop.registrations.length || 0 }}/{{ workshop.maxParticipants }}</span>
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="workshop-card__actions" (click)="$event.stopPropagation()">
+              @if (isLoggedIn()) {
+                @if (workshop.status === 'planifié') {
+                  @if (!isRegistered(workshop)) {
+                    <button class="btn btn--primary btn--sm" (click)="register(workshop)" [disabled]="isProcessing(workshop)">
+                      @if (isProcessing(workshop)) {
+                        <div class="btn-loader"></div>
+                        <span>Inscription...</span>
+                      } @else {
+                        <i class="fas fa-calendar-check"></i>
+                        <span>S'inscrire</span>
+                      }
+                    </button>
+                  } @else {
+                    <button class="btn btn--outline btn--sm" (click)="unregister(workshop)" [disabled]="isProcessing(workshop)">
+                      @if (isProcessing(workshop)) {
+                        <div class="btn-loader"></div>
+                        <span>Annulation...</span>
+                      } @else {
+                        <i class="fas fa-times"></i>
+                        <span>Se désinscrire</span>
+                      }
+                    </button>
+                  }
+                }
+                @if (workshop.meetLink && workshop.status === 'en cours') {
+                  <a [href]="workshop.meetLink" target="_blank" class="btn btn--success btn--sm">
+                    <i class="fas fa-video"></i>
+                    <span>Rejoindre</span>
+                  </a>
+                }
+              } @else {
+                <!-- Guest CTA - Encourage inscription -->
+                <div class="guest-cta">
+                  <div class="guest-cta__content">
+                    <i class="fas fa-lock"></i>
+                    <span>Connectez-vous pour vous inscrire</span>
+                  </div>
+                  <a routerLink="/connexion" class="btn btn--primary btn--sm">
+                    <i class="fas fa-key"></i>
+                    Connexion
+                  </a>
+                </div>
+              }
+            </div>
+
+            <!-- Registered badge -->
+            @if (isLoggedIn() && isRegistered(workshop)) {
+              <div class="registered-badge">
+                <i class="fas fa-check-circle"></i>
+                <span>Vous êtes inscrit</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Call to Action Section for Guests -->
+      @if (!isLoggedIn() && filteredWorkshops().length > 0) {
+        <div class="guest-cta-banner">
+          <div class="guest-cta-banner__content">
+            <div class="guest-cta-banner__icon">
+              <i class="fas fa-rocket"></i>
+            </div>
+            <div>
+              <h3>Vous voulez participer à ces workshops ?</h3>
+              <p>Rejoignez la communauté TDSI pour vous inscrire et accéder à tous les contenus</p>
+            </div>
+            <a routerLink="/inscription" class="btn btn--primary btn--lg">
+              Créer mon compte gratuitement
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      }
+
+      <!-- Inspiration Section for Members -->
+      @if (isLoggedIn()) {
+        <div class="inspiration-section">
+          <div class="inspiration-card">
+            <div class="inspiration-card__icon">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <div class="inspiration-card__content">
+              <h4>Une idée de workshop ?</h4>
+              <p>Proposez une thématique et devenez animateur</p>
+            </div>
+            <a routerLink="/espace-membre/proposer" class="btn btn--primary btn--sm">
+              Proposer <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+          <div class="inspiration-card">
+            <div class="inspiration-card__icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="inspiration-card__content">
+              <h4>Besoin d'inspiration ?</h4>
+              <p>Découvrez les thématiques populaires</p>
+            </div>
+            <a routerLink="/thematiques" class="btn btn--outline btn--sm">
+              Explorer <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Drawer Détail Workshop -->
+@if (selectedWorkshop()) {
+  <div class="drawer-overlay" [class.drawer-overlay--open]="drawerOpen()" (click)="closeDrawer()">
+    <div class="drawer" [class.drawer--open]="drawerOpen()" (click)="$event.stopPropagation()">
+
+      <!-- Header with gradient line -->
+      <div class="drawer__header" [class]="'drawer__header--' + getStatusClass(selectedWorkshop()?.status || '')">
+        <div class="drawer__badges">
+          <span class="status-badge" [class]="'status-badge--' + getStatusClass(selectedWorkshop()?.status || '')">
+            {{ getStatusIcon(selectedWorkshop()?.status || '') }}
+            {{ selectedWorkshop()?.status }}
+          </span>
+          <span class="location-badge">
+            {{ getLocationIcon(selectedWorkshop()?.location || '') }}
+            {{ selectedWorkshop()?.location }}
+          </span>
+        </div>
+        <button class="drawer__close" (click)="closeDrawer()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="drawer__content">
+        <h2 class="drawer__title">{{ selectedWorkshop()?.themeTitle }}</h2>
+
+        <!-- Presenter info -->
+        <div class="presenter-section">
+          <div class="presenter-avatar">
+            <i class="fas fa-chalkboard-user"></i>
+          </div>
+          <div class="presenter-details">
+            <span class="presenter-label">Présenté par</span>
+            <span class="presenter-name">{{ selectedWorkshop()?.presenter }}</span>
+          </div>
+        </div>
+
+        <!-- Info grid -->
+        <div class="info-grid">
+          <div class="info-card">
+            <i class="fas fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Date</span>
+              <span class="info-value">{{ selectedWorkshop()?.date | date: 'EEEE dd MMMM yyyy' }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <i class="fas fa-clock"></i>
+            <div>
+              <span class="info-label">Horaire</span>
+              <span class="info-value">{{ selectedWorkshop()?.date | date: 'HH:mm' }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <i class="fas fa-hourglass-half"></i>
+            <div>
+              <span class="info-label">Durée</span>
+              <span class="info-value">{{ formatDuration(selectedWorkshop()?.duration || 0) }}</span>
+            </div>
+          </div>
+          <div class="info-card">
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participants</span>
+              <span class="info-value">{{ selectedWorkshop()?.registrations?.length || 0 }} inscrits</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Registration progress -->
+        @if (selectedWorkshop()?.maxParticipants) {
+          <div class="registration-progress">
+            <div class="progress-info">
+              <span>Places disponibles</span>
+              <span>{{ getAvailablePlaces(selectedWorkshop()!) }} / {{ selectedWorkshop()?.maxParticipants }}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getRegistrationPercent(selectedWorkshop()!)"></div>
+            </div>
+          </div>
+        }
+
+        <!-- Meet link -->
+        @if (selectedWorkshop()?.meetLink) {
+          <div class="meet-section">
+            <h4><i class="fas fa-video"></i> Lien de connexion</h4>
+            <a [href]="selectedWorkshop()?.meetLink" target="_blank" class="meet-link">
+              {{ selectedWorkshop()?.meetLink }}
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+          </div>
+        }
+
+        <!-- AI Content for Members -->
+        @if (isLoggedIn()) {
+          @if (loadingEnriched()) {
+            <div class="ai-loading">
+              <div class="ai-loading__spinner"></div>
+              <div class="ai-loading__content">
+                <span>Génération du contenu pédagogique...</span>
+                <div class="ai-loading__bar"></div>
+              </div>
+            </div>
+          }
+
+          <!-- Objectives -->
+          <div class="drawer__section">
+            <h4>
+              <i class="fas fa-graduation-cap"></i>
+              Objectifs du workshop
+              @if (enrichedWorkshopData()?.objectives) {
+                <span class="ai-badge">
+                  <i class="fas fa-magic"></i> IA
+                </span>
+              }
+            </h4>
+            <div class="objectives-list">
+              @for (obj of (enrichedWorkshopData()?.objectives || defaultObjectives); track $index) {
+                <div class="objective-item">
+                  <i class="fas fa-check-circle"></i>
+                  <span>{{ obj }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Skills -->
+          @if (enrichedWorkshopData()?.skills) {
+            <div class="drawer__section drawer__section--bonus">
+              <h4>
+                <i class="fas fa-trophy"></i>
+                Compétences acquises
+                <span class="ai-badge">
+                  <i class="fas fa-magic"></i> IA
+                </span>
+              </h4>
+              <div class="skills-list">
+                @for (skill of enrichedWorkshopData()?.skills; track $index) {
+                  <span class="skill-badge">
+                    <i class="fas fa-star"></i>
+                    {{ skill }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        } @else {
+          <!-- Guest teaser -->
+          <div class="guest-teaser">
+            <div class="guest-teaser__icon">
+              <i class="fas fa-lock"></i>
+            </div>
+            <div class="guest-teaser__content">
+              <h4>Contenu exclusif aux membres</h4>
+              <p>Connectez-vous pour découvrir les objectifs pédagogiques, les prérequis et les compétences acquises.</p>
+              <div class="guest-teaser__buttons">
+                <a routerLink="/connexion" class="btn btn--primary btn--sm" (click)="closeDrawer()">
+                  <i class="fas fa-sign-in-alt"></i>
+                  Se connecter
+                </a>
+                <a routerLink="/inscription" class="btn btn--outline btn--sm" (click)="closeDrawer()">
+                  <i class="fas fa-user-plus"></i>
+                  Créer un compte
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="drawer__actions" (click)="$event.stopPropagation()">
+          @if (isLoggedIn()) {
+            @if (selectedWorkshop()?.status === 'planifié') {
+              @if (!isRegistered(selectedWorkshop()!)) {
+                <button class="btn btn--primary btn--full" (click)="register(selectedWorkshop()!); closeDrawer()" [disabled]="isProcessing(selectedWorkshop()!)">
+                  @if (isProcessing(selectedWorkshop()!)) {
+                    <div class="btn-loader"></div>
+                    <span>Inscription en cours...</span>
+                  } @else {
+                    <i class="fas fa-calendar-check"></i>
+                    <span>S'inscrire au workshop</span>
+                  }
+                </button>
+              } @else {
+                <button class="btn btn--outline btn--full" (click)="unregister(selectedWorkshop()!); closeDrawer()" [disabled]="isProcessing(selectedWorkshop()!)">
+                  @if (isProcessing(selectedWorkshop()!)) {
+                    <div class="btn-loader"></div>
+                    <span>Annulation...</span>
+                  } @else {
+                    <i class="fas fa-times"></i>
+                    <span>Se désinscrire</span>
+                  }
+                </button>
+              }
+            }
+            @if (selectedWorkshop()?.presenceFormEnabled) {
+              <a [routerLink]="['/espace-membre/presence', selectedWorkshop()?.id]" class="btn btn--success btn--full" (click)="closeDrawer()">
+                <i class="fas fa-check-circle"></i>
+                Confirmer ma présence
+              </a>
+            }
+            @if (selectedWorkshop()?.meetLink && selectedWorkshop()?.status === 'en cours') {
+              <a [href]="selectedWorkshop()?.meetLink" target="_blank" class="btn btn--secondary btn--full">
+                <i class="fas fa-video"></i>
+                Rejoindre la session
+              </a>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

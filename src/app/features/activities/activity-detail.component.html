@@ -1,0 +1,439 @@
+<!-- activity-detail.component.html -->
+<div class="activity-detail">
+
+  @if (loading()) {
+    <!-- Loading State -->
+    <div class="loading-state">
+      <div class="container">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
+        </div>
+        <p class="loading-text">Chargement de l'événement...</p>
+      </div>
+    </div>
+  } @else if (!activity()) {
+    <!-- Not Found State -->
+    <div class="not-found-state">
+      <div class="container">
+        <div class="not-found-card">
+          <div class="not-found-card__icon">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <h2>Événement introuvable</h2>
+          <p>L'événement que vous recherchez n'existe pas ou a été supprimé.</p>
+          <a routerLink="/activites" class="btn btn--primary">
+            <i class="fas fa-arrow-left"></i>
+            Voir tous les événements
+          </a>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a routerLink="/activites" class="breadcrumb__link">
+          <i class="fas fa-calendar-alt"></i>
+          Événements
+        </a>
+        <i class="fas fa-chevron-right breadcrumb__sep"></i>
+        <span class="breadcrumb__current">{{ activity()!.title }}</span>
+      </div>
+
+      <div class="detail-layout">
+
+        <!-- Main Content -->
+        <div class="detail-main">
+
+          <!-- Header -->
+          <div class="detail-header">
+            <div class="detail-header__badges">
+              <span class="type-badge type-badge--{{ activity()!.type }}">
+                <i class="fas {{ getTypeIcon(activity()!.type) }}"></i>
+                {{ typeLabels[activity()!.type] }}
+              </span>
+              @if (activity()!.isOnline) {
+                <span class="flag flag--online">
+                  <i class="fas fa-wifi"></i> En ligne
+                </span>
+              }
+              @if (isMeetActive(activity()!)) {
+                <span class="flag flag--live">
+                  <span class="live-dot"></span>
+                  En direct
+                </span>
+              }
+            </div>
+            <h1 class="detail-header__title">{{ activity()!.title }}</h1>
+            <p class="detail-header__desc">{{ activity()!.description }}</p>
+
+            @if (activity()!.tags.length) {
+              <div class="tag-list">
+                @for (tag of activity()!.tags; track tag) {
+                  <span class="tag">#{{ tag }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Tabs -->
+          @if (hasMultipleTabs()) {
+            <div class="tabs">
+              <button
+                class="tab"
+                [class.active]="activeTab() === 'info'"
+                (click)="activeTab.set('info')"
+              >
+                <i class="fas fa-info-circle"></i>
+                Informations
+              </button>
+              @if (activity()!.sessions?.length) {
+                <button
+                  class="tab"
+                  [class.active]="activeTab() === 'programme'"
+                  (click)="activeTab.set('programme')"
+                >
+                  <i class="fas fa-clock"></i>
+                  Programme
+                  <span class="tab-count">{{ activity()!.sessions!.length }}</span>
+                </button>
+              }
+              @if (activity()!.speakers?.length) {
+                <button
+                  class="tab"
+                  [class.active]="activeTab() === 'intervenants'"
+                  (click)="activeTab.set('intervenants')"
+                >
+                  <i class="fas fa-users"></i>
+                  Intervenants
+                  <span class="tab-count">{{ activity()!.speakers!.length }}</span>
+                </button>
+              }
+            </div>
+          }
+
+          <!-- Tab: Informations -->
+          @if (activeTab() === "info" || !hasMultipleTabs()) {
+            <div class="tab-content animate-fade-in">
+
+              <!-- Meet Embed -->
+              @if (activity()!.isOnline && isMeetActive(activity()!) && showMeet()) {
+                <div class="meet-embed">
+                  <div class="meet-embed__header">
+                    <div class="meet-embed__badge">
+                      <span class="live-dot"></span>
+                      Session en direct
+                    </div>
+                    <button class="meet-embed__close" (click)="showMeet.set(false)">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <iframe
+                    [src]="getJitsiUrl(activity()!)"
+                    allow="camera; microphone; display-capture; fullscreen"
+                    class="meet-embed__iframe"
+                    title="Session en direct"
+                  ></iframe>
+                </div>
+              }
+
+              <!-- Speakers Preview -->
+              @if (activity()!.speakers?.length && activeTab() === "info") {
+                <div class="section">
+                  <div class="section__header">
+                    <i class="fas fa-users"></i>
+                    <h3>Intervenants</h3>
+                    @if (activity()!.speakers!.length > 3) {
+                      <button class="btn-link" (click)="activeTab.set('intervenants')">
+                        Voir tous <i class="fas fa-arrow-right"></i>
+                      </button>
+                    }
+                  </div>
+                  <div class="speakers-preview">
+                    @for (speaker of activity()!.speakers!.slice(0, 3); track speaker.id) {
+                      <div class="speaker-mini">
+                        <div class="speaker-mini__avatar">
+                          @if (speaker.photoUrl) {
+                            <img [src]="speaker.photoUrl" [alt]="speaker.name" />
+                          } @else {
+                            <span>{{ speaker.name.charAt(0) }}</span>
+                          }
+                        </div>
+                        <div class="speaker-mini__info">
+                          <div class="speaker-mini__name">{{ speaker.name }}</div>
+                          <div class="speaker-mini__title">{{ speaker.title }}</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Sessions Preview -->
+              @if (activity()!.sessions?.length && activeTab() === "info") {
+                <div class="section">
+                  <div class="section__header">
+                    <i class="fas fa-calendar-week"></i>
+                    <h3>Au programme</h3>
+                    <button class="btn-link" (click)="activeTab.set('programme')">
+                      Voir tout <i class="fas fa-arrow-right"></i>
+                    </button>
+                  </div>
+                  <div class="sessions-preview">
+                    @for (session of activity()!.sessions!.slice(0, 3); track session.id) {
+                      <div class="session-preview" [class]="'session-preview--' + session.type">
+                        <div class="session-preview__time">
+                          <i class="fas fa-clock"></i>
+                          {{ session.time }}
+                        </div>
+                        <div class="session-preview__content">
+                          <div class="session-preview__title">{{ session.title }}</div>
+                          <div class="session-preview__type">{{ getSessionTypeLabel(session.type) }}</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Tab: Programme -->
+          @if (activeTab() === "programme" && activity()!.sessions?.length) {
+            <div class="tab-content animate-fade-in">
+              <div class="programme-timeline">
+                @for (session of activity()!.sessions!; track session.id) {
+                  <div class="timeline-item" [class]="'timeline-item--' + session.type">
+                    <div class="timeline-item__time">
+                      <span class="time-hour">{{ session.time }}</span>
+                      @if (session.duration) {
+                        <span class="time-duration">{{ formatDuration(session.duration) }}</span>
+                      }
+                    </div>
+                    <div class="timeline-item__content">
+                      <div class="timeline-item__type">
+                        {{ getSessionTypeLabel(session.type) }}
+                      </div>
+                      <div class="timeline-item__title">{{ session.title }}</div>
+                      @if (session.speakerId) {
+                        @if (getSpeakerById(session.speakerId); as speaker) {
+                          <div class="timeline-item__speaker">
+                            <i class="fas fa-chalkboard-user"></i>
+                            {{ speaker.name }}
+                          </div>
+                        }
+                      }
+                      @if (session.description) {
+                        <p class="timeline-item__desc">{{ session.description }}</p>
+                      }
+                      @if (session.location) {
+                        <div class="timeline-item__location">
+                          <i class="fas fa-map-marker-alt"></i>
+                          {{ session.location }}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Tab: Intervenants -->
+          @if (activeTab() === "intervenants" && activity()!.speakers?.length) {
+            <div class="tab-content animate-fade-in">
+              <div class="speakers-grid">
+                @for (speaker of activity()!.speakers!; track speaker.id) {
+                  <div class="speaker-card">
+                    <div class="speaker-card__avatar">
+                      @if (speaker.photoUrl) {
+                        <img [src]="speaker.photoUrl" [alt]="speaker.name" />
+                      } @else {
+                        <span>{{ speaker.name.charAt(0) }}</span>
+                      }
+                    </div>
+                    <div class="speaker-card__info">
+                      <div class="speaker-card__name">{{ speaker.name }}</div>
+                      <div class="speaker-card__title">{{ speaker.title }}</div>
+                      @if (speaker.organization) {
+                        <div class="speaker-card__org">
+                          <i class="fas fa-building"></i>
+                          {{ speaker.organization }}
+                        </div>
+                      }
+                      @if (speaker.bio) {
+                        <p class="speaker-card__bio">{{ speaker.bio }}</p>
+                      }
+                      @if (speaker.linkedinUrl) {
+                        <a [href]="speaker.linkedinUrl" target="_blank" class="speaker-card__linkedin">
+                          <i class="fab fa-linkedin"></i>
+                          LinkedIn
+                        </a>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="detail-sidebar">
+          <div class="sidebar-card">
+
+            <!-- Info Items -->
+            <div class="sidebar-info">
+              <div class="info-item">
+                <div class="info-item__icon">
+                  <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="info-item__content">
+                  <span class="info-label">Date</span>
+                  <span class="info-value">{{ activity()!.date | date:'EEEE d MMMM yyyy' }}</span>
+                  <span class="info-sub">
+                    {{ activity()!.date | date:'HH:mm' }}
+                    @if (activity()!.endDate) {
+                       → {{ activity()!.endDate | date:'HH:mm' }}
+                    }
+                  </span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item__icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="info-item__content">
+                  <span class="info-label">Lieu</span>
+                  <span class="info-value">{{ activity()!.location }}</span>
+                  @if (activity()!.isOnline) {
+                    <span class="info-sub info-sub--online">
+                      <i class="fas fa-wifi"></i> En ligne
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-item__icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="info-item__content">
+                  <span class="info-label">Participants</span>
+                  <span class="info-value">
+                    {{ (activity()!.registrations.length ?? 0) + (activity()!.guestCount ?? 0) }} inscrits
+                  </span>
+                  @if (activity()!.maxParticipants) {
+                    <span class="info-sub" [class.text-danger]="isFull(activity()!)">
+                      @if (isFull(activity()!)) {
+                        <i class="fas fa-ban"></i> Complet
+                      } @else {
+                        <i class="fas fa-ticket-alt"></i> {{ spotsLeft(activity()!) }} place{{ spotsLeft(activity()!) > 1 ? 's' : '' }} restante{{ spotsLeft(activity()!) > 1 ? 's' : '' }}
+                      }
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- CTA Actions -->
+            @if (isFull(activity()!)) {
+              <button class="btn btn--disabled btn--full" disabled>
+                <i class="fas fa-ban"></i>
+                Complet
+              </button>
+            } @else if (isLoggedIn && isRegistered(activity()!)) {
+              <div class="registered-state">
+                <div class="registered-badge">
+                  <i class="fas fa-check-circle"></i>
+                  Vous êtes inscrit(e)
+                </div>
+                <button
+                  class="btn btn--ghost btn--sm btn--full"
+                  (click)="unregister()"
+                  [disabled]="registering()"
+                >
+                  @if (registering()) {
+                    <div class="btn-loader"></div>
+                    <span>Annulation...</span>
+                  } @else {
+                    <i class="fas fa-times"></i>
+                    <span>Se désinscrire</span>
+                  }
+                </button>
+              </div>
+            } @else if (isLoggedIn) {
+              <button
+                class="btn btn--primary btn--full"
+                (click)="register()"
+                [disabled]="registering()"
+              >
+                @if (registering()) {
+                  <div class="btn-loader"></div>
+                  <span>Inscription...</span>
+                } @else {
+                  <i class="fas fa-ticket-alt"></i>
+                  <span>S'inscrire en tant que membre</span>
+                  <i class="fas fa-arrow-right"></i>
+                }
+              </button>
+            } @else {
+              <a
+                [routerLink]="['/activites', activity()!.id, 'inscription']"
+                class="btn btn--primary btn--full"
+              >
+                <i class="fas fa-ticket-alt"></i>
+                S'inscrire à cet événement
+              </a>
+              <p class="sidebar-note">
+                <a routerLink="/connexion">Connectez-vous</a> pour une inscription en un clic.
+              </p>
+            }
+
+            <!-- Meet CTA -->
+            @if (activity()!.isOnline && isMeetActive(activity()!)) {
+              <div class="meet-cta">
+                @if (!showMeet()) {
+                  <button class="btn btn--success btn--full" (click)="showMeet.set(true)">
+                    <i class="fas fa-video"></i>
+                    Rejoindre la session
+                  </button>
+                } @else {
+                  <button class="btn btn--ghost btn--full" (click)="showMeet.set(false)">
+                    <i class="fas fa-eye-slash"></i>
+                    Fermer la vidéo
+                  </button>
+                }
+              </div>
+            }
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <span class="share-label">Partager</span>
+              <div class="share-buttons">
+                <button class="share-btn share-btn--facebook" (click)="shareOnFacebook()">
+                  <i class="fab fa-facebook-f"></i>
+                </button>
+                <button class="share-btn share-btn--twitter" (click)="shareOnTwitter()">
+                  <i class="fab fa-twitter"></i>
+                </button>
+                <button class="share-btn share-btn--linkedin" (click)="shareOnLinkedIn()">
+                  <i class="fab fa-linkedin-in"></i>
+                </button>
+                <button class="share-btn share-btn--copy" (click)="copyLink()">
+                  <i class="fas fa-link"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  }
+</div>

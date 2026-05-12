@@ -1,3 +1,4 @@
+// confirm-modal.component.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConfirmService } from '../../../../core/services/confirm.service';

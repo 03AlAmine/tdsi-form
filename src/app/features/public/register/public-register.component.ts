@@ -1,4 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+// public-register.component.ts - Version améliorée
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -6,10 +7,10 @@ import { WorkshopService } from '../../../core/services/workshop.service';
 import { PublicRegistrationService } from '../../../core/services/public-registration.service';
 import { ESTABLISHMENTS, STUDY_LEVELS } from '../../../core/model/guest-registration.model';
 import { Workshop } from '../../../core/model/models';
+import { ToastService } from '../../../core/services/toast.service';
 import { db } from '../../../../firebase.config';
 import { doc, getDoc } from 'firebase/firestore';
 import { TechBackgroundComponent } from '../../shared/components/tech-background/tech-background.component';
-
 
 @Component({
   selector: 'app-public-register',
@@ -18,19 +19,20 @@ import { TechBackgroundComponent } from '../../shared/components/tech-background
   templateUrl: './public-register.component.html',
   styleUrls: ['./public-register.component.scss']
 })
-export class PublicRegisterComponent implements OnInit {
+export class PublicRegisterComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private workshopService = inject(WorkshopService);
   private registrationService = inject(PublicRegistrationService);
+  private toastService = inject(ToastService);
 
   workshop = signal<Workshop | null>(null);
   loading = signal(true);
   submitting = signal(false);
   registered = signal(false);
   alreadyRegistered = signal(false);
-  error = signal(''); // ← utilisé dans le template
+  error = signal('');
 
   establishments = ESTABLISHMENTS;
   studyLevels = STUDY_LEVELS;
@@ -43,30 +45,50 @@ export class PublicRegisterComponent implements OnInit {
     phone: ['']
   });
 
-  async ngOnInit(): Promise<void> {
-    const workshopId = this.route.snapshot.params['id'];
+  private workshopId: string | null = null;
 
-    // Charge uniquement ce workshop — 1 lecture au lieu de toute la collection
-    const snap = await getDoc(doc(db, 'workshops', workshopId));
-    if (!snap.exists()) {
-      this.error.set('Ce workshop n\'est plus disponible');
+  async ngOnInit(): Promise<void> {
+    this.workshopId = this.route.snapshot.params['id'];
+
+    if (!this.workshopId) {
+      this.error.set('Workshop non trouvé');
       this.loading.set(false);
       return;
     }
-    const d = snap.data() as any;
-    const found: Workshop = {
-      ...d,
-      id: snap.id,
-      date: d['date']?.toDate?.() ?? new Date(),
-      createdAt: d['createdAt']?.toDate?.() ?? new Date(),
-    };
-    if (found.status !== 'planifié' && found.status !== 'en cours') {
-      this.error.set('Ce workshop n\'est plus disponible');
+
+    try {
+      const snap = await getDoc(doc(db, 'workshops', this.workshopId));
+
+      if (!snap.exists()) {
+        this.error.set('Ce workshop n\'est plus disponible');
+        this.loading.set(false);
+        return;
+      }
+
+      const d = snap.data() as any;
+      const found: Workshop = {
+        ...d,
+        id: snap.id,
+        date: d['date']?.toDate?.() ?? new Date(),
+        createdAt: d['createdAt']?.toDate?.() ?? new Date(),
+      };
+
+      if (found.status !== 'planifié' && found.status !== 'en cours') {
+        this.error.set('Ce workshop n\'est plus disponible');
+        this.loading.set(false);
+        return;
+      }
+
+      this.workshop.set(found);
+    } catch (err) {
+      this.error.set('Erreur lors du chargement du workshop');
+    } finally {
       this.loading.set(false);
-      return;
     }
-    this.workshop.set(found);
-    this.loading.set(false);
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
   }
 
   isInvalid(field: string): boolean {
@@ -77,17 +99,19 @@ export class PublicRegisterComponent implements OnInit {
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.toastService.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
-    // Vérifier si déjà inscrit
-    const isRegistered = await this.registrationService.isAlreadyRegistered(
-      this.workshop()!.id!,
-      this.form.value.email!
-    );
+    const workshopId = this.workshop()!.id!;
+    const email = this.form.value.email!;
+
+    // Check if already registered
+    const isRegistered = await this.registrationService.isAlreadyRegistered(workshopId, email);
 
     if (isRegistered) {
       this.alreadyRegistered.set(true);
+      this.toastService.warning('Cet email est déjà inscrit à ce workshop');
       return;
     }
 
@@ -96,10 +120,10 @@ export class PublicRegisterComponent implements OnInit {
 
     try {
       await this.registrationService.registerGuest({
-        workshopId: this.workshop()!.id!,
+        workshopId: workshopId,
         workshopTitle: this.workshop()!.themeTitle,
         fullName: this.form.value.fullName!,
-        email: this.form.value.email!,
+        email: email,
         establishment: this.form.value.establishment!,
         level: this.form.value.level!,
         phone: this.form.value.phone || '',
@@ -107,8 +131,10 @@ export class PublicRegisterComponent implements OnInit {
       });
 
       this.registered.set(true);
+      this.toastService.success('Inscription confirmée ! Vérifiez votre email');
     } catch (err) {
       this.error.set('Erreur lors de l\'inscription. Veuillez réessayer.');
+      this.toastService.error('Erreur lors de l\'inscription');
     } finally {
       this.submitting.set(false);
     }
@@ -117,6 +143,8 @@ export class PublicRegisterComponent implements OnInit {
   resetForm(): void {
     this.registered.set(false);
     this.alreadyRegistered.set(false);
+    this.error.set('');
     this.form.reset();
+    this.toastService.info('Formulaire réinitialisé');
   }
 }

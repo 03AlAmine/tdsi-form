@@ -1,226 +1,397 @@
+<!-- propose.component.html -->
 <div class="propose-page">
-  <div class="container">
-    <div class="propose-container">
 
-      <!-- Header -->
-      <div class="page-header">
-        <div class="page-header__badge">
-          <span class="badge badge--primary">FORMULAIRE DE SOUMISSION</span>
+  <!-- Hero Section -->
+  <section class="propose-hero">
+    <div class="container">
+      <div class="propose-hero__content">
+        <div class="propose-hero__badge">
+          <span class="badge-glow"></span>
+          <span>✨ FORMULAIRE DE SOUMISSION</span>
         </div>
-        <h1 class="page-header__title">Proposer une thématique</h1>
-        <p class="page-header__subtitle">
-          Présente ton idée de workshop. Elle sera examinée par l'admin avant publication.
+        <h1 class="propose-hero__title">
+          Proposer une
+          <span class="gradient-text">thématique</span>
+        </h1>
+        <p class="propose-hero__subtitle">
+          Partagez votre expertise et devenez acteur de la communauté TDSI
         </p>
       </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="propose-wrapper">
 
       @if (success()) {
-        <div class="success-card animate-fade-in">
-          <div class="success-card__icon">✅</div>
+        <!-- Success State -->
+        <div class="success-card animate-slide-up">
+          <div class="success-card__icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
           <h3>Soumission envoyée avec succès !</h3>
-          <p>Ta proposition est en cours d'examen. Tu recevras une réponse prochainement.</p>
-          <button class="btn btn--outline" (click)="resetForm()">Proposer une autre thématique</button>
+          <p>Votre proposition est en cours d'examen par l'équipe TDSI.</p>
+          <div class="success-card__details">
+            <div class="detail-item">
+              <i class="fas fa-clock"></i>
+              <span>Délai de réponse : 3-5 jours</span>
+            </div>
+            <div class="detail-item">
+              <i class="fas fa-envelope"></i>
+              <span>Vous serez notifié par email</span>
+            </div>
+          </div>
+          <div class="success-card__actions">
+            <button class="btn btn--primary" (click)="resetForm()">
+              <i class="fas fa-plus"></i>
+              Proposer une autre thématique
+            </button>
+            <a routerLink="/espace-membre/mes-soumissions" class="btn btn--outline">
+              <i class="fas fa-file-alt"></i>
+              Voir mes soumissions
+            </a>
+          </div>
         </div>
-
       } @else {
+        <!-- Form -->
         <form [formGroup]="form" (ngSubmit)="submit()" class="propose-form">
 
-          <!-- ══ SECTION 01 ══ -->
-          <div class="form-section">
-            <div class="form-section__header">
-              <span class="form-section__number">01</span>
-              <h3 class="form-section__title">Informations de base</h3>
+          <!-- Section 1: Informations de base -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <div class="step-indicator">1</div>
+              <div class="step-content">
+                <h3>Informations de base</h3>
+                <p>Définissez le sujet principal de votre workshop</p>
+              </div>
             </div>
 
-            <!-- Titre + suggestions IA -->
-            <div class="form-group">
-              <label class="form-label form-label--required">Titre de la thématique</label>
-              <div class="title-input-wrap">
-                <input
-                  type="text"
-                  formControlName="proposedTitle"
-                  class="form-input"
-                  [class.form-input--error]="isInvalid('proposedTitle')"
-                  placeholder="Ex: Introduction au pentest avec Kali Linux"
-                  autocomplete="off"
-                  (input)="onTitleInput($event)"
-                  (blur)="hideSuggestions()"
-                />
-                @if (suggestLoading()) {
-                  <span class="title-input-wrap__spinner">
-                    <span class="spinner-xs"></span>
+            <div class="form-card__body">
+              <!-- Title with AI Suggestions -->
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-heading"></i>
+                  Titre de la thématique
+                </label>
+                <div class="title-input-group">
+                  <div class="input-wrapper">
+                    <input
+                      type="text"
+                      formControlName="proposedTitle"
+                      class="form-input"
+                      [class.error]="isInvalid('proposedTitle')"
+                      placeholder="Ex: Introduction au pentest avec Kali Linux"
+                      autocomplete="off"
+                      (input)="onTitleInput($event)"
+                      (blur)="hideSuggestions()"
+                    />
+                    <div class="input-border"></div>
+                    @if (suggestLoading()) {
+                      <div class="input-loader">
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                        <div class="loader-dot"></div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Suggestions Dropdown -->
+                  @if (showSuggestions() && suggestions().length > 0) {
+                    <div class="suggestions-dropdown">
+                      <div class="suggestions-header">
+                        <i class="fas fa-magic"></i>
+                        <span>Suggestions IA</span>
+                      </div>
+                      @for (s of suggestions(); track s) {
+                        <button type="button" class="suggestion-item" (click)="pickSuggestion(s)">
+                          <i class="fas fa-arrow-right"></i>
+                          {{ s }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+                @if (isInvalid('proposedTitle')) {
+                  <span class="form-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Titre requis (max 80 caractères)
                   </span>
                 }
+                <span class="form-hint">
+                  <i class="fas fa-info-circle"></i>
+                  Soyez concis et précis — les suggestions apparaissent pendant la frappe
+                </span>
               </div>
 
-              <!-- Suggestions dropdown -->
-              @if (showSuggestions() && suggestions().length > 0) {
-                <div class="suggestions-dropdown">
-                  <div class="suggestions-dropdown__header">
-                    <span class="ai-label">✦ Suggestions IA</span>
+              <!-- Category & Difficulty -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label required">
+                    <i class="fas fa-tag"></i>
+                    Catégorie
+                  </label>
+                  <div class="select-wrapper">
+                    <select formControlName="category" class="form-select" [class.error]="isInvalid('category')">
+                      <option value="" disabled>Sélectionner une catégorie</option>
+                      @for (cat of categories; track cat) {
+                        <option [value]="cat">{{ cat }}</option>
+                      }
+                    </select>
+                    <i class="fas fa-chevron-down select-icon"></i>
                   </div>
-                  @for (s of suggestions(); track s) {
-                    <button type="button" class="suggestion-item" (click)="pickSuggestion(s)">
-                      {{ s }}
-                    </button>
+                  @if (isInvalid('category')) {
+                    <span class="form-error">Veuillez sélectionner une catégorie</span>
                   }
                 </div>
-              }
 
-              @if (isInvalid('proposedTitle')) {
-                <span class="form-error">Titre requis (max 80 caractères)</span>
-              }
-              <span class="form-hint">Sois concis et précis · Les suggestions apparaissent pendant la frappe</span>
-            </div>
-
-            <!-- Catégorie + Difficulté -->
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label form-label--required">Catégorie</label>
-                <select formControlName="category" class="form-select"
-                  [class.form-select--error]="isInvalid('category')">
-                  <option value="">Sélectionner une catégorie</option>
-                  @for (cat of categories; track cat) {
-                    <option [value]="cat">{{ cat }}</option>
-                  }
-                </select>
-                @if (isInvalid('category')) {
-                  <span class="form-error">Veuillez sélectionner une catégorie</span>
-                }
-              </div>
-
-              <div class="form-group">
-                <label class="form-label form-label--required">Difficulté</label>
-                <select formControlName="difficulty" class="form-select">
-                  @for (diff of difficulties; track diff.value) {
-                    <option [value]="diff.value">{{ diff.label }} - {{ diff.desc }}</option>
-                  }
-                </select>
-              </div>
-            </div>
-
-            <!-- ── Bouton IA ── -->
-            <div class="ai-bar">
-              <div class="ai-bar__info">
-                <span class="ai-bar__icon">✦</span>
-                <div>
-                  <div class="ai-bar__title">Auto-complétion IA</div>
-                  <div class="ai-bar__sub">
-                    Génère description, objectifs, prérequis et matériels en un clic
+                <div class="form-group">
+                  <label class="form-label required">
+                    <i class="fas fa-chart-line"></i>
+                    Difficulté
+                  </label>
+                  <div class="difficulty-selector">
+                    @for (diff of difficulties; track diff.value) {
+                      <label class="difficulty-option" [class.active]="form.value.difficulty === diff.value">
+                        <input type="radio" formControlName="difficulty" [value]="diff.value" hidden />
+                        <div class="difficulty-content">
+                          <span class="difficulty-icon">{{ getDifficultyIcon(diff.value) }}</span>
+                          <div>
+                            <div class="difficulty-label">{{ diff.label }}</div>
+                            <div class="difficulty-desc">{{ diff.desc }}</div>
+                          </div>
+                        </div>
+                      </label>
+                    }
                   </div>
                 </div>
               </div>
-              <button type="button" class="btn btn--ai" (click)="autoComplete()" [disabled]="aiLoading()">
-                @if (aiLoading()) {
-                  <span class="spinner-xs"></span>
-                  Génération…
-                } @else {
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                    <path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-                  </svg>
-                  Compléter avec l'IA
-                }
-              </button>
-            </div>
 
-            @if (aiError()) {
-              <div class="alert alert--error" style="margin-top:.5rem">{{ aiError() }}</div>
-            }
-
-            <!-- Badge IA utilisée -->
-            @if (aiUsed()) {
-              <div class="ai-used-badge">
-                <span>✦</span> Contenu généré par IA — vérifie et adapte si nécessaire
+              <!-- Duration -->
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-hourglass-half"></i>
+                  Durée estimée (minutes)
+                </label>
+                <div class="duration-slider">
+                  <input
+                    type="range"
+                    formControlName="estimatedDuration"
+                    min="30"
+                    max="480"
+                    step="30"
+                    class="slider"
+                  />
+                  <div class="duration-value">
+                    <span class="value">{{ form.value.estimatedDuration }}</span>
+                    <span class="unit">minutes</span>
+                  </div>
+                  <div class="duration-marks">
+                    <span>30min</span>
+                    <span>2h</span>
+                    <span>4h</span>
+                    <span>8h</span>
+                  </div>
+                </div>
               </div>
-            }
 
-            <!-- Description -->
-            <div class="form-group">
-              <label class="form-label form-label--required">
-                Description
-                @if (aiUsed()) { <span class="field-ai-badge">✦ IA</span> }
-              </label>
-              <textarea formControlName="description" class="form-textarea"
-                [class.form-textarea--error]="isInvalid('description')"
-                [class.form-textarea--ai]="aiUsed()"
-                rows="4"
-                placeholder="Décris le sujet, l'approche, ce qui sera traité durant le workshop…"></textarea>
-              @if (isInvalid('description')) {
-                <span class="form-error">Description requise (min. 50 caractères)</span>
+              <!-- AI Auto-complete Bar -->
+              <div class="ai-bar">
+                <div class="ai-bar__content">
+                  <div class="ai-icon">
+                    <i class="fas fa-brain"></i>
+                  </div>
+                  <div>
+                    <div class="ai-title">Auto-complétion IA</div>
+                    <div class="ai-subtitle">Génère la description, objectifs, prérequis et matériel</div>
+                  </div>
+                </div>
+                <button type="button" class="btn-ai" (click)="autoComplete()" [disabled]="aiLoading()">
+                  @if (aiLoading()) {
+                    <div class="btn-loader"></div>
+                    <span>Génération...</span>
+                  } @else {
+                    <i class="fas fa-magic"></i>
+                    <span>Compléter avec l'IA</span>
+                  }
+                </button>
+              </div>
+
+              @if (aiError()) {
+                <div class="alert-error">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  {{ aiError() }}
+                </div>
               }
+
+              @if (aiUsed()) {
+                <div class="ai-used-badge">
+                  <i class="fas fa-magic"></i>
+                  <span>Contenu généré par IA — vérifiez et adaptez si nécessaire</span>
+                </div>
+              }
+
+              <!-- Description -->
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-align-left"></i>
+                  Description
+                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                </label>
+                <div class="textarea-wrapper">
+                  <textarea
+                    formControlName="description"
+                    class="form-textarea"
+                    [class.ai-filled]="aiUsed()"
+                    [class.error]="isInvalid('description')"
+                    rows="4"
+                    placeholder="Décrivez le sujet, l'approche, ce qui sera traité durant le workshop..."
+                  ></textarea>
+                  <div class="textarea-border"></div>
+                </div>
+                @if (isInvalid('description')) {
+                  <span class="form-error">Description requise (minimum 50 caractères)</span>
+                }
+              </div>
             </div>
           </div>
 
-          <!-- ══ SECTION 02 ══ -->
-          <div class="form-section">
-            <div class="form-section__header">
-              <span class="form-section__number">02</span>
-              <h3 class="form-section__title">Contenu pédagogique</h3>
+          <!-- Section 2: Contenu pédagogique -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <div class="step-indicator">2</div>
+              <div class="step-content">
+                <h3>Contenu pédagogique</h3>
+                <p>Structurez l'apprentissage des participants</p>
+              </div>
               @if (aiUsed()) {
-                <span class="section-ai-badge">✦ Pré-rempli par IA</span>
+                <span class="ai-badge-section">
+                  <i class="fas fa-magic"></i> Pré-rempli par IA
+                </span>
               }
             </div>
 
-            <div class="form-group">
-              <label class="form-label form-label--required">
-                Objectifs pédagogiques
-                @if (aiUsed()) { <span class="field-ai-badge">✦ IA</span> }
-              </label>
-              <textarea formControlName="objectives" class="form-textarea"
-                [class.form-textarea--ai]="aiUsed()"
-                [class.form-textarea--error]="isInvalid('objectives')"
-                rows="3"
-                placeholder="Ce que les participants sauront faire à la fin du workshop…"></textarea>
-              @if (isInvalid('objectives')) {
-                <span class="form-error">Objectifs requis</span>
-              }
-            </div>
+            <div class="form-card__body">
+              <!-- Objectives -->
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-graduation-cap"></i>
+                  Objectifs pédagogiques
+                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                </label>
+                <div class="textarea-wrapper">
+                  <textarea
+                    formControlName="objectives"
+                    class="form-textarea"
+                    [class.ai-filled]="aiUsed()"
+                    [class.error]="isInvalid('objectives')"
+                    rows="3"
+                    placeholder="Ce que les participants sauront faire à la fin du workshop..."
+                  ></textarea>
+                  <div class="textarea-border"></div>
+                </div>
+                @if (isInvalid('objectives')) {
+                  <span class="form-error">Objectifs requis</span>
+                }
+                <span class="form-hint">
+                  <i class="fas fa-lightbulb"></i>
+                  Ex: "À la fin de ce workshop, le participant sera capable de..."
+                </span>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label">
-                Prérequis
-                @if (aiUsed()) { <span class="field-ai-badge">✦ IA</span> }
-              </label>
-              <textarea formControlName="prerequisites" class="form-textarea"
-                [class.form-textarea--ai]="aiUsed()"
-                rows="2"
-                placeholder="Connaissances ou outils nécessaires pour suivre le workshop…"></textarea>
-            </div>
+              <!-- Prerequisites -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-clipboard-list"></i>
+                  Prérequis
+                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                </label>
+                <div class="textarea-wrapper">
+                  <textarea
+                    formControlName="prerequisites"
+                    class="form-textarea"
+                    [class.ai-filled]="aiUsed()"
+                    rows="2"
+                    placeholder="Connaissances ou outils nécessaires pour suivre le workshop..."
+                  ></textarea>
+                  <div class="textarea-border"></div>
+                </div>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label">
-                Matériels / outils nécessaires
-                @if (aiUsed()) { <span class="field-ai-badge">✦ IA</span> }
-              </label>
-              <textarea formControlName="materialsNeeded" class="form-textarea"
-                [class.form-textarea--ai]="aiUsed()"
-                rows="2"
-                placeholder="Logiciels, VM, accès réseau, équipements…"></textarea>
+              <!-- Materials -->
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-tools"></i>
+                  Matériel nécessaire
+                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                </label>
+                <div class="textarea-wrapper">
+                  <textarea
+                    formControlName="materialsNeeded"
+                    class="form-textarea"
+                    [class.ai-filled]="aiUsed()"
+                    rows="2"
+                    placeholder="Logiciels, VM, accès réseau, équipements spécifiques..."
+                  ></textarea>
+                  <div class="textarea-border"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Section -->
+          <div class="tips-card">
+            <div class="tips-header">
+              <i class="fas fa-lightbulb"></i>
+              <span>Conseils pour une bonne soumission</span>
+            </div>
+            <div class="tips-grid">
+              <div class="tip-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Soyez précis dans votre description</span>
+              </div>
+              <div class="tip-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Définissez des objectifs mesurables</span>
+              </div>
+              <div class="tip-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Listez clairement les prérequis</span>
+              </div>
+              <div class="tip-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Estimez la durée réalistement</span>
+              </div>
             </div>
           </div>
 
           @if (error()) {
-            <div class="alert alert--error">{{ error() }}</div>
+            <div class="alert-error">
+              <i class="fas fa-exclamation-triangle"></i>
+              {{ error() }}
+            </div>
           }
 
+          <!-- Form Actions -->
           <div class="form-actions">
             <button type="button" class="btn btn--ghost" routerLink="/espace-membre/thematiques">
+              <i class="fas fa-times"></i>
               Annuler
             </button>
             <button type="submit" class="btn btn--primary" [disabled]="loading()">
               @if (loading()) {
-                <span class="spinner"></span> Envoi en cours...
+                <div class="btn-loader"></div>
+                <span>Envoi en cours...</span>
               } @else {
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Soumettre la thématique
+                <i class="fas fa-paper-plane"></i>
+                <span>Soumettre la thématique</span>
+                <i class="fas fa-arrow-right"></i>
               }
             </button>
           </div>
 
         </form>
       }
+
     </div>
   </div>
 </div>

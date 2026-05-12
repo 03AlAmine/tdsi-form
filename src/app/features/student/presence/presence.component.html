@@ -1,0 +1,284 @@
+<!-- presence.component.html -->
+<div class="presence-page">
+  <div class="container">
+    <div class="presence-wrapper">
+
+      @if (loading) {
+        <!-- Loading State -->
+        <div class="loading-state">
+          <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring-inner"></div>
+          </div>
+          <p class="loading-text">Chargement du formulaire...</p>
+        </div>
+      } @else if (!workshop) {
+        <!-- Workshop Not Found -->
+        <div class="empty-state">
+          <div class="empty-state__icon">
+            <i class="fas fa-calendar-times"></i>
+          </div>
+          <h3>Workshop introuvable</h3>
+          <p>Le workshop que vous recherchez n'existe pas ou a été supprimé.</p>
+          <a routerLink="/workshops" class="btn btn--outline">
+            <i class="fas fa-arrow-left"></i>
+            Retour aux workshops
+          </a>
+        </div>
+      } @else if (!workshop.presenceFormEnabled) {
+        <!-- Form Not Available -->
+        <div class="empty-state">
+          <div class="empty-state__icon">
+            <i class="fas fa-hourglass-half"></i>
+          </div>
+          <h3>Formulaire pas encore disponible</h3>
+          <p>L'administrateur n'a pas encore activé le formulaire de présence pour ce workshop.</p>
+          <a routerLink="/workshops" class="btn btn--outline">
+            <i class="fas fa-arrow-left"></i>
+            Retour aux workshops
+          </a>
+        </div>
+      } @else if (alreadySubmitted) {
+        <!-- Already Submitted -->
+        <div class="success-card animate-slide-up">
+          <div class="success-card__icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h2>Présence déjà enregistrée</h2>
+          <p>Vous avez déjà confirmé votre présence pour <strong>{{ workshop.themeTitle }}</strong>.</p>
+          <div class="success-card__actions">
+            <a routerLink="/workshops" class="btn btn--outline">
+              <i class="fas fa-arrow-left"></i>
+              Retour aux workshops
+            </a>
+            <a routerLink="/activites" class="btn btn--primary">
+              <i class="fas fa-calendar-alt"></i>
+              Voir les événements
+            </a>
+          </div>
+        </div>
+      } @else if (submitted) {
+        <!-- Success -->
+        <div class="success-card animate-slide-up">
+          <div class="success-card__icon success-card__icon--success">
+            <i class="fas fa-party-horn"></i>
+          </div>
+          <h2>Présence confirmée !</h2>
+          <p>Votre présence au workshop <strong>{{ workshop.themeTitle }}</strong> a bien été enregistrée.</p>
+          <div class="success-card__actions">
+            <a routerLink="/workshops" class="btn btn--outline">
+              <i class="fas fa-arrow-left"></i>
+              Retour aux workshops
+            </a>
+            <a routerLink="/espace-membre/profil" class="btn btn--primary">
+              <i class="fas fa-user"></i>
+              Voir mon profil
+            </a>
+          </div>
+        </div>
+      } @else {
+        <!-- Presence Form -->
+        <div class="presence-card">
+
+          <!-- Back Button -->
+          <div class="presence-card__back">
+            <a routerLink="/workshops" class="back-link">
+              <i class="fas fa-arrow-left"></i>
+              <span>Retour aux workshops</span>
+            </a>
+          </div>
+
+          <!-- Header -->
+          <div class="presence-card__header">
+            <div class="presence-badge">
+              <i class="fas fa-clipboard-list"></i>
+              <span>FORMULAIRE DE PRÉSENCE</span>
+            </div>
+            <h1 class="presence-title">{{ workshop.themeTitle }}</h1>
+            <div class="presence-meta">
+              <span class="meta-item">
+                <i class="fas fa-chalkboard-user"></i>
+                {{ workshop.presenter }}
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-hourglass-half"></i>
+                {{ workshop.duration }} min
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ workshop.location }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <form [formGroup]="form" (ngSubmit)="submit()" class="presence-form">
+
+            <!-- Auto-filled User Info -->
+            <div class="form-section">
+              <div class="form-section__header">
+                <i class="fas fa-user-circle"></i>
+                <span>Informations personnelles</span>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-user"></i>
+                    Nom complet
+                  </label>
+                  <div class="info-display">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ user?.displayName }}</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-envelope"></i>
+                    Email
+                  </label>
+                  <div class="info-display">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ user?.email }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Fields -->
+            @if (workshop.presenceFormConfig?.fields?.length) {
+              <div class="form-section">
+                <div class="form-section__header">
+                  <i class="fas fa-edit"></i>
+                  <span>Informations complémentaires</span>
+                </div>
+
+                @for (field of workshop.presenceFormConfig!.fields; track field.id) {
+                  <div class="form-group">
+                    <label class="form-label">
+                      {{ field.label }}
+                      @if (field.required) {
+                        <span class="required-star">*</span>
+                      }
+                    </label>
+
+                    @switch (field.type) {
+                      @case ('text') {
+                        <div class="input-wrapper">
+                          <input
+                            [formControlName]="field.id"
+                            type="text"
+                            class="form-input"
+                            [class.error]="isFieldInvalid(field.id)"
+                            [placeholder]="field.placeholder ?? ''"
+                          />
+                          <div class="input-border"></div>
+                          <i class="fas fa-pen input-icon"></i>
+                        </div>
+                      }
+                      @case ('email') {
+                        <div class="input-wrapper">
+                          <input
+                            [formControlName]="field.id"
+                            type="email"
+                            class="form-input"
+                            [class.error]="isFieldInvalid(field.id)"
+                            [placeholder]="field.placeholder ?? ''"
+                          />
+                          <div class="input-border"></div>
+                          <i class="fas fa-envelope input-icon"></i>
+                        </div>
+                      }
+                      @case ('number') {
+                        <div class="input-wrapper">
+                          <input
+                            [formControlName]="field.id"
+                            type="number"
+                            class="form-input"
+                            [class.error]="isFieldInvalid(field.id)"
+                            [placeholder]="field.placeholder ?? ''"
+                          />
+                          <div class="input-border"></div>
+                          <i class="fas fa-hashtag input-icon"></i>
+                        </div>
+                      }
+                      @case ('textarea') {
+                        <div class="textarea-wrapper">
+                          <textarea
+                            [formControlName]="field.id"
+                            class="form-textarea"
+                            [class.error]="isFieldInvalid(field.id)"
+                            rows="3"
+                            [placeholder]="field.placeholder ?? ''"
+                          ></textarea>
+                          <div class="textarea-border"></div>
+                          <i class="fas fa-align-left textarea-icon"></i>
+                        </div>
+                      }
+                      @case ('select') {
+                        <div class="select-wrapper">
+                          <select
+                            [formControlName]="field.id"
+                            class="form-select"
+                            [class.error]="isFieldInvalid(field.id)"
+                          >
+                            <option value="">Sélectionner...</option>
+                            @for (opt of field.options; track opt) {
+                              <option [value]="opt">{{ opt }}</option>
+                            }
+                          </select>
+                          <i class="fas fa-chevron-down select-icon"></i>
+                          <div class="select-border"></div>
+                        </div>
+                      }
+                      @case ('checkbox') {
+                        <label class="checkbox-wrapper">
+                          <input
+                            [formControlName]="field.id"
+                            type="checkbox"
+                            class="checkbox-input"
+                          />
+                          <span class="checkbox-custom"></span>
+                          <span class="checkbox-label">{{ field.placeholder || field.label }}</span>
+                        </label>
+                      }
+                    }
+
+                    @if (isFieldInvalid(field.id)) {
+                      <span class="form-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Ce champ est obligatoire
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            @if (error) {
+              <div class="alert-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ error }}</span>
+                <button class="alert-close" (click)="error = ''">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            }
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn--primary btn--full btn--lg" [disabled]="saving">
+              @if (saving) {
+                <div class="btn-loader"></div>
+                <span>Enregistrement...</span>
+              } @else {
+                <i class="fas fa-check-circle"></i>
+                <span>Confirmer ma présence</span>
+                <i class="fas fa-arrow-right"></i>
+              }
+            </button>
+          </form>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

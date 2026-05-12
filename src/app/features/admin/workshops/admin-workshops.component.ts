@@ -54,6 +54,7 @@ export class AdminWorkshopsComponent {
     time: ['14:00', Validators.required],
     location: ['en ligne', Validators.required],
     meetLink: [''],
+    maxParticipants: [20, [Validators.required, Validators.min(1), Validators.max(1000)]],
   });
 
   constructor() {
@@ -102,6 +103,7 @@ export class AdminWorkshopsComponent {
         status: 'planifié',
         presenceFormEnabled: false,
         registrations: [],
+        maxParticipants: v.maxParticipants!,
         createdAt: new Date(),
       });
       this.form.reset({ duration: 90, location: 'en ligne', time: '14:00' });

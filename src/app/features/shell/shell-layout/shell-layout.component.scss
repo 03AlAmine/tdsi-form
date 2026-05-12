@@ -1,0 +1,36 @@
+// shell-layout.component.scss
+.shell-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.shell-main {
+  flex: 1;
+  margin-top: 80px;
+  padding-bottom: 2rem;
+  position: relative;
+  z-index: 10;
+
+  @media (min-width: 768px) {
+    margin-top: 88px;
+    padding-bottom: 0;
+  }
+}
+
+// Page transition améliorée
+.page-transition {
+  animation: pageFadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pageFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
