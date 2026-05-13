@@ -18,7 +18,9 @@ import { Component, Input } from '@angular/core';
       <div class="logo__text-wrapper">
         <span class="logo__text">Club</span>
         <span class="logo__text logo__text--gradient">TDSI</span>
-        <span class="logo__badge" *ngIf="showBadge">Campus</span>
+        @if (showBadge) {
+          <span class="logo__badge">Campus</span>
+        }
       </div>
     </div>
   `,

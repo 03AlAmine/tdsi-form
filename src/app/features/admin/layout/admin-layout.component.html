@@ -1,13 +1,19 @@
+<!-- admin-layout.component.html -->
 <div class="admin-layout">
-  <!-- Sidebar Desktop -->
-  <aside class="sidebar" [class.sidebar--collapsed]="false">
+  <!-- Desktop Sidebar -->
+  <aside class="sidebar" [class.sidebar--collapsed]="sidebarCollapsed()">
     <div class="sidebar__header">
       <a routerLink="/admin/dashboard" class="sidebar__brand">
         <div class="sidebar__logo">
           <img src="/assets/images/logo.png" alt="Club TDSI" />
         </div>
-        <div class="sidebar__brand-text">TDSI <span>Club</span></div>
+        @if (!sidebarCollapsed()) {
+          <div class="sidebar__brand-text">TDSI <span>Admin</span></div>
+        }
       </a>
+      <button class="sidebar__toggle" (click)="toggleSidebar()">
+        <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed()" [class.fa-chevron-right]="sidebarCollapsed()"></i>
+      </button>
     </div>
 
     <nav class="sidebar__nav">
@@ -18,18 +24,13 @@
           class="sidebar__item"
           [routerLinkActiveOptions]="{ exact: false }"
         >
-          <svg
-            class="sidebar__item-icon"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path [attr.d]="item.icon" />
-          </svg>
-          <span>{{ item.label }}</span>
+          <i class="fas {{ item.icon }}"></i>
+          @if (!sidebarCollapsed()) {
+            <span>{{ item.label }}</span>
+          }
+          @if (item.badge && !sidebarCollapsed()) {
+            <span class="sidebar__badge">{{ item.badge }}</span>
+          }
         </a>
       }
     </nav>
@@ -37,126 +38,82 @@
     <div class="sidebar__footer">
       <div class="sidebar__user">
         <div class="sidebar__user-avatar">
-          <span>👨‍💼</span>
+          <span>{{ userInitial }}</span>
         </div>
-        <div class="sidebar__user-info">
-          <div class="sidebar__user-name">Administrateur</div>
-          <div class="sidebar__user-role">TDSI Admin</div>
-        </div>
+        @if (!sidebarCollapsed()) {
+          <div class="sidebar__user-info">
+            <div class="sidebar__user-name">{{ adminName }}</div>
+            <div class="sidebar__user-role">Administrateur</div>
+          </div>
+        }
       </div>
-      <button class="sidebar__logout" (click)="logout()">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-        Déconnexion
-      </button>
+      @if (!sidebarCollapsed()) {
+        <button class="sidebar__logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Déconnexion
+        </button>
+      }
     </div>
   </aside>
 
-  <!-- Mobile Top Bar -->
+  <!-- Mobile Header -->
   <header class="mobile-header">
     <div class="mobile-header__container">
       <button class="mobile-header__menu-btn" (click)="mobileOpen.set(true)">
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
+        <i class="fas fa-bars"></i>
       </button>
 
       <a routerLink="/admin/dashboard" class="mobile-header__brand">
         <img src="/assets/images/logo.png" alt="Club TDSI" />
-        <span>TDSI <span>Club</span></span>
+        <span>TDSI <span>Admin</span></span>
       </a>
 
-      <button class="mobile-header__logout" (click)="logout()">
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-      </button>
+      <div class="mobile-header__user">
+        <div class="mobile-header__avatar">{{ userInitial }}</div>
+      </div>
     </div>
   </header>
 
-  <!-- Mobile Menu Overlay -->
+  <!-- Mobile Menu -->
   @if (mobileOpen()) {
     <div class="mobile-menu" (click)="closeMobileMenu()">
       <div class="mobile-menu__container" (click)="$event.stopPropagation()">
         <div class="mobile-menu__header">
           <div class="mobile-menu__brand">
             <img src="/assets/images/logo.png" alt="Club TDSI" />
-            <span>TDSI <span>Club</span></span>
+            <span>TDSI <span>Admin</span></span>
           </div>
           <button class="mobile-menu__close" (click)="closeMobileMenu()">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <i class="fas fa-times"></i>
           </button>
         </div>
 
+        <div class="mobile-menu__user">
+          <div class="mobile-menu__avatar">{{ userInitial }}</div>
+          <div>
+            <div class="mobile-menu__name">{{ adminName }}</div>
+            <div class="mobile-menu__role">Administrateur</div>
+          </div>
+        </div>
+
         <nav class="mobile-menu__nav">
-          <!-- Dans le template, remplace les svg avec path dynamique par ceci : -->
           @for (item of navItems; track item.path) {
             <a
               [routerLink]="item.path"
               routerLinkActive="active"
-              class="sidebar__item"
-              [routerLinkActiveOptions]="{ exact: false }"
+              class="mobile-menu__item"
+              (click)="closeMobileMenu()"
             >
-              <svg
-                class="sidebar__item-icon"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path [attr.d]="item.icon" />
-              </svg>
+              <i class="fas {{ item.icon }}"></i>
               <span>{{ item.label }}</span>
             </a>
           }
         </nav>
 
-        <div class="mobile-menu__footer">
-          <div class="mobile-menu__user">
-            <div class="mobile-menu__user-avatar">👨‍💼</div>
-            <div class="mobile-menu__user-name">Administrateur</div>
-          </div>
-        </div>
+        <button class="mobile-menu__logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Déconnexion
+        </button>
       </div>
     </div>
   }
@@ -167,7 +124,7 @@
       <router-outlet />
     </div>
   </main>
-  <app-confirm-modal />
 
   <app-toast />
+  <app-confirm-modal />
 </div>

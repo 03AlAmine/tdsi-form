@@ -1,261 +1,791 @@
+<!-- admin-activities.component.html -->
 <div class="admin-activities">
-
-  <!-- ── En-tête ─────────────────────────────────────────── -->
+  <!-- Header -->
   <div class="page-header">
     <div>
-      <h1 class="page-header__title">Activités</h1>
-      <p class="page-header__subtitle">Conférences, journées, hackathons et ateliers</p>
+      <h1 class="page-header__title">
+        <i class="fas fa-calendar-alt"></i>
+        Activités
+      </h1>
+      <p class="page-header__subtitle">
+        Conférences, journées, hackathons et ateliers
+      </p>
     </div>
     <button class="btn btn--primary" (click)="toggleForm()">
       @if (showForm()) {
-        ✕ Annuler
+        <i class="fas fa-times"></i>
+        <span>Annuler</span>
       } @else {
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Nouvelle activité
+        <i class="fas fa-plus"></i>
+        <span>Nouvelle activité</span>
       }
     </button>
   </div>
 
-  <!-- ── Formulaire de création ───────────────────────────── -->
+  <!-- Create Form -->
   @if (showForm()) {
-    <div class="create-form animate-fade-in">
+    <div class="create-form animate-slide-down">
       <div class="create-form__header">
-        <h3>Créer une activité</h3>
+        <div class="create-form__title">
+          <i class="fas fa-calendar-plus"></i>
+          <h3>Créer une activité</h3>
+        </div>
         <span class="badge badge--primary">NOUVELLE</span>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="create()" class="activity-form">
-
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label form-label--required">Type</label>
-            <select formControlName="type" class="form-select">
-              @for (t of types; track t) {
-                <option [value]="t">{{ typeLabels[t] }}</option>
-              }
-            </select>
+            <label class="form-label required">
+              <i class="fas fa-tag"></i>
+              Type
+            </label>
+            <div class="select-wrapper">
+              <select formControlName="type" class="form-select">
+                @for (t of types; track t) {
+                  <option [value]="t">{{ typeLabels[t] }}</option>
+                }
+              </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+            </div>
           </div>
           <div class="form-group">
-            <label class="form-label form-label--required">Titre</label>
-            <input type="text" formControlName="title" class="form-input" placeholder="Ex : Sécurité des objets connectés" />
-            @if (isInvalid('title')) { <span class="form-error">Titre requis (min. 5 caractères)</span> }
+            <label class="form-label required">
+              <i class="fas fa-heading"></i>
+              Titre
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                formControlName="title"
+                class="form-input"
+                placeholder="Ex : Sécurité des objets connectés"
+              />
+              <div class="input-border"></div>
+            </div>
+            @if (isInvalid("title")) {
+              <span class="form-error">Titre requis (min. 5 caractères)</span>
+            }
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label form-label--required">Description</label>
-          <textarea formControlName="description" class="form-textarea" rows="4"
-            placeholder="Décrivez l'activité, les objectifs, le public cible..."></textarea>
-          @if (isInvalid('description')) { <span class="form-error">Description requise (min. 20 caractères)</span> }
+          <label class="form-label required">
+            <i class="fas fa-align-left"></i>
+            Description
+          </label>
+          <div class="textarea-wrapper">
+            <textarea
+              formControlName="description"
+              class="form-textarea"
+              rows="4"
+              placeholder="Décrivez l'activité, les objectifs, le public cible..."
+            ></textarea>
+            <div class="textarea-border"></div>
+          </div>
+          @if (isInvalid("description")) {
+            <span class="form-error"
+              >Description requise (min. 20 caractères)</span
+            >
+          }
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label form-label--required">Date de début</label>
-            <input type="date" formControlName="date" class="form-input" [min]="minDate" />
-            @if (isInvalid('date')) { <span class="form-error">Date requise</span> }
+            <label class="form-label required">
+              <i class="fas fa-calendar-alt"></i>
+              Date de début
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="date"
+                formControlName="date"
+                class="form-input"
+                [min]="minDate"
+              />
+              <div class="input-border"></div>
+            </div>
+            @if (isInvalid("date")) {
+              <span class="form-error">Date requise</span>
+            }
           </div>
           <div class="form-group">
-            <label class="form-label form-label--required">Heure</label>
-            <input type="time" formControlName="time" class="form-input" />
+            <label class="form-label required">
+              <i class="fas fa-clock"></i>
+              Heure
+            </label>
+            <div class="input-wrapper">
+              <input type="time" formControlName="time" class="form-input" />
+              <div class="input-border"></div>
+            </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Date de fin (facultatif)</label>
-            <input type="date" formControlName="endDate" class="form-input" [min]="minDate" />
+            <label class="form-label">
+              <i class="fas fa-calendar-week"></i>
+              Date de fin
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="date"
+                formControlName="endDate"
+                class="form-input"
+                [min]="minDate"
+              />
+              <div class="input-border"></div>
+            </div>
             <span class="form-hint">Pour les journées multi-jours</span>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label form-label--required">Lieu</label>
-            <input type="text" formControlName="location" class="form-input" placeholder="Ex : Amphi A, ESP Dakar" />
-            @if (isInvalid('location')) { <span class="form-error">Lieu requis</span> }
+            <label class="form-label required">
+              <i class="fas fa-map-marker-alt"></i>
+              Lieu
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                formControlName="location"
+                class="form-input"
+                placeholder="Ex : Amphi A, Ucad Dakar"
+              />
+              <div class="input-border"></div>
+            </div>
+            @if (isInvalid("location")) {
+              <span class="form-error">Lieu requis</span>
+            }
           </div>
           <div class="form-group">
-            <label class="form-label">Capacité max</label>
-            <input type="number" formControlName="maxParticipants" class="form-input" min="1" placeholder="Laisser vide = illimité" />
+            <label class="form-label">
+              <i class="fas fa-users"></i>
+              Capacité max
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="number"
+                formControlName="maxParticipants"
+                class="form-input"
+                min="1"
+                placeholder="Illimité"
+              />
+              <div class="input-border"></div>
+            </div>
+            <span class="form-hint">Laisser vide = illimité</span>
           </div>
         </div>
 
-        <div class="form-row form-row--align-center">
-          <div class="form-group form-group--checkbox">
-            <input type="checkbox" formControlName="isOnline" id="isOnline" class="form-checkbox" />
-            <label for="isOnline" class="form-label">Événement en ligne (ou hybride)</label>
-          </div>
-          @if (form.get('isOnline')?.value) {
+        <div class="form-row form-row--checkbox">
+          <label class="checkbox-wrapper">
+            <input
+              type="checkbox"
+              formControlName="isOnline"
+              class="checkbox-input"
+            />
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-label">Événement en ligne (ou hybride)</span>
+          </label>
+          @if (form.get("isOnline")?.value) {
             <div class="form-group">
-              <label class="form-label">Lien de réunion</label>
-              <input type="url" formControlName="meetLink" class="form-input" placeholder="https://meet.jit.si/tdsi-..." />
+              <label class="form-label">
+                <i class="fas fa-video"></i>
+                Lien de réunion
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="url"
+                  formControlName="meetLink"
+                  class="form-input"
+                  placeholder="https://meet.jit.si/tdsi-..."
+                />
+                <div class="input-border"></div>
+              </div>
             </div>
           }
         </div>
 
         <div class="form-group">
-          <label class="form-label">Tags</label>
-          <input type="text" formControlName="tags" class="form-input"
-            placeholder="cybersécurité, réseaux, IA  (séparés par des virgules)" />
-          <span class="form-hint">Facilitent la recherche sur la page publique</span>
+          <label class="form-label">
+            <i class="fas fa-tags"></i>
+            Tags
+          </label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              formControlName="tags"
+              class="form-input"
+              placeholder="cybersécurité, réseaux, IA (séparés par des virgules)"
+            />
+            <div class="input-border"></div>
+          </div>
+          <span class="form-hint"
+            >Facilitent la recherche sur la page publique</span
+          >
         </div>
 
-        <div class="create-form__actions">
-          <button type="button" class="btn btn--ghost" (click)="toggleForm()">Annuler</button>
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" (click)="toggleForm()">
+            <i class="fas fa-times"></i>
+            Annuler
+          </button>
           <button type="submit" class="btn btn--primary" [disabled]="saving()">
-            @if (saving()) { Création... } @else { Créer en brouillon }
+            @if (saving()) {
+              <div class="btn-loader"></div>
+              <span>Création...</span>
+            } @else {
+              <i class="fas fa-save"></i>
+              <span>Créer en brouillon</span>
+            }
           </button>
         </div>
       </form>
     </div>
   }
 
-  <!-- ── Filtres statut ────────────────────────────────────── -->
-  <div class="filters">
-    <button class="filter-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">Toutes</button>
-    <button class="filter-btn" [class.active]="filterStatus() === 'draft'" (click)="filterStatus.set('draft')">Brouillons</button>
-    <button class="filter-btn" [class.active]="filterStatus() === 'published'" (click)="filterStatus.set('published')">Publiées</button>
-    <button class="filter-btn" [class.active]="filterStatus() === 'ongoing'" (click)="filterStatus.set('ongoing')">En cours</button>
-    <button class="filter-btn" [class.active]="filterStatus() === 'done'" (click)="filterStatus.set('done')">Terminées</button>
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-scroll">
+      @for (filter of filters; track filter.value) {
+        <button
+          class="filter-chip"
+          [class.active]="filterStatus() === filter.value"
+          (click)="filterStatus.set(filter.value)"
+        >
+          <i class="fas {{ filter.icon }}"></i>
+          {{ filter.label }}
+        </button>
+      }
+    </div>
   </div>
 
-  <!-- ── Liste ──────────────────────────────────────────────── -->
+  <!-- Loading State -->
   @if (loading()) {
     <div class="loading-state">
-      <div class="spinner"></div>
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring-inner"></div>
+      </div>
       <p>Chargement des activités...</p>
     </div>
   } @else if (filteredActivities().length === 0) {
+    <!-- Empty State -->
     <div class="empty-state">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      <p>Aucune activité pour ce filtre</p>
-      <button class="btn btn--primary" (click)="toggleForm()">Créer une activité</button>
+      <div class="empty-state__icon">
+        <i class="fas fa-calendar-week"></i>
+      </div>
+      <h3>Aucune activité</h3>
+      <p>Aucune activité ne correspond à ce filtre</p>
+      <button class="btn btn--primary" (click)="toggleForm()">
+        <i class="fas fa-plus"></i>
+        Créer une activité
+      </button>
     </div>
   } @else {
+    <!-- Activities Grid -->
     <div class="activities-grid">
       @for (activity of filteredActivities(); track activity.id) {
-        <div class="activity-card">
+        <div
+          class="activity-card"
+          [class]="'activity-card--' + activity.status"
+        >
           <div class="activity-card__header">
             <div class="activity-card__badges">
-              <span class="badge" [class]="getTypeClass(activity.type)">
+              <span
+                class="badge"
+                [class]="'badge--' + getTypeClass(activity.type)"
+              >
+                <i class="fas {{ getTypeIcon(activity.type) }}"></i>
                 {{ typeLabels[activity.type] }}
               </span>
-              <span class="badge" [class]="getStatusClass(activity.status)">
+              <span
+                class="badge"
+                [class]="'badge--' + getStatusClass(activity.status)"
+              >
+                <i class="fas {{ getStatusIcon(activity.status) }}"></i>
                 {{ statusLabels[activity.status] }}
               </span>
               @if (activity.presenceEnabled) {
-                <span class="badge badge--success">✓ Check-in actif</span>
+                <span class="badge badge--success">
+                  <i class="fas fa-qrcode"></i> Check-in actif
+                </span>
               }
             </div>
             <div class="activity-card__actions">
-              <button class="btn-icon" title="QR inscription" (click)="openQr(activity)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                  <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
-                </svg>
+              <button
+                class="action-btn"
+                title="Modifier"
+                (click)="openEditModal(activity)"
+              >
+                <i class="fas fa-edit"></i>
               </button>
-              <a [routerLink]="['/admin/activites', activity.id, 'presences']" class="btn-icon" title="Présences">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/>
-                </svg>
+              <button
+                class="action-btn"
+                title="QR inscription"
+                (click)="openQr(activity)"
+              >
+                <i class="fas fa-qrcode"></i>
+              </button>
+              <a
+                [routerLink]="['/admin/activites', activity.id, 'presences']"
+                class="action-btn"
+                title="Présences"
+              >
+                <i class="fas fa-users"></i>
               </a>
-              <button class="btn-icon btn-icon--danger" title="Supprimer" (click)="delete(activity)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                  <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-                </svg>
+              <button
+                class="action-btn action-btn--delete"
+                title="Supprimer"
+                (click)="deleteActivity(activity)"
+              >
+                <i class="fas fa-trash-alt"></i>
               </button>
             </div>
           </div>
 
           <h3 class="activity-card__title">{{ activity.title }}</h3>
-          <p class="activity-card__desc">{{ activity.description | slice:0:100 }}...</p>
+          <p class="activity-card__desc">
+            {{ activity.description | slice: 0 : 100 }}...
+          </p>
 
           <div class="activity-card__meta">
-            <span class="meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              {{ activity.date | date:'d MMM yyyy, HH:mm' }}
-            </span>
-            <span class="meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              {{ activity.location }}
-            </span>
-            <span class="meta-item">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-              </svg>
-              {{ (activity?.registrations?.length ?? 0) + (activity?.guestCount ?? 0) }} inscrits · {{ spotsLeft(activity) }}
-            </span>
+            <div class="meta-item">
+              <i class="fas fa-calendar-alt"></i>
+              <span>{{ activity.date | date: "dd MMM yyyy, HH:mm" }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{ activity.location }}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-users"></i>
+              <span
+                >{{
+                  activity.registrations.length + activity.guestCount
+                }}
+                inscrits</span
+              >
+              <span class="meta-sub">{{ getSpotsLeftText(activity) }}</span>
+            </div>
           </div>
 
           @if (activity.tags.length) {
             <div class="activity-card__tags">
-              @for (tag of activity.tags; track tag) {
-                <span class="tag">{{ tag }}</span>
+              @for (tag of activity.tags.slice(0, 3); track tag) {
+                <span class="tag">#{{ tag }}</span>
+              }
+              @if (activity.tags.length > 3) {
+                <span class="tag more">+{{ activity.tags.length - 3 }}</span>
               }
             </div>
           }
 
           <div class="activity-card__footer">
-            @if (activity.status === 'draft') {
-              <button class="btn btn--primary btn--sm" (click)="publish(activity)">
+            @if (activity.status === "draft") {
+              <button
+                class="btn btn--primary btn--sm"
+                (click)="publishActivity(activity)"
+              >
+                <i class="fas fa-rocket"></i>
                 Publier
               </button>
             }
-            @if (activity.status === 'published' || activity.status === 'ongoing') {
-              <button class="btn btn--sm"
+            @if (
+              activity.status === "published" || activity.status === "ongoing"
+            ) {
+              <button
+                class="btn btn--sm"
                 [class.btn--success]="!activity.presenceEnabled"
-                [class.btn--ghost]="activity.presenceEnabled"
-                (click)="togglePresence(activity)">
-                {{ activity.presenceEnabled ? 'Désactiver check-in' : 'Activer check-in' }}
+                [class.btn--outline]="activity.presenceEnabled"
+                (click)="togglePresence(activity)"
+              >
+                @if (activity.presenceEnabled) {
+                  <i class="fas fa-toggle-on"></i>
+                  Désactiver check-in
+                } @else {
+                  <i class="fas fa-toggle-off"></i>
+                  Activer check-in
+                }
               </button>
             }
-            <select class="form-select form-select--sm"
-              [value]="activity.status"
-              (change)="updateStatus(activity, $any($event.target).value)">
-              <option value="draft">Brouillon</option>
-              <option value="published">Publié</option>
-              <option value="ongoing">En cours</option>
-              <option value="done">Terminé</option>
-              <option value="cancelled">Annulé</option>
-            </select>
+            <div class="status-select-wrapper">
+              <select
+                class="status-select"
+                [value]="activity.status"
+                (change)="updateStatus(activity, $any($event.target).value)"
+              >
+                <option value="draft">📋 Brouillon</option>
+                <option value="published">🚀 Publié</option>
+                <option value="ongoing">▶️ En cours</option>
+                <option value="done">✅ Terminé</option>
+                <option value="cancelled">❌ Annulé</option>
+              </select>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
           </div>
         </div>
       }
     </div>
   }
 
-  <!-- ── Modale QR code ────────────────────────────────────── -->
+  <!-- QR Modal -->
   @if (qrActivity()) {
     <div class="qr-overlay" (click)="closeQr()">
       <div class="qr-modal" (click)="$event.stopPropagation()">
-        <button class="qr-modal__close" (click)="closeQr()">✕</button>
+        <button class="qr-modal__close" (click)="closeQr()">
+          <i class="fas fa-times"></i>
+        </button>
+
         <div class="qr-modal__header">
-          <span class="badge badge--primary" style="font-size:11px;letter-spacing:.1em">QR INSCRIPTION</span>
+          <div class="qr-modal__badge">
+            <i class="fas fa-qrcode"></i>
+            QR INSCRIPTION
+          </div>
           <h3 class="qr-modal__title">{{ qrActivity()!.title }}</h3>
-          <p class="qr-modal__sub">Partagez ce QR ou projetez-le pour les inscriptions</p>
+          <p class="qr-modal__sub">Scannez ce QR code pour vous inscrire</p>
         </div>
-        <div class="qr-modal__img-wrap">
-          <img [src]="getInscriptionQr(qrActivity()!.id!)" alt="QR inscription" width="180" height="180" />
+
+        <div class="qr-modal__img">
+          <img
+            [src]="getInscriptionQr(qrActivity()!.id!)"
+            alt="QR inscription"
+          />
         </div>
-        <p class="qr-modal__url font-mono">
-          /activites/{{ qrActivity()!.id }}/inscription
-        </p>
-        <button class="btn btn--primary" (click)="downloadQr(qrActivity()!)">
+
+        <div class="qr-modal__url">
+          <i class="fas fa-link"></i>
+          <span>/activites/{{ qrActivity()!.id }}/inscription</span>
+        </div>
+
+        <button
+          class="btn btn--primary btn--full"
+          (click)="downloadQr(qrActivity()!)"
+        >
+          <i class="fas fa-download"></i>
           Télécharger PNG (400×400)
         </button>
       </div>
     </div>
   }
-
 </div>
+<!-- Modal d'édition d'activité - À ajouter à la fin du fichier -->
+@if (editingActivity()) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div
+      class="modal-container modal-container--large"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div class="modal-header__title">
+          <i class="fas fa-edit"></i>
+          <h3>Modifier l'activité</h3>
+        </div>
+        <button class="modal-close" (click)="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form
+        [formGroup]="editForm"
+        (ngSubmit)="updateActivity()"
+        class="edit-form"
+      >
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-tag"></i>
+                Type
+              </label>
+              <div class="select-wrapper">
+                <select formControlName="type" class="form-select">
+                  @for (t of types; track t) {
+                    <option [value]="t">{{ typeLabels[t] }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-heading"></i>
+                Titre
+              </label>
+              <div class="input-wrapper">
+                <input type="text" formControlName="title" class="form-input" />
+                <div class="input-border"></div>
+              </div>
+              @if (isEditInvalid("title")) {
+                <span class="form-error">Titre requis (min. 5 caractères)</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">
+              <i class="fas fa-align-left"></i>
+              Description
+            </label>
+            <div class="textarea-wrapper">
+              <textarea
+                formControlName="description"
+                class="form-textarea"
+                rows="4"
+              ></textarea>
+              <div class="textarea-border"></div>
+            </div>
+            @if (isEditInvalid("description")) {
+              <span class="form-error"
+                >Description requise (min. 20 caractères)</span
+              >
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-calendar-alt"></i>
+                Date de début
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="date"
+                  formControlName="date"
+                  class="form-input"
+                  [min]="minDate"
+                />
+                <div class="input-border"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-clock"></i>
+                Heure
+              </label>
+              <div class="input-wrapper">
+                <input type="time" formControlName="time" class="form-input" />
+                <div class="input-border"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-calendar-week"></i>
+                Date de fin
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="date"
+                  formControlName="endDate"
+                  class="form-input"
+                  [min]="minDate"
+                />
+                <div class="input-border"></div>
+              </div>
+              <span class="form-hint">Pour les journées multi-jours</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-map-marker-alt"></i>
+                Lieu
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  formControlName="location"
+                  class="form-input"
+                />
+                <div class="input-border"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-users"></i>
+                Capacité max
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  formControlName="maxParticipants"
+                  class="form-input"
+                  min="1"
+                  placeholder="Illimité"
+                />
+                <div class="input-border"></div>
+              </div>
+              <span class="form-hint">Laisser vide = illimité</span>
+            </div>
+          </div>
+
+          <div class="form-row form-row--checkbox">
+            <label class="checkbox-wrapper">
+              <input
+                type="checkbox"
+                formControlName="isOnline"
+                class="checkbox-input"
+              />
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label"
+                >Événement en ligne (ou hybride)</span
+              >
+            </label>
+            @if (editForm.get("isOnline")?.value) {
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-video"></i>
+                  Lien de réunion
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="url"
+                    formControlName="meetLink"
+                    class="form-input"
+                    placeholder="https://meet.jit.si/..."
+                  />
+                  <div class="input-border"></div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fas fa-tags"></i>
+              Tags
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                formControlName="tags"
+                class="form-input"
+                placeholder="sécurité, réseaux, IA"
+              />
+              <div class="input-border"></div>
+            </div>
+            <span class="form-hint">Séparez les tags par des virgules</span>
+          </div>
+
+          <!-- Speakers Section -->
+          <div class="form-section">
+            <div class="form-section__header">
+              <div>
+                <h4 class="form-section__title">Intervenants</h4>
+                <p class="form-section__subtitle">
+                  Ajoutez des intervenants à cette activité
+                </p>
+              </div>
+              <button type="button" class="btn-add-sm" (click)="addSpeaker()">
+                <i class="fas fa-plus"></i>
+                Ajouter
+              </button>
+            </div>
+
+            <div class="speakers-list">
+              @for (
+                speaker of speakers.controls;
+                let i = $index;
+                track speaker.get("id")?.value
+              ) {
+                <div [formGroupName]="i" class="speaker-item">
+                  <div class="speaker-item__drag">
+                    <i class="fas fa-grip-vertical"></i>
+                  </div>
+                  <div class="speaker-item__content">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Nom</label>
+                        <input
+                          formControlName="name"
+                          type="text"
+                          class="form-input"
+                          placeholder="Nom de l'intervenant"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Titre / Fonction</label>
+                        <input
+                          formControlName="title"
+                          type="text"
+                          class="form-input"
+                          placeholder="Expert en cybersécurité"
+                        />
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Organisation</label>
+                        <input
+                          formControlName="organization"
+                          type="text"
+                          class="form-input"
+                          placeholder="Entreprise / Institution"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">LinkedIn (optionnel)</label>
+                        <input
+                          formControlName="linkedinUrl"
+                          type="url"
+                          class="form-input"
+                          placeholder="https://linkedin.com/in/..."
+                        />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Bio</label>
+                      <textarea
+                        formControlName="bio"
+                        class="form-textarea"
+                        rows="2"
+                        placeholder="Courte biographie de l'intervenant"
+                      ></textarea>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="speaker-item__remove"
+                    (click)="removeSpeaker(i)"
+                  >
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (speakers.length === 0) {
+              <div class="empty-speakers">
+                <i class="fas fa-user-plus"></i>
+                <p>Aucun intervenant</p>
+                <span>Cliquez sur "Ajouter" pour ajouter un intervenant</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn--ghost"
+            (click)="closeEditModal()"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="btn btn--primary"
+            [disabled]="editSaving()"
+          >
+            @if (editSaving()) {
+              <div class="btn-loader"></div>
+              <span>Sauvegarde...</span>
+            } @else {
+              <i class="fas fa-save"></i>
+              <span>Enregistrer les modifications</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

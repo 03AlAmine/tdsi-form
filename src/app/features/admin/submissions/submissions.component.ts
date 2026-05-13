@@ -1,13 +1,12 @@
+// submissions.component.ts - Version améliorée
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
-import {
-  AiService,
-  SubmissionSummary,
-} from '../../../core/services/ai.service';
+import { AiService, SubmissionSummary } from '../../../core/services/ai.service';
 import { ThemeSubmission } from '../../../core/model/models';
+import { ToastService } from '../../../core/services/toast.service';
 
 type FilterType = 'all' | 'en attente' | 'approuvé' | 'refusé';
 
@@ -21,59 +20,83 @@ type FilterType = 'all' | 'en attente' | 'approuvé' | 'refusé';
 export class SubmissionsComponent {
   private themeService = inject(ThemeService);
   private aiService = inject(AiService);
+  private toast = inject(ToastService);
 
   allSubmissions = signal<ThemeSubmission[]>([]);
   activeFilter = signal<FilterType>('en attente');
   processingId = signal<string | null>(null);
-  commentText = signal<{ [key: string]: string }>({});
+  commentText = signal<Record<string, string>>({});
 
   summaries = signal<Record<string, SubmissionSummary>>({});
   summaryLoading = signal<Record<string, boolean>>({});
   summaryError = signal<Record<string, string>>({});
   summaryExpanded = signal<Record<string, boolean>>({});
 
-  filters: { value: FilterType; label: string }[] = [
-    { value: 'en attente', label: 'En attente' },
-    { value: 'approuvé', label: 'Approuvées' },
-    { value: 'refusé', label: 'Refusées' },
-    { value: 'all', label: 'Toutes' },
+  private subscription: Subscription | null = null;
+
+  filters = [
+    { value: 'en attente' as FilterType, label: 'En attente', icon: 'fa-clock' },
+    { value: 'approuvé' as FilterType, label: 'Approuvées', icon: 'fa-check-circle' },
+    { value: 'refusé' as FilterType, label: 'Refusées', icon: 'fa-times-circle' },
+    { value: 'all' as FilterType, label: 'Toutes', icon: 'fa-list' },
   ];
 
   filteredSubmissions = computed(() => {
     const filter = this.activeFilter();
     if (filter === 'all') return this.allSubmissions();
-    return this.allSubmissions().filter((s) => s.status === filter);
+    return this.allSubmissions().filter(s => s.status === filter);
   });
 
-  pendingCount = computed(
-    () => this.allSubmissions().filter((s) => s.status === 'en attente').length,
+  pendingCount = computed(() =>
+    this.allSubmissions().filter(s => s.status === 'en attente').length
   );
 
   constructor() {
-    this.themeService
-      .getSubmissions()
-      .pipe(takeUntilDestroyed())
-      .subscribe((subs) => this.allSubmissions.set(subs));
+    this.subscription = this.themeService.getSubmissions().subscribe(subs => {
+      this.allSubmissions.set(subs);
+    });
   }
 
-  setFilter(f: FilterType): void {
-    this.activeFilter.set(f);
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
+
+  getStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      'en attente': 'warning',
+      'approuvé': 'success',
+      'refusé': 'danger',
+    };
+    return map[status] || 'neutral';
+  }
+
+  getStatusIcon(status: string): string {
+    const map: Record<string, string> = {
+      'en attente': 'fa-hourglass-half',
+      'approuvé': 'fa-check-circle',
+      'refusé': 'fa-times-circle',
+    };
+    return map[status] || 'fa-circle';
+  }
+
+  setFilter(filter: FilterType): void {
+    this.activeFilter.set(filter);
   }
 
   updateComment(id: string, value: string): void {
-    this.commentText.update((prev) => ({ ...prev, [id]: value }));
+    this.commentText.update(prev => ({ ...prev, [id]: value }));
   }
 
   async analyzeSummary(sub: ThemeSubmission): Promise<void> {
     const id = sub.id!;
 
     if (this.summaries()[id]) {
-      this.summaryExpanded.update((p) => ({ ...p, [id]: !p[id] }));
+      this.summaryExpanded.update(prev => ({ ...prev, [id]: !prev[id] }));
       return;
     }
 
-    this.summaryLoading.update((p) => ({ ...p, [id]: true }));
-    this.summaryError.update((p) => ({ ...p, [id]: '' }));
+    this.summaryLoading.update(prev => ({ ...prev, [id]: true }));
+    this.summaryError.update(prev => ({ ...prev, [id]: '' }));
 
     try {
       const result = await this.aiService.summarizeSubmission({
@@ -88,57 +111,66 @@ export class SubmissionsComponent {
         promo: sub.promo,
       });
 
-      this.summaries.update((p) => ({ ...p, [id]: result }));
-      this.summaryExpanded.update((p) => ({ ...p, [id]: true }));
+      this.summaries.update(prev => ({ ...prev, [id]: result }));
+      this.summaryExpanded.update(prev => ({ ...prev, [id]: true }));
 
       if (!this.commentText()[id]) {
         this.updateComment(id, result.suggestion_commentaire);
       }
+
+      this.toast.success('Analyse IA terminée');
     } catch {
-      this.summaryError.update((p) => ({
-        ...p,
-        [id]: 'Analyse indisponible. Réessaie.',
+      this.summaryError.update(prev => ({
+        ...prev,
+        [id]: 'Analyse indisponible. Veuillez réessayer.',
       }));
+      this.toast.error('Erreur lors de l\'analyse IA');
     } finally {
-      this.summaryLoading.update((p) => ({ ...p, [id]: false }));
+      this.summaryLoading.update(prev => ({ ...prev, [id]: false }));
     }
   }
 
   getSummary(id: string): SubmissionSummary | null {
     return this.summaries()[id] ?? null;
   }
+
   isSummaryLoading(id: string): boolean {
     return this.summaryLoading()[id] ?? false;
   }
+
   isSummaryExpanded(id: string): boolean {
     return this.summaryExpanded()[id] ?? false;
   }
+
   getSummaryError(id: string): string {
     return this.summaryError()[id] ?? '';
   }
 
-  getVerdictClass(v: string): string {
-    return (
-      (
-        {
-          fort: 'verdict--fort',
-          moyen: 'verdict--moyen',
-          faible: 'verdict--faible',
-        } as any
-      )[v] ?? ''
-    );
+  getVerdictClass(verdict: string): string {
+    const map: Record<string, string> = {
+      fort: 'verdict--fort',
+      moyen: 'verdict--moyen',
+      faible: 'verdict--faible',
+    };
+    return map[verdict] || '';
   }
-  getVerdictIcon(v: string): string {
-    return ({ fort: '🟢', moyen: '🟡', faible: '🔴' } as any)[v] ?? '⚪';
+
+  getVerdictIcon(verdict: string): string {
+    const map: Record<string, string> = {
+      fort: 'fa-check-circle',
+      moyen: 'fa-chart-line',
+      faible: 'fa-exclamation-triangle',
+    };
+    return map[verdict] || 'fa-circle';
   }
 
   async approve(sub: ThemeSubmission): Promise<void> {
     this.processingId.set(sub.id!);
     try {
-      await this.themeService.approveSubmission(
-        sub,
-        this.commentText()[sub.id!] ?? '',
-      );
+      await this.themeService.approveSubmission(sub, this.commentText()[sub.id!] ?? '');
+      this.toast.success('Soumission approuvée et publiée');
+    } catch {
+      this.toast.error('Erreur lors de l\'approbation');
     } finally {
       this.processingId.set(null);
     }
@@ -147,30 +179,18 @@ export class SubmissionsComponent {
   async refuse(sub: ThemeSubmission): Promise<void> {
     const comment = this.commentText()[sub.id!] ?? '';
     if (!comment.trim()) {
-      if (!confirm('Aucun commentaire. Confirmer le refus ?')) return;
+      const confirm = window.confirm('Aucun commentaire. Confirmer le refus ?');
+      if (!confirm) return;
     }
+
     this.processingId.set(sub.id!);
     try {
       await this.themeService.refuseSubmission(sub.id!, comment);
+      this.toast.info('Soumission refusée');
+    } catch {
+      this.toast.error('Erreur lors du refus');
     } finally {
       this.processingId.set(null);
     }
-  }
-
-  getStatusBadgeClass(status: string): string {
-    return (
-      (
-        {
-          'en attente': 'badge--warning',
-          approuvé: 'badge--success',
-          refusé: 'badge--danger',
-        } as any
-      )[status] ?? ''
-    );
-  }
-  getStatusIcon(status: string): string {
-    return (
-      ({ 'en attente': '⏳', approuvé: '✓', refusé: '✕' } as any)[status] ?? '●'
-    );
   }
 }

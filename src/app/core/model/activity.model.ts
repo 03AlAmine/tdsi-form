@@ -60,7 +60,7 @@ export interface Activity {
   endDate?: Date;         // pour journées multi-jours
 
   // Lieu
-  location: string;       // texte libre : "Amphi A, ESP Dakar"
+  location: string;       // texte libre : "Amphi A, TDSI Dakar"
   isOnline: boolean;
   meetLink?: string;
 

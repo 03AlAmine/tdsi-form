@@ -17,7 +17,6 @@
   <div class="scan-line"></div>
 
   <div class="auth-container" [class.auth-switched]="showRegister">
-
     <!-- Login Form -->
     <div class="auth-form-box auth-form-login">
       <div class="auth-form-content">
@@ -35,7 +34,7 @@
             </h1>
             <div class="auth-title-line"></div>
           </div>
-          <p class="auth-subtitle">Accédez à votre espace TDSI</p>
+          <p class="auth-subtitle">Accédez à votre espace Club TDSI Campus</p>
         </div>
 
         @if (error()) {
@@ -55,13 +54,18 @@
               <span>Email institutionnel</span>
             </label>
             <div class="input-wrapper">
-              <input type="email" formControlName="email" placeholder="prenom.nom@esp.sn"
-                     [class.error]="isInvalid('email')" autocomplete="email" />
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="prenom.nom@clubtdsi.sn"
+                [class.error]="isInvalid('email')"
+                autocomplete="email"
+              />
               <div class="input-border"></div>
               <i class="fas fa-envelope input-icon"></i>
               <div class="input-shine"></div>
             </div>
-            @if (isInvalid('email')) {
+            @if (isInvalid("email")) {
               <span class="form-error">
                 <i class="fas fa-circle-exclamation"></i>
                 Veuillez entrer un email valide
@@ -75,15 +79,23 @@
               <span>Mot de passe</span>
             </label>
             <div class="input-wrapper">
-              <input [type]="showPassword() ? 'text' : 'password'" formControlName="password"
-                     placeholder="••••••••" [class.error]="isInvalid('password')"
-                     autocomplete="current-password" />
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                [class.error]="isInvalid('password')"
+                autocomplete="current-password"
+              />
               <div class="input-border"></div>
-              <i class="fas input-icon" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"
-                 (click)="togglePassword()"></i>
+              <i
+                class="fas input-icon"
+                [class.fa-eye]="!showPassword()"
+                [class.fa-eye-slash]="showPassword()"
+                (click)="togglePassword()"
+              ></i>
               <div class="input-shine"></div>
             </div>
-            @if (isInvalid('password')) {
+            @if (isInvalid("password")) {
               <span class="form-error">
                 <i class="fas fa-circle-exclamation"></i>
                 Mot de passe requis (minimum 6 caractères)
@@ -97,10 +109,16 @@
               <span class="checkbox-custom"></span>
               <span class="checkbox-label">Se souvenir de moi</span>
             </label>
-            <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+            <a routerLink="/forgot-password" class="forgot-link"
+              >Mot de passe oublié ?</a
+            >
           </div>
 
-          <button type="submit" class="auth-btn auth-btn--primary" [disabled]="loading()">
+          <button
+            type="submit"
+            class="auth-btn auth-btn--primary"
+            [disabled]="loading()"
+          >
             @if (loading()) {
               <div class="btn-loader"></div>
               <span>Connexion en cours...</span>
@@ -144,7 +162,9 @@
               Content de vous<br />revoir sur
               <span class="gradient-text">TDSI</span>
             </h2>
-            <p class="toggle-desc">Votre communauté tech — Apprenez, Partagez, Innovez</p>
+            <p class="toggle-desc">
+              Votre communauté tech — Apprenez, Partagez, Innovez
+            </p>
 
             <div class="toggle-stats">
               <div class="stat">
@@ -184,7 +204,9 @@
               Rejoignez<br />la révolution
               <span class="gradient-text">tech</span>
             </h2>
-            <p class="toggle-desc">Devenez membre de la première communauté tech de l'ESP</p>
+            <p class="toggle-desc">
+              Devenez membre de la première communauté tech de l'UCAD
+            </p>
 
             <div class="toggle-features">
               <div class="feature">
@@ -235,7 +257,7 @@
             </h1>
             <div class="auth-title-line"></div>
           </div>
-          <p class="auth-subtitle">Créez votre compte TDSI</p>
+          <p class="auth-subtitle">Créez votre compte Club TDSI</p>
         </div>
 
         @if (registerError()) {
@@ -248,7 +270,11 @@
           </div>
         }
 
-        <form [formGroup]="registerForm" (ngSubmit)="registerSubmit()" class="auth-form">
+        <form
+          [formGroup]="registerForm"
+          (ngSubmit)="registerSubmit()"
+          class="auth-form"
+        >
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">
@@ -256,14 +282,21 @@
                 <span>Nom complet</span>
               </label>
               <div class="input-wrapper">
-                <input type="text" formControlName="displayName" placeholder="Fatou Diallo"
-                       [class.error]="isRegInvalid('displayName')" autocomplete="name" />
+                <input
+                  type="text"
+                  formControlName="displayName"
+                  placeholder="Fatou Diallo"
+                  [class.error]="isRegInvalid('displayName')"
+                  autocomplete="name"
+                />
                 <div class="input-border"></div>
                 <i class="fas fa-user input-icon"></i>
                 <div class="input-shine"></div>
               </div>
-              @if (isRegInvalid('displayName')) {
-                <span class="form-error">Nom complet requis (minimum 3 caractères)</span>
+              @if (isRegInvalid("displayName")) {
+                <span class="form-error"
+                  >Nom complet requis (minimum 3 caractères)</span
+                >
               }
             </div>
 
@@ -273,8 +306,13 @@
                 <span>Promotion</span>
               </label>
               <div class="input-wrapper">
-                <select formControlName="promo" [class.error]="isRegInvalid('promo')">
-                  <option value="" disabled selected>Sélectionnez votre promo</option>
+                <select
+                  formControlName="promo"
+                  [class.error]="isRegInvalid('promo')"
+                >
+                  <option value="" disabled selected>
+                    Sélectionnez votre promo
+                  </option>
                   @for (p of promos; track p) {
                     <option [value]="p">{{ p }}</option>
                   }
@@ -283,8 +321,10 @@
                 <i class="fas fa-chevron-down input-icon"></i>
                 <div class="input-shine"></div>
               </div>
-              @if (isRegInvalid('promo')) {
-                <span class="form-error">Veuillez sélectionner une promotion</span>
+              @if (isRegInvalid("promo")) {
+                <span class="form-error"
+                  >Veuillez sélectionner une promotion</span
+                >
               }
             </div>
           </div>
@@ -295,14 +335,21 @@
               <span>Email institutionnel</span>
             </label>
             <div class="input-wrapper">
-              <input type="email" formControlName="email" placeholder="prenom.nom@esp.sn"
-                     [class.error]="isRegInvalid('email')" autocomplete="email" />
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="prenom.nom@clubtdsi.sn"
+                [class.error]="isRegInvalid('email')"
+                autocomplete="email"
+              />
               <div class="input-border"></div>
               <i class="fas fa-envelope input-icon"></i>
               <div class="input-shine"></div>
             </div>
-            @if (isRegInvalid('email')) {
-              <span class="form-error">Veuillez entrer un email valide (&#64;esp.sn)</span>
+            @if (isRegInvalid("email")) {
+              <span class="form-error"
+                >Veuillez entrer un email valide (&#64;clubtdsi.sn)</span
+              >
             }
           </div>
 
@@ -313,15 +360,23 @@
                 <span>Mot de passe</span>
               </label>
               <div class="input-wrapper">
-                <input [type]="showRegPassword() ? 'text' : 'password'" formControlName="password"
-                       placeholder="Minimum 6 caractères" [class.error]="isRegInvalid('password')"
-                       autocomplete="new-password" />
+                <input
+                  [type]="showRegPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="Minimum 6 caractères"
+                  [class.error]="isRegInvalid('password')"
+                  autocomplete="new-password"
+                />
                 <div class="input-border"></div>
-                <i class="fas input-icon" [class.fa-eye]="!showRegPassword()" [class.fa-eye-slash]="showRegPassword()"
-                   (click)="toggleRegPassword()"></i>
+                <i
+                  class="fas input-icon"
+                  [class.fa-eye]="!showRegPassword()"
+                  [class.fa-eye-slash]="showRegPassword()"
+                  (click)="toggleRegPassword()"
+                ></i>
                 <div class="input-shine"></div>
               </div>
-              @if (isRegInvalid('password')) {
+              @if (isRegInvalid("password")) {
                 <span class="form-error">Minimum 6 caractères</span>
               }
             </div>
@@ -332,11 +387,20 @@
                 <span>Confirmer</span>
               </label>
               <div class="input-wrapper">
-                <input [type]="showRegPassword() ? 'text' : 'password'" formControlName="confirm"
-                       placeholder="Répéter le mot de passe" [class.error]="passwordMismatch"
-                       autocomplete="new-password" />
+                <input
+                  [type]="showRegPassword() ? 'text' : 'password'"
+                  formControlName="confirm"
+                  placeholder="Répéter le mot de passe"
+                  [class.error]="passwordMismatch"
+                  autocomplete="new-password"
+                />
                 <div class="input-border"></div>
-                <i class="fas fa-check input-icon" [class.text-success]="!passwordMismatch && registerForm.get('confirm')?.value"></i>
+                <i
+                  class="fas fa-check input-icon"
+                  [class.text-success]="
+                    !passwordMismatch && registerForm.get('confirm')?.value
+                  "
+                ></i>
                 <div class="input-shine"></div>
               </div>
             </div>
@@ -354,12 +418,17 @@
               <input type="checkbox" class="checkbox-input" required />
               <span class="checkbox-custom"></span>
               <span class="checkbox-label">
-                J'accepte les <a href="#" class="terms-link">conditions d'utilisation</a>
+                J'accepte les
+                <a href="#" class="terms-link">conditions d'utilisation</a>
               </span>
             </label>
           </div>
 
-          <button type="submit" class="auth-btn auth-btn--primary" [disabled]="regLoading()">
+          <button
+            type="submit"
+            class="auth-btn auth-btn--primary"
+            [disabled]="regLoading()"
+          >
             @if (regLoading()) {
               <div class="btn-loader"></div>
               <span>Création du compte...</span>

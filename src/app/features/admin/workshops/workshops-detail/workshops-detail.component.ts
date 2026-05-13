@@ -1,11 +1,12 @@
-import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
+// workshops-detail.component.ts - Version améliorée
+import { Component, Output, EventEmitter, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Workshop } from '../../../../core/model/models';
+import { GuestRegistration } from '../../../../core/model/guest-registration.model';
 import { db } from '../../../../../firebase.config';
 import { doc, getDoc } from 'firebase/firestore';
 import { PublicRegistrationService } from '../../../../core/services/public-registration.service';
-import { GuestRegistration } from '../../../../core/model/guest-registration.model';
 
 interface ParticipantInfo {
   uid: string;
@@ -22,13 +23,13 @@ interface ParticipantInfo {
   styleUrls: ['./workshops-detail.component.scss']
 })
 export class WorkshopDetailComponent {
-  @Input() workshop: Workshop | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() edit = new EventEmitter<Workshop>();
   @Output() delete = new EventEmitter<Workshop>();
 
   private publicRegistrationService = inject(PublicRegistrationService);
 
+  workshop: Workshop | null = null;
   isOpen = signal(false);
   participants = signal<ParticipantInfo[]>([]);
   guestRegistrations = signal<GuestRegistration[]>([]);
@@ -44,11 +45,10 @@ export class WorkshopDetailComponent {
     this.isOpen.set(true);
     document.body.style.overflow = 'hidden';
 
-    // Charger les participants membres
-    await this.loadParticipantsInfo();
-
-    // Charger les invités
-    await this.loadGuestRegistrations();
+    await Promise.all([
+      this.loadParticipantsInfo(),
+      this.loadGuestRegistrations()
+    ]);
   }
 
   closeModal(): void {
@@ -65,7 +65,6 @@ export class WorkshopDetailComponent {
 
     this.loadingParticipants.set(true);
     try {
-      // Tous les getDoc lancés en parallèle — 1 RTT au lieu de N
       const snaps = await Promise.all(
         this.workshop.registrations.map(uid => getDoc(doc(db, 'users', uid)))
       );
@@ -73,20 +72,19 @@ export class WorkshopDetailComponent {
       const participantsList: ParticipantInfo[] = snaps.map((userSnap, i) => {
         const uid = this.workshop!.registrations[i];
         if (userSnap.exists()) {
-          const d = userSnap.data();
+          const data = userSnap.data();
           return {
             uid,
-            displayName: d['displayName'] || 'Inconnu',
-            email: d['email'] || 'Non disponible',
-            promo: d['promo'] || 'Non spécifié'
+            displayName: data['displayName'] || 'Inconnu',
+            email: data['email'] || 'Non disponible',
+            promo: data['promo'] || 'Non spécifié'
           };
         }
         return { uid, displayName: 'Utilisateur inconnu', email: 'Non disponible', promo: 'Non spécifié' };
       });
 
       this.participants.set(participantsList);
-    } catch (error) {
-      console.error('Erreur chargement participants:', error);
+    } catch {
       this.participants.set([]);
     } finally {
       this.loadingParticipants.set(false);
@@ -103,12 +101,29 @@ export class WorkshopDetailComponent {
     try {
       const guests = await this.publicRegistrationService.getRegistrationsByWorkshop(this.workshop.id);
       this.guestRegistrations.set(guests);
-    } catch (error) {
-      console.error('Erreur chargement invités:', error);
+    } catch {
       this.guestRegistrations.set([]);
     } finally {
       this.loadingGuests.set(false);
     }
+  }
+
+  getAvailablePlaces(): number {
+    if (!this.workshop?.maxParticipants) return 0;
+    const total = (this.workshop.registrations?.length || 0) + this.guestRegistrations().length;
+    return Math.max(0, this.workshop.maxParticipants - total);
+  }
+
+  getFieldIcon(type: string): string {
+    const icons: Record<string, string> = {
+      text: 'fa-font',
+      email: 'fa-envelope',
+      number: 'fa-hashtag',
+      textarea: 'fa-align-left',
+      select: 'fa-caret-down',
+      checkbox: 'fa-check-square'
+    };
+    return icons[type] || 'fa-pen';
   }
 
   openParticipantProfile(participant: ParticipantInfo, event: Event): void {
@@ -119,10 +134,7 @@ export class WorkshopDetailComponent {
 
   closeParticipantModal(): void {
     this.showParticipantModal.set(false);
-    setTimeout(() => {
-      this.selectedParticipant.set(null);
-      document.body.style.overflow = '';
-    }, 300);
+    setTimeout(() => this.selectedParticipant.set(null), 300);
   }
 
   openGuestProfile(guest: GuestRegistration, event: Event): void {
@@ -133,10 +145,7 @@ export class WorkshopDetailComponent {
 
   closeGuestModal(): void {
     this.showGuestModal.set(false);
-    setTimeout(() => {
-      this.selectedGuest.set(null);
-      document.body.style.overflow = '';
-    }, 300);
+    setTimeout(() => this.selectedGuest.set(null), 300);
   }
 
   async checkInGuest(guestId: string): Promise<void> {
@@ -153,7 +162,7 @@ export class WorkshopDetailComponent {
   }
 
   onDelete(): void {
-    if (this.workshop && confirm(`Supprimer le workshop "${this.workshop.themeTitle}" ?`)) {
+    if (this.workshop) {
       this.delete.emit(this.workshop);
       this.closeModal();
     }
@@ -161,21 +170,25 @@ export class WorkshopDetailComponent {
 
   getStatusInfo(status: string): { label: string; icon: string; color: string } {
     const map: Record<string, { label: string; icon: string; color: string }> = {
-      'planifié': { label: 'Planifié', icon: '📋', color: 'info' },
-      'en cours': { label: 'En cours', icon: '▶️', color: 'primary' },
-      'terminé': { label: 'Terminé', icon: '✅', color: 'success' },
-      'annulé': { label: 'Annulé', icon: '❌', color: 'danger' }
+      'planifié': { label: 'Planifié', icon: 'fa-clock', color: 'info' },
+      'en cours': { label: 'En cours', icon: 'fa-play-circle', color: 'primary' },
+      'terminé': { label: 'Terminé', icon: 'fa-check-circle', color: 'success' },
+      'annulé': { label: 'Annulé', icon: 'fa-ban', color: 'danger' }
     };
-    return map[status] || { label: status, icon: '●', color: 'neutral' };
+    return map[status] || { label: status, icon: 'fa-circle', color: 'neutral' };
   }
 
   getLocationInfo(location: string): { icon: string; label: string } {
     const map: Record<string, { icon: string; label: string }> = {
-      'en ligne': { icon: '💻', label: 'En ligne' },
-      'présentiel': { icon: '🏛️', label: 'Présentiel' },
-      'hybride': { icon: '🔄', label: 'Hybride' }
+      'en ligne': { icon: 'fa-wifi', label: 'En ligne' },
+      'présentiel': { icon: 'fa-building', label: 'Présentiel' },
+      'hybride': { icon: 'fa-sync-alt', label: 'Hybride' }
     };
-    return map[location] || { icon: '📍', label: location };
+    return map[location] || { icon: 'fa-map-marker-alt', label: location };
+  }
+
+  getLocationIconClass(location: string): string {
+    return this.getLocationInfo(location).icon;
   }
 
   formatDuration(minutes: number): string {

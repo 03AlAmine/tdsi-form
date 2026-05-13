@@ -9,18 +9,27 @@
    ============================================================ */
 .themes-hero {
   position: relative;
-  padding: 3rem 0 4rem;
-  background: radial-gradient(ellipse at 50% 0%, rgba(0, 212, 255, 0.08), transparent);
+  padding: 2rem 0 3rem;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(0, 212, 255, 0.08),
+    transparent
+  );
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--tech-cyan), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--tech-cyan),
+      transparent
+    );
   }
 
   &__content {
@@ -342,7 +351,11 @@
   &__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.9), rgba(0, 212, 255, 0.7));
+    background: linear-gradient(
+      135deg,
+      rgba(0, 212, 255, 0.9),
+      rgba(0, 212, 255, 0.7)
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -430,10 +443,18 @@
     font-size: 0.625rem;
   }
 
-  &--green { color: var(--tech-success); }
-  &--amber { color: var(--tech-warning); }
-  &--red { color: var(--tech-danger); }
-  &--neutral { color: var(--gray-500); }
+  &--green {
+    color: var(--tech-success);
+  }
+  &--amber {
+    color: var(--tech-warning);
+  }
+  &--red {
+    color: var(--tech-danger);
+  }
+  &--neutral {
+    color: var(--gray-500);
+  }
 }
 
 .participants {
@@ -463,7 +484,11 @@
    RECOMMENDATIONS SECTION
    ============================================================ */
 .reco-section {
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(139, 92, 246, 0.03));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.05),
+    rgba(139, 92, 246, 0.03)
+  );
   border: 1px solid rgba(0, 212, 255, 0.15);
   border-radius: var(--radius-xl);
   padding: 1.5rem;
@@ -505,7 +530,8 @@
   font-size: 2rem;
 }
 
-.reco-refresh, .reco-close {
+.reco-refresh,
+.reco-close {
   width: 32px;
   height: 32px;
   display: flex;
@@ -625,14 +651,25 @@
 
   .skeleton-line {
     height: 12px;
-    background: linear-gradient(90deg, rgba(0, 212, 255, 0.05), rgba(0, 212, 255, 0.1), rgba(0, 212, 255, 0.05));
+    background: linear-gradient(
+      90deg,
+      rgba(0, 212, 255, 0.05),
+      rgba(0, 212, 255, 0.1),
+      rgba(0, 212, 255, 0.05)
+    );
     border-radius: var(--radius-sm);
     margin-bottom: 0.75rem;
     animation: shimmer 1.5s infinite;
 
-    &.short { width: 40%; }
-    &.medium { width: 70%; }
-    &.long { width: 90%; }
+    &.short {
+      width: 40%;
+    }
+    &.medium {
+      width: 70%;
+    }
+    &.long {
+      width: 90%;
+    }
   }
 }
 
@@ -725,11 +762,17 @@
   gap: 1rem;
   margin: 2rem 0 1.5rem;
 
-  &::before, &::after {
-    content: '';
+  &::before,
+  &::after {
+    content: "";
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(0, 212, 255, 0.2),
+      transparent
+    );
   }
 
   span {
@@ -861,13 +904,21 @@
     }
 
     &--highlight {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(139, 92, 246, 0.02));
+      background: linear-gradient(
+        135deg,
+        rgba(0, 212, 255, 0.05),
+        rgba(139, 92, 246, 0.02)
+      );
       border-radius: var(--radius-lg);
       padding: 1rem;
     }
 
     &--bonus {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), transparent);
+      background: linear-gradient(
+        135deg,
+        rgba(139, 92, 246, 0.05),
+        transparent
+      );
       border-radius: var(--radius-lg);
       padding: 1rem;
       border: 1px solid rgba(139, 92, 246, 0.15);
@@ -948,10 +999,22 @@
 }
 
 .difficulty-badge {
-  &--green { background: rgba(16, 185, 129, 0.12); color: var(--tech-success); }
-  &--amber { background: rgba(245, 158, 11, 0.12); color: var(--tech-warning); }
-  &--red { background: rgba(239, 68, 68, 0.12); color: var(--tech-danger); }
-  &--neutral { background: rgba(255, 255, 255, 0.05); color: var(--gray-400); }
+  &--green {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--tech-success);
+  }
+  &--amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--tech-warning);
+  }
+  &--red {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--tech-danger);
+  }
+  &--neutral {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--gray-400);
+  }
 }
 
 .duration-badge {
@@ -1236,27 +1299,48 @@
    ANIMATIONS
    ============================================================ */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes spin-reverse {
-  to { transform: rotate(-360deg); }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.9); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 @keyframes progress {
-  0% { width: 0%; }
-  50% { width: 70%; }
-  100% { width: 100%; }
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 .animate-slide-up {

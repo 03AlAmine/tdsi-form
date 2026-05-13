@@ -272,7 +272,7 @@ export class ConfirmationPdfService {
 
     y += 5;
     pdf.text(
-      'club-tdsi-sign.web.app · Club TDSI — ESP Dakar',
+      'club-tdsi-sign.web.app · Club TDSI — UCAD Dakar',
       W / 2, y,
       { align: 'center' }
     );

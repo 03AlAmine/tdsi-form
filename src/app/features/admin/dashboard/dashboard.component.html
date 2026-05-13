@@ -1,152 +1,225 @@
+<!-- dashboard.component.html -->
 <div class="dashboard">
+
+  <!-- Header -->
   <div class="dashboard__header">
-    <h1 class="dashboard__title">Tableau de bord</h1>
-    <p class="dashboard__subtitle">Bienvenue, Administrateur 👋</p>
+    <div>
+      <h1 class="dashboard__title">Tableau de bord</h1>
+      <p class="dashboard__subtitle">Bienvenue, {{ adminName }} 👋</p>
+    </div>
+    <div class="dashboard__date">
+      <i class="fas fa-calendar-alt"></i>
+      <span>{{ currentDate | date:'EEEE d MMMM yyyy' }}</span>
+    </div>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
-      <div class="spinner"></div>
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring-inner"></div>
+      </div>
+      <p>Chargement des données...</p>
     </div>
   } @else {
-    <!-- Stats Grid -->
+
+    <!-- Stats Cards -->
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-card__icon stat-card__icon--themes">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
+      <div class="stat-card stat-card--themes">
+        <div class="stat-card__icon">
+          <i class="fas fa-layer-group"></i>
         </div>
         <div class="stat-card__content">
           <span class="stat-card__value">{{ stats().totalThemes }}</span>
           <span class="stat-card__label">Thématiques</span>
         </div>
+        <div class="stat-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ stats().themesGrowth }}%</span>
+        </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-card__icon stat-card__icon--workshops">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
+      <div class="stat-card stat-card--workshops">
+        <div class="stat-card__icon">
+          <i class="fas fa-chalkboard-user"></i>
         </div>
         <div class="stat-card__content">
           <span class="stat-card__value">{{ stats().totalWorkshops }}</span>
           <span class="stat-card__label">Workshops</span>
         </div>
+        <div class="stat-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ stats().workshopsGrowth }}%</span>
+        </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-card__icon stat-card__icon--pending">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
+      <div class="stat-card stat-card--members">
+        <div class="stat-card__icon">
+          <i class="fas fa-users"></i>
         </div>
         <div class="stat-card__content">
-          <span class="stat-card__value">{{ stats().pendingSubmissions }}</span>
-          <span class="stat-card__label">En attente</span>
+          <span class="stat-card__value">{{ stats().totalMembers }}</span>
+          <span class="stat-card__label">Membres</span>
+        </div>
+        <div class="stat-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ stats().membersGrowth }}%</span>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-card__icon stat-card__icon--users">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+      <div class="stat-card stat-card--registrations">
+        <div class="stat-card__icon">
+          <i class="fas fa-ticket-alt"></i>
         </div>
         <div class="stat-card__content">
           <span class="stat-card__value">{{ stats().totalRegistrations }}</span>
           <span class="stat-card__label">Inscriptions</span>
         </div>
+        <div class="stat-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ stats().registrationsGrowth }}%</span>
+        </div>
       </div>
     </div>
 
-    <!-- Recent Workshops & Pending Submissions -->
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <!-- Activity Chart -->
+      <div class="chart-card">
+        <div class="chart-card__header">
+          <h3>Activité mensuelle</h3>
+          <div class="chart-legend">
+            <span><i class="fas fa-circle" style="color: #00d4ff"></i> Workshops</span>
+            <span><i class="fas fa-circle" style="color: #8b5cf6"></i> Inscriptions</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas #activityChart></canvas>
+        </div>
+      </div>
+
+      <!-- Category Distribution -->
+      <div class="chart-card">
+        <div class="chart-card__header">
+          <h3>Répartition par catégorie</h3>
+        </div>
+        <div class="chart-container">
+          <canvas #categoryChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submissions Status -->
+    <div class="submissions-status">
+      <div class="status-card">
+        <div class="status-card__header">
+          <i class="fas fa-clock"></i>
+          <span>Soumissions en attente</span>
+          <span class="status-card__badge">{{ stats().pendingSubmissions }}</span>
+        </div>
+        <div class="status-card__progress">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="pendingPercentage()"></div>
+          </div>
+        </div>
+        <div class="status-card__footer">
+          <span>{{ stats().approvedSubmissions }} approuvées</span>
+          <span>{{ stats().refusedSubmissions }} refusées</span>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-card__header">
+          <i class="fas fa-check-circle"></i>
+          <span>Taux de participation</span>
+          <span class="status-card__badge">{{ participationRate() }}%</span>
+        </div>
+        <div class="status-card__progress">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="participationRate()"></div>
+          </div>
+        </div>
+        <div class="status-card__footer">
+          <span>{{ stats().totalRegistrations }} inscriptions</span>
+          <span>{{ stats().confirmedPresences }} présences</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity Tables -->
     <div class="dashboard-grid">
       <!-- Recent Workshops -->
-      <div class="dashboard-card">
-        <div class="dashboard-card__header">
-          <h3 class="dashboard-card__title">Workshops récents</h3>
-          <a routerLink="/admin/workshops" class="dashboard-card__link">
-            Voir tout
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+      <div class="data-table">
+        <div class="data-table__header">
+          <h3>Workshops récents</h3>
+          <a routerLink="/admin/workshops" class="data-table__link">
+            Voir tout <i class="fas fa-arrow-right"></i>
           </a>
         </div>
-
-        <div class="dashboard-card__body">
+        <div class="data-table__body">
           @if (recentWorkshops().length === 0) {
-            <div class="empty-message">
-              <span>📅</span>
-              <p>Aucun workshop pour le moment</p>
+            <div class="empty-state-small">
+              <i class="fas fa-calendar-alt"></i>
+              <p>Aucun workshop</p>
             </div>
           } @else {
-            <div class="recent-list">
-              @for (workshop of recentWorkshops(); track workshop.id) {
-                <div class="recent-item">
-                  <div class="recent-item__info">
-                    <div class="recent-item__title">{{ workshop.themeTitle }}</div>
-                    <div class="recent-item__meta">
-                      <span class="badge badge--sm" [class.badge--primary]="workshop.status === 'planifié'">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Titre</th><th>Date</th><th>Statut</th><th>Inscrits</th></tr>
+              </thead>
+              <tbody>
+                @for (workshop of recentWorkshops(); track workshop.id) {
+                  <tr>
+                    <td class="title">{{ workshop.themeTitle }}</td>
+                    <td>{{ workshop.date | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      <span class="status-badge" [class]="'status-badge--' + workshop.status">
                         {{ workshop.status }}
                       </span>
-                      <span>{{ workshop.date | date:'dd/MM/yyyy' }}</span>
-                    </div>
-                  </div>
-                  <div class="recent-item__stats">
-                    <span>{{ workshop.registrations?.length || 0 }} inscrits</span>
-                  </div>
-                </div>
-              }
-            </div>
+                    </td>
+                    <td>{{ workshop.registrations?.length || 0 }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           }
         </div>
       </div>
 
       <!-- Pending Submissions -->
-      <div class="dashboard-card">
-        <div class="dashboard-card__header">
-          <h3 class="dashboard-card__title">Soumissions en attente</h3>
-          <a routerLink="/admin/soumissions" class="dashboard-card__link">
-            Voir tout
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+      <div class="data-table">
+        <div class="data-table__header">
+          <h3>Soumissions à traiter</h3>
+          <a routerLink="/admin/soumissions" class="data-table__link">
+            Voir tout <i class="fas fa-arrow-right"></i>
           </a>
         </div>
-
-        <div class="dashboard-card__body">
+        <div class="data-table__body">
           @if (pendingSubmissionsList().length === 0) {
-            <div class="empty-message">
-              <span>✅</span>
+            <div class="empty-state-small">
+              <i class="fas fa-check-circle"></i>
               <p>Aucune soumission en attente</p>
             </div>
           } @else {
-            <div class="pending-list">
-              @for (sub of pendingSubmissionsList(); track sub.id) {
-                <div class="pending-item">
-                  <div class="pending-item__title">{{ sub.proposedTitle }}</div>
-                  <div class="pending-item__meta">
-                    <span>{{ sub.studentName }}</span>
-                    <span>{{ sub.promo }}</span>
-                  </div>
-                  <a routerLink="/admin/soumissions" class="pending-item__action">
-                    Traiter
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                  </a>
-                </div>
-              }
-            </div>
+            <table class="admin-table">
+              <thead>
+                <tr><th>Titre</th><th>Étudiant</th><th>Promo</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (sub of pendingSubmissionsList(); track sub.id) {
+                  <tr>
+                    <td class="title">{{ sub.proposedTitle }}</td>
+                    <td>{{ sub.studentName }}</td>
+                    <td>{{ sub.promo }}</td>
+                    <td class="actions">
+                      <a routerLink="/admin/soumissions" class="action-btn">
+                        <i class="fas fa-chevron-right"></i>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           }
         </div>
       </div>
@@ -154,27 +227,34 @@
 
     <!-- Quick Actions -->
     <div class="quick-actions">
-      <h3 class="quick-actions__title">Actions rapides</h3>
+      <h3>Actions rapides</h3>
       <div class="quick-actions__grid">
         <a routerLink="/admin/themes" class="quick-action">
-          <div class="quick-action__icon">➕</div>
-          <div class="quick-action__content">
+          <i class="fas fa-plus-circle"></i>
+          <div>
             <div class="quick-action__title">Nouvelle thématique</div>
             <div class="quick-action__desc">Ajouter un sujet de workshop</div>
           </div>
         </a>
         <a routerLink="/admin/workshops" class="quick-action">
-          <div class="quick-action__icon">📅</div>
-          <div class="quick-action__content">
+          <i class="fas fa-calendar-plus"></i>
+          <div>
             <div class="quick-action__title">Planifier un workshop</div>
             <div class="quick-action__desc">Organiser une session</div>
           </div>
         </a>
         <a routerLink="/admin/soumissions" class="quick-action">
-          <div class="quick-action__icon">📋</div>
-          <div class="quick-action__content">
-            <div class="quick-action__title">Voir les soumissions</div>
+          <i class="fas fa-clipboard-list"></i>
+          <div>
+            <div class="quick-action__title">Gérer les soumissions</div>
             <div class="quick-action__desc">Approuver ou refuser</div>
+          </div>
+        </a>
+        <a routerLink="/admin/activites" class="quick-action">
+          <i class="fas fa-calendar-alt"></i>
+          <div>
+            <div class="quick-action__title">Événements</div>
+            <div class="quick-action__desc">Créer une activité</div>
           </div>
         </a>
       </div>

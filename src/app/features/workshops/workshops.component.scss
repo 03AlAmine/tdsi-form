@@ -9,18 +9,27 @@
    ============================================================ */
 .workshops-hero {
   position: relative;
-  padding: 3rem 0 4rem;
-  background: radial-gradient(ellipse at 50% 0%, rgba(0, 212, 255, 0.08), transparent);
+  padding: 2rem 0 3rem;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(0, 212, 255, 0.08),
+    transparent
+  );
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--tech-cyan), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--tech-cyan),
+      transparent
+    );
   }
 
   &__content {
@@ -336,7 +345,11 @@
 .guest-cta-banner {
   margin: 2rem 0;
   padding: 2rem;
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(139, 92, 246, 0.04));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.08),
+    rgba(139, 92, 246, 0.04)
+  );
   border-radius: var(--radius-2xl);
   border: 1px solid rgba(0, 212, 255, 0.2);
 
@@ -546,7 +559,11 @@
     }
 
     &--bonus {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), transparent);
+      background: linear-gradient(
+        135deg,
+        rgba(139, 92, 246, 0.05),
+        transparent
+      );
       border-radius: var(--radius-lg);
       padding: 1rem;
       border: 1px solid rgba(139, 92, 246, 0.15);
@@ -1142,7 +1159,7 @@
   .btn-loader {
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
@@ -1153,22 +1170,39 @@
    ANIMATIONS
    ============================================================ */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes spin-reverse {
-  to { transform: rotate(-360deg); }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.9); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
 }
 
 @keyframes progress {
-  0% { width: 0%; }
-  50% { width: 70%; }
-  100% { width: 100%; }
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
 }
 
 /* ============================================================

@@ -106,12 +106,12 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 1px;
   background: linear-gradient(90deg, transparent, var(--tech-cyan), var(--tech-purple), transparent);
   animation: scan 8s linear infinite;
-  opacity: 0.5;
+  opacity: 0.2;
   pointer-events: none;
-  z-index: 1;
+  z-index: 3;
 }
 
 @keyframes scan {
@@ -344,8 +344,6 @@
 }
 
 .input-wrapper {
-  position: relative;
-
   input, select {
     width: 100%;
     padding: 0.875rem 2.5rem 0.875rem 1rem;

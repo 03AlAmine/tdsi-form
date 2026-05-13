@@ -1,331 +1,295 @@
+<!-- submissions.component.html -->
 <div class="submissions">
+
+  <!-- Header -->
   <div class="page-header">
     <div>
-      <h1 class="page-header__title">Soumissions</h1>
+      <h1 class="page-header__title">
+        <i class="fas fa-file-alt"></i>
+        Soumissions
+      </h1>
       <p class="page-header__subtitle">Gérer les propositions des étudiants</p>
     </div>
     <div class="page-header__stats">
-      <div class="stat-badge">
-        <span class="stat-badge__label">En attente</span>
-        <span class="stat-badge__value">{{ pendingCount() }}</span>
+      <div class="pending-badge">
+        <i class="fas fa-clock"></i>
+        <span>En attente</span>
+        <strong>{{ pendingCount() }}</strong>
       </div>
     </div>
   </div>
 
   <!-- Filters -->
-  <div class="filters">
-    @for (filter of filters; track filter.value) {
-      <button
-        class="filter-chip"
-        [class.filter-chip--active]="activeFilter() === filter.value"
-        (click)="setFilter(filter.value)"
-      >
-        {{ filter.label }}
-        @if (filter.value === "en attente" && pendingCount() > 0) {
-          <span class="filter-chip__count">{{ pendingCount() }}</span>
-        }
-      </button>
-    }
+  <div class="filters-section">
+    <div class="filters-scroll">
+      @for (filter of filters; track filter.value) {
+        <button class="filter-chip"
+                [class.active]="activeFilter() === filter.value"
+                (click)="setFilter(filter.value)">
+          <i class="fas {{ filter.icon }}"></i>
+          {{ filter.label }}
+          @if (filter.value === 'en attente' && pendingCount() > 0) {
+            <span class="filter-count">{{ pendingCount() }}</span>
+          }
+        </button>
+      }
+    </div>
   </div>
 
   <!-- Submissions List -->
   @if (filteredSubmissions().length === 0) {
     <div class="empty-state">
-      <div class="empty-state__icon">📋</div>
-      <h3 class="empty-state__title">Aucune soumission</h3>
-      <p class="empty-state__description">
+      <div class="empty-state__icon">
+        <i class="fas fa-inbox"></i>
+      </div>
+      <h3>Aucune soumission</h3>
+      <p>
         @switch (activeFilter()) {
-          @case ("en attente") {
-            Aucune soumission en attente de validation.
-          }
-          @case ("approuvé") {
-            Aucune soumission approuvée pour le moment.
-          }
-          @case ("refusé") {
-            Aucune soumission refusée.
-          }
-          @default {
-            Aucune soumission trouvée.
-          }
+          @case ('en attente') { Aucune soumission en attente de validation. }
+          @case ('approuvé') { Aucune soumission approuvée pour le moment. }
+          @case ('refusé') { Aucune soumission refusée. }
+          @default { Aucune soumission trouvée. }
         }
       </p>
     </div>
   } @else {
     <div class="submissions-list">
       @for (sub of filteredSubmissions(); track sub.id) {
-        <div
-          class="submission-card"
-          [class.submission-card--approved]="sub.status === 'approuvé'"
-        >
-          <!-- Status Indicator -->
-          <div class="submission-card__status" [attr.data-status]="sub.status">
-            <span
-              class="status-indicator"
-              [class.status-indicator--pending]="sub.status === 'en attente'"
-              [class.status-indicator--approved]="sub.status === 'approuvé'"
-              [class.status-indicator--refused]="sub.status === 'refusé'"
-            >
-              {{ getStatusIcon(sub.status) }}
-            </span>
-          </div>
+        <div class="submission-card"
+             [class.status-pending]="sub.status === 'en attente'"
+             [class.status-approved]="sub.status === 'approuvé'"
+             [class.status-refused]="sub.status === 'refusé'">
 
-          <!-- Content -->
+          <!-- Status Bar -->
+          <div class="submission-card__status-bar"></div>
+
           <div class="submission-card__content">
+            <!-- Header -->
             <div class="submission-card__header">
-              <div>
+              <div class="submission-card__info">
                 <h3 class="submission-card__title">{{ sub.proposedTitle }}</h3>
                 <div class="submission-card__meta">
-                  <span class="badge badge--primary">{{ sub.category }}</span>
-                  <span class="submission-card__author">
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
+                  <span class="badge badge--primary">
+                    <i class="fas fa-tag"></i>
+                    {{ sub.category }}
+                  </span>
+                  <span class="meta-author">
+                    <i class="fas fa-user-graduate"></i>
                     {{ sub.studentName }} · {{ sub.promo }}
                   </span>
-                  <span class="submission-card__date">
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    {{ sub.submittedAt | date: "dd/MM/yyyy à HH:mm" }}
+                  <span class="meta-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    {{ sub.submittedAt | date:'dd/MM/yyyy à HH:mm' }}
                   </span>
                 </div>
               </div>
-              <span class="badge" [class]="getStatusBadgeClass(sub.status)">
-                {{ sub.status }}
-              </span>
+              <div class="submission-card__status-badge">
+                <span class="status-badge" [class]="'status-badge--' + getStatusClass(sub.status)">
+                  <i class="fas {{ getStatusIcon(sub.status) }}"></i>
+                  {{ sub.status }}
+                </span>
+              </div>
             </div>
 
+            <!-- Description -->
             <p class="submission-card__description">{{ sub.description }}</p>
 
             <!-- Details Grid -->
             <div class="details-grid">
-              <div class="detail-item">
-                <span class="detail-item__label">Objectifs</span>
-                <p class="detail-item__value">{{ sub.objectives }}</p>
+              <div class="detail-card">
+                <div class="detail-card__icon">
+                  <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                  <span class="detail-label">Objectifs</span>
+                  <p class="detail-value">{{ sub.objectives }}</p>
+                </div>
               </div>
               @if (sub.prerequisites) {
-                <div class="detail-item">
-                  <span class="detail-item__label">Prérequis</span>
-                  <p class="detail-item__value">{{ sub.prerequisites }}</p>
+                <div class="detail-card">
+                  <div class="detail-card__icon">
+                    <i class="fas fa-clipboard-list"></i>
+                  </div>
+                  <div>
+                    <span class="detail-label">Prérequis</span>
+                    <p class="detail-value">{{ sub.prerequisites }}</p>
+                  </div>
                 </div>
               }
               @if (sub.materialsNeeded) {
-                <div class="detail-item">
-                  <span class="detail-item__label">Matériel nécessaire</span>
-                  <p class="detail-item__value">{{ sub.materialsNeeded }}</p>
+                <div class="detail-card">
+                  <div class="detail-card__icon">
+                    <i class="fas fa-tools"></i>
+                  </div>
+                  <div>
+                    <span class="detail-label">Matériel nécessaire</span>
+                    <p class="detail-value">{{ sub.materialsNeeded }}</p>
+                  </div>
                 </div>
               }
-              <div class="detail-item">
-                <span class="detail-item__label">Durée estimée</span>
-                <p class="detail-item__value">
-                  {{ sub.estimatedDuration }} minutes
-                </p>
+              <div class="detail-card">
+                <div class="detail-card__icon">
+                  <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div>
+                  <span class="detail-label">Durée estimée</span>
+                  <p class="detail-value">{{ sub.estimatedDuration }} minutes</p>
+                </div>
+              </div>
+              <div class="detail-card">
+                <div class="detail-card__icon">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                  <span class="detail-label">Difficulté proposée</span>
+                  <p class="detail-value">
+                    @switch (sub.difficulty) {
+                      @case ('débutant') { <span><i class="fas fa-seedling"></i> Débutant</span> }
+                      @case ('intermédiaire') { <span><i class="fas fa-book-open"></i> Intermédiaire</span> }
+                      @case ('avancé') { <span><i class="fas fa-rocket"></i> Avancé</span> }
+                      @default { <span><i class="fas fa-question-circle"></i> Non spécifiée</span> }
+                    }
+                  </p>
+                </div>
               </div>
             </div>
-            <!-- Dans la section des détails de la soumission -->
-            <div class="detail-block">
-              <span class="detail-block__lbl">Difficulté proposée</span>
-              <p>
-                @switch (sub.difficulty) {
-                  @case ("débutant") {
-                    <span>🌱 Débutant</span>
-                  }
-                  @case ("intermédiaire") {
-                    <span>📘 Intermédiaire</span>
-                  }
-                  @case ("avancé") {
-                    <span>⚡ Avancé</span>
-                  }
-                  @default {
-                    <span>📍 Non spécifiée</span>
-                  }
-                }
-              </p>
-            </div>
 
-            <!-- Admin Comment Display -->
-            @if (sub.adminComment && sub.status !== "en attente") {
-              <div
-                class="admin-comment"
-                [class.admin-comment--approved]="sub.status === 'approuvé'"
-                [class.admin-comment--refused]="sub.status === 'refusé'"
-              >
+            <!-- Admin Comment -->
+            @if (sub.adminComment && sub.status !== 'en attente') {
+              <div class="admin-comment" [class]="'admin-comment--' + getStatusClass(sub.status)">
                 <div class="admin-comment__header">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                    />
-                  </svg>
+                  <i class="fas fa-user-shield"></i>
                   <span>Commentaire administrateur</span>
+                  <span class="admin-comment__date">{{ sub.updatedAt | date:'dd MMM yyyy' }}</span>
                 </div>
                 <p class="admin-comment__text">{{ sub.adminComment }}</p>
               </div>
             }
 
-            <!-- Actions (for pending submissions) -->
-            @if (sub.status === "en attente") {
-
-              <!-- ══ AXE 4 — Analyse IA ══ -->
-              @if (sub.status === 'en attente') {
-                <div class="ai-analyze-zone">
-                  <button type="button" class="btn-ai-analyze"
-                    (click)="analyzeSummary(sub)"
-                    [disabled]="isSummaryLoading(sub.id!)">
-                    @if (isSummaryLoading(sub.id!)) {
-                      <span class="spinner-ai"></span> Analyse en cours…
-                    } @else if (getSummary(sub.id!)) {
-                      ✦ {{ isSummaryExpanded(sub.id!) ? "Masquer l'analyse" : "Voir l'analyse IA" }}
-                    } @else {
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-                      </svg>
-                      Analyser avec l'IA
-                    }
-                  </button>
-
-                  @if (getSummaryError(sub.id!)) {
-                    <span class="ai-error">{{ getSummaryError(sub.id!) }}</span>
+            <!-- AI Analysis Section (Pending only) -->
+            @if (sub.status === 'en attente') {
+              <div class="ai-section">
+                <button class="btn-ai" (click)="analyzeSummary(sub)" [disabled]="isSummaryLoading(sub.id!)">
+                  @if (isSummaryLoading(sub.id!)) {
+                    <div class="btn-loader"></div>
+                    <span>Analyse en cours...</span>
+                  } @else if (getSummary(sub.id!)) {
+                    <i class="fas fa-brain"></i>
+                    <span>{{ isSummaryExpanded(sub.id!) ? 'Masquer l\'analyse' : 'Voir l\'analyse IA' }}</span>
+                  } @else {
+                    <i class="fas fa-magic"></i>
+                    <span>Analyser avec l'IA</span>
                   }
+                </button>
 
-                  @if (getSummary(sub.id!) && isSummaryExpanded(sub.id!)) {
-                    <div class="ai-panel">
-                      <div class="ai-panel__header">
-                        <span class="ai-label">✦ ANALYSE IA</span>
-                        <span class="verdict-badge" [class]="getVerdictClass(getSummary(sub.id!)!.verdict)">
-                          {{ getVerdictIcon(getSummary(sub.id!)!.verdict) }}
-                          Dossier {{ getSummary(sub.id!)!.verdict }}
-                        </span>
+                @if (getSummaryError(sub.id!)) {
+                  <div class="ai-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ getSummaryError(sub.id!) }}
+                  </div>
+                }
+
+                @if (getSummary(sub.id!) && isSummaryExpanded(sub.id!)) {
+                  <div class="ai-panel animate-fade-in">
+                    <div class="ai-panel__header">
+                      <div class="ai-panel__badge">
+                        <i class="fas fa-brain"></i>
+                        <span>ANALYSE IA</span>
                       </div>
+                      <span class="verdict-badge" [class]="'verdict--' + getSummary(sub.id!)!.verdict">
+                        <i class="fas {{ getVerdictIcon(getSummary(sub.id!)!.verdict) }}"></i>
+                        Dossier {{ getSummary(sub.id!)!.verdict }}
+                      </span>
+                    </div>
 
-                      <p class="ai-panel__resume">{{ getSummary(sub.id!)!.resume }}</p>
+                    <p class="ai-resume">{{ getSummary(sub.id!)!.resume }}</p>
 
-                      <div class="ai-panel__grid">
-                        @if (getSummary(sub.id!)!.points_forts.length > 0) {
-                          <div class="ai-points ai-points--good">
-                            <div class="ai-points__lbl">✓ Points forts</div>
-                            @for (p of getSummary(sub.id!)!.points_forts; track p) {
-                              <div class="ai-points__item">{{ p }}</div>
-                            }
+                    <div class="ai-points-grid">
+                      @if (getSummary(sub.id!)!.points_forts.length > 0) {
+                        <div class="points-card points-card--strength">
+                          <div class="points-card__header">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Points forts</span>
                           </div>
-                        }
-                        @if (getSummary(sub.id!)!.points_faibles.length > 0) {
-                          <div class="ai-points ai-points--bad">
-                            <div class="ai-points__lbl">⚠ À améliorer</div>
-                            @for (p of getSummary(sub.id!)!.points_faibles; track p) {
-                              <div class="ai-points__item">{{ p }}</div>
+                          <ul>
+                            @for (point of getSummary(sub.id!)!.points_forts; track point) {
+                              <li>{{ point }}</li>
                             }
+                          </ul>
+                        </div>
+                      }
+                      @if (getSummary(sub.id!)!.points_faibles.length > 0) {
+                        <div class="points-card points-card--weakness">
+                          <div class="points-card__header">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>À améliorer</span>
                           </div>
-                        }
-                      </div>
+                          <ul>
+                            @for (point of getSummary(sub.id!)!.points_faibles; track point) {
+                              <li>{{ point }}</li>
+                            }
+                          </ul>
+                        </div>
+                      }
+                    </div>
 
-                      <div class="ai-panel__comment-hint">
-                        <span class="ai-label">✦ Commentaire suggéré</span>
-                        <span class="ai-hint-sub">pré-rempli ci-dessous — modifiable</span>
+                    <div class="ai-suggestion">
+                      <div class="ai-suggestion__header">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>Commentaire suggéré</span>
+                        <span class="suggestion-hint">pré-rempli ci-dessous — modifiable</span>
                       </div>
                     </div>
-                  }
-                </div>
-              }
+                  </div>
+                }
+              </div>
+            }
 
+            <!-- Actions (Pending only) -->
+            @if (sub.status === 'en attente') {
               <div class="action-section">
-                <div class="comment-input">
-                  <label class="form-label">Commentaire (optionnel)</label>
-                  <textarea
-                    class="form-textarea form-textarea--sm"
-                    [ngModel]="commentText()[sub.id!]"
-                    (ngModelChange)="updateComment(sub.id!, $event)"
-                    placeholder="Ajouter un commentaire pour l'étudiant..."
-                    rows="2"
-                  ></textarea>
+                <div class="comment-field">
+                  <label class="form-label">
+                    <i class="fas fa-comment"></i>
+                    Commentaire (optionnel)
+                  </label>
+                  <div class="textarea-wrapper">
+                    <textarea class="form-textarea"
+                              [ngModel]="commentText()[sub.id!]"
+                              (ngModelChange)="updateComment(sub.id!, $event)"
+                              placeholder="Ajouter un commentaire pour l'étudiant..."
+                              rows="2"></textarea>
+                    <div class="textarea-border"></div>
+                  </div>
                 </div>
                 <div class="action-buttons">
-                  <button
-                    class="btn btn--success btn--sm"
-                    [disabled]="processingId() === sub.id"
-                    (click)="approve(sub)"
-                  >
+                  <button class="btn btn--success" [disabled]="processingId() === sub.id" (click)="approve(sub)">
                     @if (processingId() === sub.id) {
-                      <span class="spinner"></span>
+                      <div class="btn-loader"></div>
+                      <span>Traitement...</span>
                     } @else {
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
+                      <i class="fas fa-check-circle"></i>
+                      <span>Approuver & publier</span>
                     }
-                    Approuver & publier
                   </button>
-                  <button
-                    class="btn btn--danger btn--sm"
-                    [disabled]="processingId() === sub.id"
-                    (click)="refuse(sub)"
-                  >
+                  <button class="btn btn--danger" [disabled]="processingId() === sub.id" (click)="refuse(sub)">
                     @if (processingId() === sub.id) {
-                      <span class="spinner"></span>
+                      <div class="btn-loader"></div>
+                      <span>Traitement...</span>
                     } @else {
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
+                      <i class="fas fa-times-circle"></i>
+                      <span>Refuser</span>
                     }
-                    Refuser
                   </button>
                 </div>
               </div>
             }
 
             <!-- Published Badge -->
-            @if (sub.status === "approuvé") {
+            @if (sub.status === 'approuvé') {
               <div class="published-badge">
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Thématique publiée dans le catalogue
+                <i class="fas fa-check-circle"></i>
+                <span>Thématique publiée dans le catalogue</span>
               </div>
             }
           </div>

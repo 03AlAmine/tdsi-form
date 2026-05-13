@@ -324,7 +324,7 @@
                 <div class="info-item__content">
                   <span class="info-label">Participants</span>
                   <span class="info-value">
-                    {{ (activity()!.registrations.length ?? 0) + (activity()!.guestCount ?? 0) }} inscrits
+                    {{ activity()!.registrations.length + (activity()!.guestCount ?? 0) }} inscrits
                   </span>
                   @if (activity()!.maxParticipants) {
                     <span class="info-sub" [class.text-danger]="isFull(activity()!)">

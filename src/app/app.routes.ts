@@ -17,6 +17,13 @@ export const routes: Routes = [
         (m) => m.LoginComponent,
       ),
   },
+  {
+    path: 'mot-de-passe-oublie',
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
 
   {
     path: '',
@@ -175,6 +182,20 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/activities/activity-presence/activity-presence.component').then(
             (m) => m.ActivityPresenceComponent,
+          ),
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/admin/users/admin-users.component').then(
+            (m) => m.AdminUsersComponent,
+          ),
+      },
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import('./features/admin/analytics/analytics.component').then(
+            (m) => m.AnalyticsComponent,
           ),
       },
     ],

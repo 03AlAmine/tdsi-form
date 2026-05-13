@@ -8,6 +8,7 @@ export interface User {
 }
 
 export interface Theme {
+  linkedWorkshop?: any;
   id?: string;
   title: string;
   description: string;

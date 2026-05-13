@@ -1,65 +1,87 @@
+<!-- admin-workshops.component.html -->
 <div class="admin-workshops">
-  <!-- Workshop Detail Modal -->
-  <app-workshop-detail
-    (edit)="editWorkshop($event)"
-    (delete)="deleteWorkshop($event)">
-  </app-workshop-detail>
 
+  <!-- Header -->
   <div class="page-header">
     <div>
-      <h1 class="page-header__title">Workshops</h1>
+      <h1 class="page-header__title">
+        <i class="fas fa-chalkboard-user"></i>
+        Workshops
+      </h1>
       <p class="page-header__subtitle">Planifier et gérer les sessions</p>
     </div>
     <button class="btn btn--primary" (click)="toggleForm()">
       @if (showForm()) {
-        ✕ Annuler
+        <i class="fas fa-times"></i>
+        <span>Annuler</span>
       } @else {
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Nouveau workshop
+        <i class="fas fa-plus"></i>
+        <span>Nouveau workshop</span>
       }
     </button>
   </div>
 
   <!-- Create Form -->
   @if (showForm()) {
-    <div class="create-form animate-fade-in">
+    <div class="create-form animate-slide-down">
       <div class="create-form__header">
-        <h3>Planifier un workshop</h3>
+        <div class="create-form__title">
+          <i class="fas fa-calendar-plus"></i>
+          <h3>Planifier un workshop</h3>
+        </div>
         <span class="badge badge--primary">NOUVEAU</span>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="create()" class="workshop-form">
-        <!-- ... formulaire inchangé ... -->
         <div class="form-group">
-          <label class="form-label form-label--required">Thématique</label>
-          <select formControlName="themeId" class="form-select" (change)="onThemeChange($event)">
-            <option value="">Sélectionner une thématique</option>
-            @for (theme of themes(); track theme.id) {
-              <option [value]="theme.id">{{ theme.title }}</option>
-            }
-          </select>
+          <label class="form-label required">
+            <i class="fas fa-layer-group"></i>
+            Thématique
+          </label>
+          <div class="select-wrapper">
+            <select formControlName="themeId" class="form-select" (change)="onThemeChange($event)">
+              <option value="">Sélectionner une thématique</option>
+              @for (theme of themes(); track theme.id) {
+                <option [value]="theme.id">{{ theme.title }}</option>
+              }
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+            <div class="select-border"></div>
+          </div>
           @if (isInvalid('themeId')) {
-            <span class="form-error">Veuillez sélectionner une thématique</span>
+            <span class="form-error">
+              <i class="fas fa-exclamation-circle"></i>
+              Veuillez sélectionner une thématique
+            </span>
           }
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label form-label--required">Présentateur</label>
-            <input type="text" formControlName="presenter" class="form-input"
-                   placeholder="Nom du présentateur" />
+            <label class="form-label required">
+              <i class="fas fa-user"></i>
+              Présentateur
+            </label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="presenter" class="form-input"
+                     placeholder="Nom du présentateur" />
+              <div class="input-border"></div>
+            </div>
             @if (isInvalid('presenter')) {
               <span class="form-error">Nom du présentateur requis</span>
             }
           </div>
 
           <div class="form-group">
-            <label class="form-label form-label--required">Durée (minutes)</label>
-            <input type="number" formControlName="duration" class="form-input"
-                   min="15" max="480" step="15" />
+            <label class="form-label required">
+              <i class="fas fa-hourglass-half"></i>
+              Durée (minutes)
+            </label>
+            <div class="input-wrapper">
+              <input type="number" formControlName="duration" class="form-input"
+                     min="15" max="480" step="15" />
+              <div class="input-border"></div>
+            </div>
             <span class="form-hint">Entre 15 et 480 minutes</span>
             @if (isInvalid('duration')) {
               <span class="form-error">Durée invalide</span>
@@ -69,16 +91,28 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label form-label--required">Date</label>
-            <input type="date" formControlName="date" class="form-input" [min]="minDate" />
+            <label class="form-label required">
+              <i class="fas fa-calendar-alt"></i>
+              Date
+            </label>
+            <div class="input-wrapper">
+              <input type="date" formControlName="date" class="form-input" [min]="minDate" />
+              <div class="input-border"></div>
+            </div>
             @if (isInvalid('date')) {
               <span class="form-error">Date requise</span>
             }
           </div>
 
           <div class="form-group">
-            <label class="form-label form-label--required">Heure</label>
-            <input type="time" formControlName="time" class="form-input" />
+            <label class="form-label required">
+              <i class="fas fa-clock"></i>
+              Heure
+            </label>
+            <div class="input-wrapper">
+              <input type="time" formControlName="time" class="form-input" />
+              <div class="input-border"></div>
+            </div>
             @if (isInvalid('time')) {
               <span class="form-error">Heure requise</span>
             }
@@ -87,32 +121,61 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Format</label>
-            <select formControlName="location" class="form-select">
-              <option value="en ligne">💻 En ligne</option>
-              <option value="présentiel">🏛️ Présentiel</option>
-              <option value="hybride">🔄 Hybride</option>
-            </select>
+            <label class="form-label">
+              <i class="fas fa-map-marker-alt"></i>
+              Format
+            </label>
+            <div class="select-wrapper">
+              <select formControlName="location" class="form-select">
+                <option value="en ligne">💻 En ligne</option>
+                <option value="présentiel">🏛️ Présentiel</option>
+                <option value="hybride">🔄 Hybride</option>
+              </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+              <div class="select-border"></div>
+            </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Lien Meet/Zoom</label>
-            <input type="url" formControlName="meetLink" class="form-input"
-                   placeholder="https://meet.google.com/..." />
+            <label class="form-label">
+              <i class="fas fa-video"></i>
+              Lien Meet/Zoom
+            </label>
+            <div class="input-wrapper">
+              <input type="url" formControlName="meetLink" class="form-input"
+                     placeholder="https://meet.google.com/..." />
+              <div class="input-border"></div>
+            </div>
             <span class="form-hint">Optionnel - pour les sessions en ligne</span>
           </div>
         </div>
 
-        <div class="create-form__actions">
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-users"></i>
+            Max participants
+          </label>
+          <div class="input-wrapper">
+            <input type="number" formControlName="maxParticipants" class="form-input"
+                   min="1" max="1000" />
+            <div class="input-border"></div>
+          </div>
+          <span class="form-hint">Optionnel - limite de places</span>
+        </div>
+
+        <div class="form-actions">
           <button type="button" class="btn btn--ghost" (click)="toggleForm()">
+            <i class="fas fa-times"></i>
             Annuler
           </button>
           <button type="submit" class="btn btn--primary" [disabled]="saving()">
             @if (saving()) {
-              <span class="spinner"></span>
-              Création...
+              <div class="btn-loader"></div>
+              <span>Création...</span>
             } @else {
-              Créer le workshop
+              <i class="fas fa-save"></i>
+              <span>Créer le workshop</span>
+              <i class="fas fa-arrow-right"></i>
             }
           </button>
         </div>
@@ -120,99 +183,86 @@
     </div>
   }
 
-  <!-- Workshops List -->
-  @if (workshops().length === 0) {
+  <!-- Loading State -->
+  @if (workshops().length === 0 && !loading()) {
+    <div class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring-inner"></div>
+      </div>
+      <p>Chargement des workshops...</p>
+    </div>
+  } @else if (workshops().length === 0) {
+    <!-- Empty State -->
     <div class="empty-state">
-      <div class="empty-state__icon">📅</div>
-      <h3 class="empty-state__title">Aucun workshop</h3>
-      <p class="empty-state__description">Commencez par créer votre premier workshop</p>
-      <button class="btn btn--primary btn--sm" (click)="toggleForm()">
+      <div class="empty-state__icon">
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+      <h3>Aucun workshop</h3>
+      <p>Commencez par créer votre premier workshop</p>
+      <button class="btn btn--primary" (click)="toggleForm()">
+        <i class="fas fa-plus"></i>
         Créer un workshop
       </button>
     </div>
   } @else {
+    <!-- Workshops Grid -->
     <div class="workshops-grid">
       @for (workshop of workshops(); track workshop.id) {
-        <div class="workshop-card" [class.workshop-card--canceled]="workshop.status === 'annulé'" (click)="openWorkshopDetail(workshop)">
+        <div class="workshop-card"
+             [class.workshop-card--canceled]="workshop.status === 'annulé'"
+             (click)="openWorkshopDetail(workshop)">
+
           <div class="workshop-card__header">
-            <div class="workshop-card__status">
-              <span class="badge" [class]="getStatusBadgeClass(workshop.status)">
+            <div class="workshop-card__badges">
+              <span class="status-badge" [class]="'status-badge--' + getStatusBadgeClass(workshop.status)">
+                <i class="fas {{ getStatusIcon(workshop.status) }}"></i>
                 {{ workshop.status }}
               </span>
-              <span class="workshop-card__location">
-                {{ getLocationIcon(workshop.location) }} {{ workshop.location }}
+              <span class="location-badge">
+                <i class="fas {{ getLocationIconClass(workshop.location) }}"></i>
+                {{ workshop.location }}
               </span>
             </div>
             <div class="workshop-card__actions" (click)="$event.stopPropagation()">
-              <button class="btn-icon" title="QR Code présence"
-                (click)="$event.stopPropagation(); openQr(workshop)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                  <rect x="3" y="14" width="7" height="7"/>
-                  <path d="M14 14h1v1h-1z M17 14h1v1h-1z M14 17h1v1h-1z M17 17h3v3h-3z"/>
-                </svg>
+              <button class="action-btn" title="QR Code" (click)="openQr(workshop)">
+                <i class="fas fa-qrcode"></i>
               </button>
-              <a [routerLink]="['/admin/presence', workshop.id]" class="btn-icon"
-                 title="Configurer la présence">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 11l3 3L22 4"/>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                </svg>
+              <a [routerLink]="['/admin/presence', workshop.id]" class="action-btn" title="Configurer présence">
+                <i class="fas fa-clipboard-list"></i>
               </a>
-              <button class="btn-icon btn-icon--danger" (click)="deleteWorkshop(workshop)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                </svg>
+              <button class="action-btn action-btn--delete" (click)="deleteWorkshop(workshop)">
+                <i class="fas fa-trash-alt"></i>
               </button>
             </div>
           </div>
 
           <h3 class="workshop-card__title">{{ workshop.themeTitle }}</h3>
-          <p class="workshop-card__presenter">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-            {{ workshop.presenter }}
-          </p>
+
+          <div class="workshop-card__presenter">
+            <i class="fas fa-chalkboard-user"></i>
+            <span>{{ workshop.presenter }}</span>
+          </div>
 
           <div class="workshop-card__details">
             <div class="detail">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              {{ workshop.date | date:'dd/MM/yyyy' }} à {{ workshop.date | date:'HH:mm' }}
+              <i class="fas fa-calendar-alt"></i>
+              <span>{{ workshop.date | date:'dd/MM/yyyy' }} à {{ workshop.date | date:'HH:mm' }}</span>
             </div>
             <div class="detail">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              {{ formatDuration(workshop.duration) }}
+              <i class="fas fa-hourglass-half"></i>
+              <span>{{ formatDuration(workshop.duration) }}</span>
             </div>
             <div class="detail">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-              {{ workshop.registrations.length || 0 }} inscrits
+              <i class="fas fa-users"></i>
+              <span>{{ workshop.registrations.length || 0 }} inscrits</span>
             </div>
           </div>
 
           @if (workshop.meetLink) {
             <div class="workshop-card__meet-link" (click)="$event.stopPropagation()">
               <a [href]="workshop.meetLink" target="_blank" rel="noopener">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
+                <i class="fas fa-video"></i>
                 Lien de connexion
               </a>
             </div>
@@ -220,17 +270,13 @@
 
           @if (workshop.presenceFormEnabled) {
             <div class="workshop-card__presence-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+              <i class="fas fa-check-circle"></i>
               Formulaire de présence activé
             </div>
           }
 
           <div class="workshop-card__footer" (click)="$event.stopPropagation()">
-            <select class="form-select form-select--sm"
-                    [value]="workshop.status"
-                    (change)="updateStatus(workshop, $event)">
+            <select class="status-select" [value]="workshop.status" (change)="updateStatus(workshop, $event)">
               <option value="planifié">📋 Planifié</option>
               <option value="en cours">▶️ En cours</option>
               <option value="terminé">✅ Terminé</option>
@@ -241,55 +287,65 @@
       }
     </div>
   }
-</div>
 
-  <!-- ══ QR Code Modal ══ -->
+  <!-- QR Code Modal -->
   @if (qrWorkshop()) {
     <div class="qr-overlay" (click)="closeQr()">
       <div class="qr-modal" (click)="$event.stopPropagation()">
-        <button class="qr-modal__close" (click)="closeQr()">✕</button>
+        <button class="qr-modal__close" (click)="closeQr()">
+          <i class="fas fa-times"></i>
+        </button>
 
         <div class="qr-modal__header">
-          <span class="font-mono text-xs" style="color:var(--accent-bright);letter-spacing:.1em">QR CODES</span>
+          <span class="qr-modal__badge">QR CODES</span>
           <h3 class="qr-modal__title">{{ qrWorkshop()!.themeTitle }}</h3>
         </div>
 
         <div class="qr-modal__grid">
-
-          <!-- QR Présence (membres connectés) -->
+          <!-- QR Présence -->
           <div class="qr-card">
-            <div class="qr-card__badge qr-card__badge--presence">✓ Présence</div>
-            <div class="qr-card__img-wrap">
-              <img [src]="getPresenceQr(qrWorkshop()!.id!)" alt="QR Présence"
-                width="180" height="180" />
+            <div class="qr-card__badge qr-card__badge--presence">
+              <i class="fas fa-check-circle"></i> Présence membres
+            </div>
+            <div class="qr-card__img">
+              <img [src]="getPresenceQr(qrWorkshop()!.id!)" alt="QR Présence" />
             </div>
             <p class="qr-card__label">Membres connectés</p>
-            <p class="qr-card__sub">Redirige vers le formulaire de présence</p>
-            <button class="btn btn--primary btn--sm btn--full"
-              (click)="downloadQr('presence', qrWorkshop()!)">
-              ↓ Télécharger
+            <p class="qr-card__desc">Redirige vers le formulaire de présence</p>
+            <button class="btn btn--primary btn--sm btn--full" (click)="downloadQr('presence', qrWorkshop()!)">
+              <i class="fas fa-download"></i>
+              Télécharger
             </button>
           </div>
 
-          <!-- QR Public (invités non connectés) -->
+          <!-- QR Public -->
           <div class="qr-card">
-            <div class="qr-card__badge qr-card__badge--public">👥 Public</div>
-            <div class="qr-card__img-wrap">
-              <img [src]="getPublicQr(qrWorkshop()!.id!)" alt="QR Public"
-                width="180" height="180" />
+            <div class="qr-card__badge qr-card__badge--public">
+              <i class="fas fa-users"></i> Inscription publique
+            </div>
+            <div class="qr-card__img">
+              <img [src]="getPublicQr(qrWorkshop()!.id!)" alt="QR Public" />
             </div>
             <p class="qr-card__label">Visiteurs / Invités</p>
-            <p class="qr-card__sub">Redirige vers la page d'inscription publique</p>
-            <button class="btn btn--outline btn--sm btn--full"
-              (click)="downloadQr('public', qrWorkshop()!)">
-              ↓ Télécharger
+            <p class="qr-card__desc">Redirige vers la page d'inscription publique</p>
+            <button class="btn btn--outline btn--sm btn--full" (click)="downloadQr('public', qrWorkshop()!)">
+              <i class="fas fa-download"></i>
+              Télécharger
             </button>
           </div>
         </div>
 
-        <div class="qr-modal__hint font-mono">
-          💡 Affiche ces QR sur ton écran ou imprime-les pour le workshop
+        <div class="qr-modal__hint">
+          <i class="fas fa-lightbulb"></i>
+          Affichez ces QR codes sur écran ou imprimez-les pour le workshop
         </div>
       </div>
     </div>
   }
+
+  <!-- Workshop Detail Modal -->
+  <app-workshop-detail
+    (edit)="editWorkshop($event)"
+    (delete)="deleteWorkshop($event)">
+  </app-workshop-detail>
+</div>

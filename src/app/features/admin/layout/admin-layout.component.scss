@@ -1,25 +1,58 @@
+// admin-layout.component.scss
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  position: relative;
+  background: linear-gradient(135deg, #0a0e27, #0f1235);
 }
 
-// Sidebar
+/* ============================================================
+   DESKTOP SIDEBAR
+   ============================================================ */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 260px;
-  background: rgba(17, 22, 34, 0.95);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid var(--border-default);
+  width: 280px;
+  background: rgba(15, 18, 53, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 212, 255, 0.1);
   display: flex;
   flex-direction: column;
-  z-index: 50;
-  transition: transform var(--transition-base);
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  @media (max-width: 768px) {
+  &--collapsed {
+    width: 80px;
+
+    .sidebar__brand-text,
+    .sidebar__item span,
+    .sidebar__user-info,
+    .sidebar__logout span,
+    .sidebar__badge {
+      display: none;
+    }
+
+    .sidebar__item {
+      justify-content: center;
+      padding: 0.75rem;
+
+      i {
+        margin: 0;
+      }
+    }
+
+    .sidebar__user {
+      justify-content: center;
+      padding: 0.5rem;
+    }
+
+    .sidebar__header {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 992px) {
     transform: translateX(-100%);
 
     &.sidebar--open {
@@ -28,8 +61,11 @@
   }
 
   &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 1.5rem;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
   }
 
   &__brand {
@@ -40,8 +76,8 @@
   }
 
   &__logo {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
 
     img {
       width: 100%;
@@ -54,14 +90,32 @@
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.125rem;
-    background: var(--gradient-blue);
+    background: linear-gradient(135deg, #00d4ff, #3b82f6);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
 
     span {
       background: none;
-      color: var(--text-primary);
+      color: white;
+    }
+  }
+
+  &__toggle {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 8px;
+    color: #00d4ff;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(0, 212, 255, 0.2);
     }
   }
 
@@ -78,36 +132,55 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
+    border-radius: 12px;
+    color: #94a3b8;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all var(--transition-fast);
+    transition: all 0.2s;
+    position: relative;
+
+    i {
+      width: 20px;
+      font-size: 1rem;
+    }
 
     &:hover {
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--text-primary);
+      background: rgba(0, 212, 255, 0.08);
+      color: white;
     }
 
     &.active {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-primary);
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(59, 130, 246, 0.1));
+      color: #00d4ff;
 
-      .sidebar__item-icon {
-        color: var(--accent-primary);
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: linear-gradient(180deg, #00d4ff, #8b5cf6);
+        border-radius: 0 3px 3px 0;
       }
     }
   }
 
-  &__item-icon {
-    flex-shrink: 0;
-    transition: color var(--transition-fast);
+  &__badge {
+    margin-left: auto;
+    padding: 0.125rem 0.5rem;
+    background: #ef4444;
+    border-radius: 20px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: white;
   }
 
   &__footer {
     padding: 1rem 0.75rem;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid rgba(0, 212, 255, 0.1);
   }
 
   &__user {
@@ -116,19 +189,21 @@
     gap: 0.75rem;
     padding: 0.75rem;
     background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     margin-bottom: 0.75rem;
   }
 
   &__user-avatar {
-    width: 36px;
-    height: 36px;
-    background: var(--gradient-blue);
-    border-radius: var(--radius-md);
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.125rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
   }
 
   &__user-info {
@@ -138,12 +213,12 @@
   &__user-name {
     font-size: 0.875rem;
     font-weight: 600;
+    color: white;
   }
 
   &__user-role {
     font-size: 0.6875rem;
-    color: var(--text-tertiary);
-    font-family: var(--font-mono);
+    color: #64748b;
   }
 
   &__logout {
@@ -155,12 +230,12 @@
     padding: 0.625rem;
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: var(--radius-md);
-    color: var(--accent-danger);
+    border-radius: 10px;
+    color: #f87171;
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all 0.2s;
 
     &:hover {
       background: rgba(239, 68, 68, 0.2);
@@ -168,19 +243,21 @@
   }
 }
 
-// Mobile Header
+/* ============================================================
+   MOBILE HEADER
+   ============================================================ */
 .mobile-header {
   display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 40;
-  background: rgba(17, 22, 34, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-default);
+  z-index: 90;
+  background: rgba(15, 18, 53, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
 
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     display: block;
   }
 
@@ -192,20 +269,16 @@
   }
 
   &__menu-btn {
-    background: none;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 212, 255, 0.08);
     border: none;
-    color: var(--text-secondary);
+    border-radius: 10px;
+    color: #00d4ff;
     cursor: pointer;
-    padding: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-primary);
+    i {
+      font-size: 1.125rem;
     }
   }
 
@@ -216,18 +289,16 @@
     text-decoration: none;
 
     img {
-      width: 28px;
-      height: 28px;
-      object-fit: contain;
+      width: 32px;
+      height: 32px;
     }
 
     span {
-      font-family: var(--font-display);
       font-weight: 700;
-      font-size: 1rem;
+      color: white;
 
       span {
-        background: var(--gradient-blue);
+        background: linear-gradient(135deg, #00d4ff, #3b82f6);
         background-clip: text;
         -webkit-background-clip: text;
         color: transparent;
@@ -235,40 +306,36 @@
     }
   }
 
-  &__logout {
-    background: none;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    padding: 0.5rem;
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-
-    &:hover {
-      background: rgba(239, 68, 68, 0.1);
-      color: var(--accent-danger);
-    }
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
   }
 }
 
-// Mobile Menu
+/* ============================================================
+   MOBILE MENU
+   ============================================================ */
 .mobile-menu {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
-  z-index: 100;
+  backdrop-filter: blur(8px);
+  z-index: 200;
   display: flex;
   justify-content: flex-end;
 
   &__container {
     width: 280px;
     height: 100%;
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border-default);
+    background: #0f1235;
     display: flex;
     flex-direction: column;
     animation: slideInRight 0.3s ease-out;
@@ -279,7 +346,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
   }
 
   &__brand {
@@ -290,16 +357,14 @@
     img {
       width: 28px;
       height: 28px;
-      object-fit: contain;
     }
 
     span {
-      font-family: var(--font-display);
       font-weight: 700;
-      font-size: 1rem;
+      color: white;
 
       span {
-        background: var(--gradient-blue);
+        background: linear-gradient(135deg, #00d4ff, #3b82f6);
         background-clip: text;
         -webkit-background-clip: text;
         color: transparent;
@@ -308,25 +373,51 @@
   }
 
   &__close {
-    background: none;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05);
     border: none;
-    color: var(--text-tertiary);
+    border-radius: 10px;
+    color: #94a3b8;
     cursor: pointer;
-    padding: 0.5rem;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(0, 212, 255, 0.05);
+    margin: 1rem;
+    border-radius: 12px;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-md);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: white;
+  }
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-primary);
-    }
+  &__name {
+    font-weight: 600;
+    color: white;
+  }
+
+  &__role {
+    font-size: 0.75rem;
+    color: #64748b;
   }
 
   &__nav {
     flex: 1;
-    padding: 1rem;
+    padding: 0 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -337,66 +428,47 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
+    border-radius: 10px;
+    color: #94a3b8;
     text-decoration: none;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    transition: all var(--transition-fast);
+    font-size: 0.875rem;
 
-    &:hover {
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--text-primary);
+    i {
+      width: 20px;
     }
 
     &.active {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-primary);
+      background: rgba(0, 212, 255, 0.1);
+      color: #00d4ff;
     }
   }
 
-  &__item-icon {
-    flex-shrink: 0;
-  }
-
-  &__footer {
-    padding: 1rem;
-    border-top: 1px solid var(--border-light);
-  }
-
-  &__user {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius-md);
-  }
-
-  &__user-avatar {
-    width: 40px;
-    height: 40px;
-    background: var(--gradient-blue);
-    border-radius: var(--radius-md);
+  &__logout {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-  }
-
-  &__user-name {
+    gap: 0.5rem;
+    margin: 1rem;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    color: #f87171;
     font-size: 0.875rem;
-    font-weight: 600;
+    cursor: pointer;
   }
 }
 
-// Main Content
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
 .main-content {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 280px;
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
 
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     margin-left: 0;
     padding-top: 60px;
   }
@@ -407,13 +479,12 @@
     @media (min-width: 768px) {
       padding: 2rem;
     }
-
-    @media (min-width: 1200px) {
-      padding: 2rem 2.5rem;
-    }
   }
 }
 
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 @keyframes slideInRight {
   from {
     transform: translateX(100%);

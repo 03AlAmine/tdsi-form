@@ -261,7 +261,7 @@ export class AiService {
     const key = `complete:${title.toLowerCase().trim()}:${category}`;
 
     return this.callLLM<ThemeCompletion>(
-      `Tu es un assistant pédagogique pour le Club TDSI (cybersécurité, réseaux, IA) à l'ESP Dakar.
+      `Tu es un assistant pédagogique pour le Club TDSI (cybersécurité, réseaux, IA) à l'UCAD Dakar.
 Niveau des participants : ${promo}.
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ni après, sans markdown.`,
       `Génère le contenu complet pour un workshop intitulé "${title}" dans la catégorie "${category}".
@@ -328,7 +328,7 @@ Retourne exactement : ["titre1", "titre2", "titre3", "titre4"]`,
       .join('\n');
 
     return this.callLLM<ThemeRecommendation[]>(
-      `Tu es conseiller pédagogique au Club TDSI de l'ESP Dakar.
+      `Tu es conseiller pédagogique au Club TDSI de l'UCAD Dakar.
 Réponds UNIQUEMENT avec un tableau JSON valide, sans texte avant ni après, sans markdown.`,
       `Profil de l'étudiant :
 - Promotion : ${userProfile.promo}

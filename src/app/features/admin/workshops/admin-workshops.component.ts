@@ -1,9 +1,9 @@
-import { Component, inject, signal, ViewChild } from '@angular/core';
+// admin-workshops.component.ts - Version améliorée
+import { Component, inject, signal, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { combineLatest } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { WorkshopService } from '../../../core/services/workshop.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { Workshop, Theme } from '../../../core/model/models';
@@ -24,7 +24,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
   templateUrl: './admin-workshops.component.html',
   styleUrls: ['./admin-workshops.component.scss'],
 })
-export class AdminWorkshopsComponent {
+export class AdminWorkshopsComponent implements OnInit, OnDestroy {
   private wsService = inject(WorkshopService);
   private themeService = inject(ThemeService);
   private fb = inject(FormBuilder);
@@ -38,77 +38,81 @@ export class AdminWorkshopsComponent {
   themes = signal<Theme[]>([]);
   showForm = signal(false);
   saving = signal(false);
-  selectedThemeId = signal<string>('');
+  loading = signal(true);
   qrWorkshop = signal<Workshop | null>(null);
   minDate = new Date().toISOString().split('T')[0];
+
+  private subscription: Subscription | null = null;
 
   form = this.fb.group({
     themeId: ['', Validators.required],
     themeTitle: [''],
     presenter: ['', [Validators.required, Validators.minLength(2)]],
-    duration: [
-      90,
-      [Validators.required, Validators.min(15), Validators.max(480)],
-    ],
+    duration: [90, [Validators.required, Validators.min(15), Validators.max(480)]],
     date: ['', Validators.required],
     time: ['14:00', Validators.required],
     location: ['en ligne', Validators.required],
     meetLink: [''],
-    maxParticipants: [20, [Validators.required, Validators.min(1), Validators.max(1000)]],
+    maxParticipants: [30, [Validators.required, Validators.min(1), Validators.max(1000)]],
   });
 
-  constructor() {
-    combineLatest([
-      this.wsService.getWorkshops(),
-      this.themeService.getThemes(),
-    ])
-      .pipe(takeUntilDestroyed())
-      .subscribe(([workshops, themes]) => {
-        this.workshops.set(workshops);
-        this.themes.set(themes);
-      });
+  ngOnInit(): void {
+    this.subscription = this.wsService.getWorkshops().subscribe(workshops => {
+      this.workshops.set(workshops);
+      this.loading.set(false);
+    });
+
+    this.themeService.getThemes().subscribe(themes => {
+      this.themes.set(themes);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
   }
 
   toggleForm(): void {
-    this.showForm.update((v) => !v);
+    this.showForm.update(v => !v);
     if (!this.showForm()) {
-      this.form.reset({ duration: 90, location: 'en ligne', time: '14:00' });
-      this.selectedThemeId.set('');
+      this.form.reset({ duration: 90, location: 'en ligne', time: '14:00', maxParticipants: 30 });
     }
   }
 
   onThemeChange(event: Event): void {
     const themeId = (event.target as HTMLSelectElement).value;
-    this.selectedThemeId.set(themeId);
-    const theme = this.themes().find((t) => t.id === themeId);
-    if (theme) this.form.patchValue({ themeTitle: theme.title });
+    const theme = this.themes().find(t => t.id === themeId);
+    if (theme) {
+      this.form.patchValue({ themeTitle: theme.title });
+    }
   }
 
   async create(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.toastService.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
+
     this.saving.set(true);
-    const v = this.form.value;
+    const values = this.form.value;
+
     try {
       await this.wsService.createWorkshop({
-        themeId: v.themeId!,
-        themeTitle: v.themeTitle!,
-        presenter: v.presenter!,
-        duration: v.duration!,
-        date: new Date(`${v.date}T${v.time}`),
-        location: v.location as Workshop['location'],
-        meetLink: v.meetLink || '',
+        themeId: values.themeId!,
+        themeTitle: values.themeTitle!,
+        presenter: values.presenter!,
+        duration: values.duration!,
+        date: new Date(`${values.date}T${values.time}`),
+        location: values.location as Workshop['location'],
+        meetLink: values.meetLink || '',
         status: 'planifié',
         presenceFormEnabled: false,
         registrations: [],
-        maxParticipants: v.maxParticipants!,
+        maxParticipants: values.maxParticipants!,
         createdAt: new Date(),
       });
-      this.form.reset({ duration: 90, location: 'en ligne', time: '14:00' });
+      this.form.reset({ duration: 90, location: 'en ligne', time: '14:00', maxParticipants: 30 });
       this.showForm.set(false);
-      this.selectedThemeId.set('');
       this.toastService.success('Workshop créé avec succès');
     } catch {
       this.toastService.error('Erreur lors de la création');
@@ -118,8 +122,7 @@ export class AdminWorkshopsComponent {
   }
 
   async updateStatus(workshop: Workshop, event: Event): Promise<void> {
-    const status = (event.target as HTMLSelectElement)
-      .value as Workshop['status'];
+    const status = (event.target as HTMLSelectElement).value as Workshop['status'];
     try {
       await this.wsService.updateWorkshop(workshop.id!, { status });
       this.toastService.success(`Statut mis à jour : ${status}`);
@@ -134,6 +137,7 @@ export class AdminWorkshopsComponent {
       message: `Êtes-vous sûr de vouloir supprimer "${workshop.themeTitle}" ?`,
       type: 'danger',
       confirmText: 'Supprimer',
+      cancelText: 'Annuler',
       onConfirm: async () => {
         try {
           await this.wsService.deleteWorkshop(workshop.id!);
@@ -159,68 +163,79 @@ export class AdminWorkshopsComponent {
       time: workshop.date.toISOString().split('T')[1]?.slice(0, 5),
       location: workshop.location,
       meetLink: workshop.meetLink,
+      maxParticipants: workshop.maxParticipants,
     });
     this.showForm.set(true);
   }
 
   getStatusBadgeClass(status: string): string {
-    return (
-      (
-        {
-          planifié: 'badge--info',
-          'en cours': 'badge--primary',
-          terminé: 'badge--success',
-          annulé: 'badge--danger',
-        } as any
-      )[status] ?? 'badge--neutral'
-    );
+    const map: Record<string, string> = {
+      planifié: 'info',
+      'en cours': 'primary',
+      terminé: 'success',
+      annulé: 'danger',
+    };
+    return map[status] || 'neutral';
   }
-  getLocationIcon(location: string): string {
-    return (
-      ({ 'en ligne': '💻', présentiel: '🏛️', hybride: '🔄' } as any)[
-        location
-      ] ?? '📍'
-    );
+
+  getStatusIcon(status: string): string {
+    const map: Record<string, string> = {
+      planifié: 'fa-clock',
+      'en cours': 'fa-play-circle',
+      terminé: 'fa-check-circle',
+      annulé: 'fa-ban',
+    };
+    return map[status] || 'fa-circle';
   }
+
+  getLocationIconClass(location: string): string {
+    const map: Record<string, string> = {
+      'en ligne': 'fa-wifi',
+      présentiel: 'fa-building',
+      hybride: 'fa-sync-alt',
+    };
+    return map[location] || 'fa-map-marker-alt';
+  }
+
   formatDuration(minutes: number): string {
     if (minutes >= 60) {
-      const h = Math.floor(minutes / 60),
-        m = minutes % 60;
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
       return m > 0 ? `${h}h ${m}min` : `${h}h`;
     }
     return `${minutes}min`;
   }
+
   isInvalid(field: string): boolean {
-    const c = this.form.get(field);
-    return c ? c.invalid && c.touched : false;
+    const control = this.form.get(field);
+    return control ? control.invalid && control.touched : false;
   }
 
   openQr(workshop: Workshop): void {
     this.qrWorkshop.set(workshop);
     document.body.style.overflow = 'hidden';
   }
+
   closeQr(): void {
     this.qrWorkshop.set(null);
     document.body.style.overflow = '';
   }
+
   getPresenceQr(id: string): string {
     return this.qrService.presenceQrUrl(id, 180);
   }
+
   getPublicQr(id: string): string {
     return this.qrService.workshopPublicQrUrl(id, 180);
   }
 
-  async downloadQr(
-    type: 'presence' | 'public',
-    workshop: Workshop,
-  ): Promise<void> {
-    const url =
-      type === 'presence'
-        ? this.qrService.presenceQrUrl(workshop.id!, 400)
-        : this.qrService.workshopPublicQrUrl(workshop.id!, 400);
+  async downloadQr(type: 'presence' | 'public', workshop: Workshop): Promise<void> {
+    const url = type === 'presence'
+      ? this.qrService.presenceQrUrl(workshop.id!, 400)
+      : this.qrService.workshopPublicQrUrl(workshop.id!, 400);
     await this.qrService.downloadQr(
       url,
-      `qr-${type}-${workshop.themeTitle.toLowerCase().replace(/\s+/g, '-')}`,
+      `qr-${type}-${workshop.themeTitle.toLowerCase().replace(/\s+/g, '-')}`
     );
   }
 }

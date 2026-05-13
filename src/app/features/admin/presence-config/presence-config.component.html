@@ -1,178 +1,230 @@
-<div class="presence-config-page">
-  <div class="container">
-    <div class="config-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div class="page-header__back">
-          <button class="btn btn--ghost btn--sm" (click)="router.navigate(['/admin/workshops'])">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            Retour aux workshops
-          </button>
+<!-- presence-config.component.html -->
+<div class="presence-config">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__back">
+      <button class="back-btn" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Retour aux workshops</span>
+      </button>
+    </div>
+    <div class="page-header__info">
+      <div class="page-header__badge">
+        <span class="badge badge--primary">
+          <i class="fas fa-sliders-h"></i>
+          CONFIGURATION FORMULAIRE
+        </span>
+      </div>
+      <h1 class="page-header__title">{{ workshop?.themeTitle }}</h1>
+      <div class="page-header__meta">
+        <span class="meta-item">
+          <i class="fas fa-chalkboard-user"></i>
+          {{ workshop?.presenter }}
+        </span>
+        <span class="meta-item">
+          <i class="fas fa-calendar-alt"></i>
+          {{ workshop?.date | date:'dd MMMM yyyy à HH:mm' }}
+        </span>
+        <span class="meta-item">
+          <i class="fas fa-map-marker-alt"></i>
+          {{ workshop?.location }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <!-- Loading State -->
+    <div class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring-inner"></div>
+      </div>
+      <p>Chargement de la configuration...</p>
+    </div>
+  } @else if (!workshop) {
+    <!-- Error State -->
+    <div class="error-card">
+      <div class="error-card__icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3>Workshop introuvable</h3>
+      <p>Le workshop que vous cherchez n'existe pas ou a été supprimé.</p>
+      <button class="btn btn--primary" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        Retour à la liste
+      </button>
+    </div>
+  } @else {
+
+    <!-- Toggle Card -->
+    <div class="toggle-card">
+      <div class="toggle-card__info">
+        <div class="toggle-card__title">
+          <i class="fas fa-toggle-on"></i>
+          Formulaire de présence
         </div>
-        <div class="page-header__info">
-          <div class="page-header__badge">
-            <span class="badge badge--primary">CONFIGURATION FORMULAIRE</span>
-          </div>
-          <h1 class="page-header__title">{{ workshop?.themeTitle }}</h1>
-          <p class="page-header__subtitle">
-            {{ workshop?.presenter }} · {{ workshop?.date | date:'dd MMMM yyyy à HH:mm' }}
-          </p>
+        <div class="toggle-card__subtitle">
+          Activez le formulaire pour permettre aux étudiants de confirmer leur présence
         </div>
       </div>
+      <button class="toggle-switch"
+              [class.active]="form.get('presenceFormEnabled')?.value"
+              (click)="toggleEnabled()">
+        <span class="toggle-switch__slider"></span>
+      </button>
+    </div>
 
-      @if (loading) {
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>Chargement...</p>
-        </div>
-      } @else if (!workshop) {
-        <div class="error-state">
-          <div class="error-state__icon">
-            <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <h3>Workshop introuvable</h3>
-          <p>Le workshop que vous cherchez n'existe pas ou a été supprimé.</p>
-          <button class="btn btn--primary" (click)="router.navigate(['/admin/workshops'])">
-            Retour à la liste
-          </button>
-        </div>
-      } @else {
-        <!-- Toggle activation -->
-        <div class="toggle-card">
-          <div class="toggle-card__info">
-            <div class="toggle-card__title">Formulaire de présence</div>
-            <div class="toggle-card__subtitle">
-              Activez le formulaire pour permettre aux étudiants de confirmer leur présence
-            </div>
-          </div>
-          <button
-            class="toggle-switch"
-            [class.toggle-switch--active]="form.get('presenceFormEnabled')?.value"
-            (click)="toggleEnabled()">
-            <span class="toggle-switch__slider"></span>
-          </button>
-        </div>
+    @if (form.get('presenceFormEnabled')?.value) {
+      <!-- Active Form Configuration -->
+      <form [formGroup]="form" (ngSubmit)="save()" class="config-form">
 
-        @if (form.get('presenceFormEnabled')?.value) {
-          <form [formGroup]="form" (ngSubmit)="save()" class="config-form">
-            <!-- Champs dynamiques -->
-            <div class="form-section">
-              <div class="form-section__header">
-                <div>
-                  <h3 class="form-section__title">Champs du formulaire</h3>
-                  <p class="form-section__subtitle">
-                    Les champs Nom et Email sont toujours inclus automatiquement
-                  </p>
-                </div>
-                <button type="button" class="btn btn--outline btn--sm" (click)="addField()">
-                  <i class="fas fa-plus"></i>
-                  Ajouter un champ
-                </button>
+        <!-- Fields Section -->
+        <div class="form-card">
+          <div class="form-card__header">
+            <div class="form-card__title">
+              <i class="fas fa-list-ul"></i>
+              <div>
+                <h3>Champs du formulaire</h3>
+                <p>Les champs Nom et Email sont toujours inclus automatiquement</p>
               </div>
+            </div>
+            <button type="button" class="btn-add" (click)="addField()">
+              <i class="fas fa-plus"></i>
+              Ajouter un champ
+            </button>
+          </div>
 
-              @if (fields.length === 0) {
-                <div class="fields-empty">
-                  <i class="fas fa-inbox"></i>
-                  <p>Aucun champ supplémentaire</p>
-                  <span>Cliquez sur "Ajouter un champ" pour commencer</span>
-                </div>
-              } @else {
-                <div class="fields-list">
-                  @for (field of fields.controls; let i = $index; track field.get('id')?.value) {
-                    <div [formGroupName]="i" class="field-card">
-                      <div class="field-card__drag">
-                        <i class="fas fa-grip-vertical"></i>
-                      </div>
+          @if (fields.length === 0) {
+            <div class="empty-fields">
+              <i class="fas fa-inbox"></i>
+              <p>Aucun champ supplémentaire</p>
+              <span>Cliquez sur "Ajouter un champ" pour commencer</span>
+            </div>
+          } @else {
+            <div class="fields-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+              @for (field of fields.controls; let i = $index; track field.get('id')?.value) {
+                <div [formGroupName]="i" class="field-card" cdkDrag>
+                  <div class="field-card__drag" cdkDragHandle>
+                    <i class="fas fa-grip-vertical"></i>
+                  </div>
 
-                      <div class="field-card__content">
-                        <div class="field-card__row">
-                          <div class="form-group">
-                            <label class="form-label">Libellé <span class="form-required">*</span></label>
-                            <input formControlName="label" type="text" class="form-input"
-                                   placeholder="Ex: Votre établissement" />
-                          </div>
-                          <div class="form-group">
-                            <label class="form-label">Type</label>
-                            <select formControlName="type" class="form-select">
-                              @for (type of fieldTypes; track type.value) {
-                                <option [value]="type.value">{{ type.label }}</option>
-                              }
-                            </select>
-                          </div>
+                  <div class="field-card__content">
+                    <div class="field-card__row">
+                      <div class="form-group">
+                        <label class="form-label required">
+                          <i class="fas fa-tag"></i>
+                          Libellé
+                        </label>
+                        <div class="input-wrapper">
+                          <input formControlName="label" type="text" class="form-input"
+                                 placeholder="Ex: Votre établissement" />
+                          <div class="input-border"></div>
                         </div>
-
-                        <div class="field-card__row">
-                          <div class="form-group">
-                            <label class="form-label">Placeholder</label>
-                            <input formControlName="placeholder" type="text" class="form-input"
-                                   placeholder="Texte d'aide..." />
-                          </div>
-                          <div class="form-group field-card__checkbox">
-                            <label class="checkbox-label">
-                              <input formControlName="required" type="checkbox" />
-                              <span>Champ obligatoire</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        <!-- Options pour select -->
-                        @if (field.get('type')?.value === 'select') {
-                          <div class="form-group">
-                            <label class="form-label">Options (une par ligne)</label>
-                            <textarea formControlName="optionsText" class="form-textarea" rows="3"
-                                      placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
-                          </div>
-                        }
                       </div>
-
-                      <button type="button" class="field-card__remove" (click)="removeField(i)">
-                        <i class="fas fa-trash-alt"></i>
-                      </button>
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-code"></i>
+                          Type
+                        </label>
+                        <div class="select-wrapper">
+                          <select formControlName="type" class="form-select">
+                            @for (type of fieldTypes; track type.value) {
+                              <option [value]="type.value">{{ type.label }}</option>
+                            }
+                          </select>
+                          <i class="fas fa-chevron-down select-icon"></i>
+                          <div class="select-border"></div>
+                        </div>
+                      </div>
                     </div>
-                  }
+
+                    <div class="field-card__row">
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-quote-left"></i>
+                          Placeholder
+                        </label>
+                        <div class="input-wrapper">
+                          <input formControlName="placeholder" type="text" class="form-input"
+                                 placeholder="Texte d'aide..." />
+                          <div class="input-border"></div>
+                        </div>
+                      </div>
+                      <div class="form-group checkbox-group">
+                        <label class="checkbox-wrapper">
+                          <input formControlName="required" type="checkbox" class="checkbox-input" />
+                          <span class="checkbox-custom"></span>
+                          <span class="checkbox-label">Champ obligatoire</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- Options for select type -->
+                    @if (field.get('type')?.value === 'select') {
+                      <div class="form-group">
+                        <label class="form-label">
+                          <i class="fas fa-list"></i>
+                          Options (une par ligne)
+                        </label>
+                        <div class="textarea-wrapper">
+                          <textarea formControlName="optionsText" class="form-textarea" rows="3"
+                                    placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                          <div class="textarea-border"></div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <button type="button" class="field-card__remove" (click)="removeField(i)">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
                 </div>
               }
             </div>
+          }
+        </div>
 
-            @if (saved) {
-              <div class="alert alert--success">
-                <i class="fas fa-check-circle"></i>
-                Configuration sauvegardée avec succès !
-              </div>
-            }
-            @if (error) {
-              <div class="alert alert--error">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ error }}
-              </div>
-            }
-
-            <div class="form-actions">
-              <button type="submit" class="btn btn--primary" [disabled]="saving">
-                @if (saving) {
-                  <span class="spinner"></span>
-                  Sauvegarde...
-                } @else {
-                  <i class="fas fa-save"></i>
-                  Sauvegarder la configuration
-                }
-              </button>
-            </div>
-          </form>
-        } @else {
-          <div class="disabled-card">
-            <div class="disabled-card__icon">
-              <i class="fas fa-toggle-off"></i>
-            </div>
-            <div class="disabled-card__content">
-              <h3>Formulaire désactivé</h3>
-              <p>Activez le formulaire de présence pour configurer ses champs.</p>
-            </div>
+        <!-- Alerts -->
+        @if (saved) {
+          <div class="alert alert--success animate-fade-in">
+            <i class="fas fa-check-circle"></i>
+            <span>Configuration sauvegardée avec succès !</span>
           </div>
         }
-      }
-    </div>
-  </div>
+        @if (error) {
+          <div class="alert alert--error animate-fade-in">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ error }}</span>
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary btn--lg" [disabled]="saving">
+            @if (saving) {
+              <div class="btn-loader"></div>
+              <span>Sauvegarde...</span>
+            } @else {
+              <i class="fas fa-save"></i>
+              <span>Sauvegarder la configuration</span>
+              <i class="fas fa-arrow-right"></i>
+            }
+          </button>
+        </div>
+      </form>
+    } @else {
+      <!-- Disabled State -->
+      <div class="disabled-card">
+        <div class="disabled-card__icon">
+          <i class="fas fa-toggle-off"></i>
+        </div>
+        <div class="disabled-card__content">
+          <h3>Formulaire désactivé</h3>
+          <p>Activez le formulaire de présence pour configurer ses champs.</p>
+        </div>
+      </div>
+    }
+  }
 </div>

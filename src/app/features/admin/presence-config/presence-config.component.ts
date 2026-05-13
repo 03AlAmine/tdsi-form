@@ -1,35 +1,47 @@
-import { Component, inject, OnInit } from '@angular/core';
+// presence-config.component.ts - Version améliorée
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, FormArray, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkshopService } from '../../../core/services/workshop.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { Workshop, PresenceField } from '../../../core/model/models';
 import { db } from '../../../../firebase.config';
 import { doc, getDoc } from 'firebase/firestore';
+import {
+  CdkDragDrop,
+  moveItemInArray,
+  DragDropModule
+} from '@angular/cdk/drag-drop';
 
 type FieldType = 'text' | 'email' | 'select' | 'checkbox' | 'textarea' | 'number';
 
 const FIELD_TYPES: { value: FieldType; label: string }[] = [
-  { value: 'text',     label: 'Texte court' },
+  { value: 'text', label: 'Texte court' },
   { value: 'textarea', label: 'Texte long' },
-  { value: 'email',    label: 'Email' },
-  { value: 'number',   label: 'Nombre' },
-  { value: 'select',   label: 'Liste déroulante' },
+  { value: 'email', label: 'Email' },
+  { value: 'number', label: 'Nombre' },
+  { value: 'select', label: 'Liste déroulante' },
   { value: 'checkbox', label: 'Case à cocher' },
 ];
 
 @Component({
   selector: 'app-presence-config',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './presence-config.component.html',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    DragDropModule
+  ],
+   templateUrl: './presence-config.component.html',
   styleUrls: ['./presence-config.component.scss']
 })
-export class PresenceConfigComponent implements OnInit {
-  router = inject(Router);
+export class PresenceConfigComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private fb = inject(FormBuilder);
   private wsService = inject(WorkshopService);
+  private toast = inject(ToastService);
 
   workshop: Workshop | null = null;
   loading = true;
@@ -43,42 +55,47 @@ export class PresenceConfigComponent implements OnInit {
     fields: this.fb.array([]),
   });
 
-  get fields() {
+  get fields(): FormArray {
     return this.form.get('fields') as FormArray;
   }
 
-  async ngOnInit() {
+  async ngOnInit(): Promise<void> {
     const workshopId = this.route.snapshot.params['workshopId'];
 
-    // Lecture unique du document — pas de listener temps réel, pas de fuite mémoire
-    const snap = await getDoc(doc(db, 'workshops', workshopId));
+    try {
+      const snap = await getDoc(doc(db, 'workshops', workshopId));
 
-    if (snap.exists()) {
-      const data: any = snap.data();
-      this.workshop = {
-        ...data,
-        id: snap.id,
-        date:      data['date']?.toDate?.()      ?? new Date(),
-        createdAt: data['createdAt']?.toDate?.() ?? new Date(),
-      } as Workshop;
+      if (snap.exists()) {
+        const data: any = snap.data();
+        this.workshop = {
+          ...data,
+          id: snap.id,
+          date: data['date']?.toDate?.() ?? new Date(),
+          createdAt: data['createdAt']?.toDate?.() ?? new Date(),
+        } as Workshop;
 
-      this.form.patchValue({
-        presenceFormEnabled: this.workshop.presenceFormEnabled,
-      });
+        this.form.patchValue({
+          presenceFormEnabled: this.workshop.presenceFormEnabled ?? false,
+        });
 
-      if (this.workshop.presenceFormConfig?.fields?.length) {
-        for (const field of this.workshop.presenceFormConfig.fields) {
-          this.fields.push(this.buildFieldGroup(field));
+        if (this.workshop.presenceFormConfig?.fields?.length) {
+          for (const field of this.workshop.presenceFormConfig.fields) {
+            this.fields.push(this.buildFieldGroup(field));
+          }
         }
       }
+    } catch {
+      this.error = 'Erreur lors du chargement';
+    } finally {
+      this.loading = false;
     }
-
-    this.loading = false;
   }
+
+  ngOnDestroy(): void {}
 
   buildFieldGroup(field?: Partial<PresenceField>): FormGroup {
     return this.fb.group({
-      id: [field?.id ?? this.genId()],
+      id: [field?.id ?? this.generateId()],
       label: [field?.label ?? '', Validators.required],
       type: [field?.type ?? 'text'],
       required: [field?.required ?? false],
@@ -87,22 +104,36 @@ export class PresenceConfigComponent implements OnInit {
     });
   }
 
-  addField() {
+  generateId(): string {
+    return Math.random().toString(36).substring(2, 10);
+  }
+
+  addField(): void {
     this.fields.push(this.buildFieldGroup());
   }
 
-  removeField(i: number) {
-    this.fields.removeAt(i);
+  removeField(index: number): void {
+    this.fields.removeAt(index);
   }
 
-  toggleEnabled() {
-    const current = this.form.value.presenceFormEnabled;
+  onDrop(event: CdkDragDrop<any[]>): void {
+    moveItemInArray(this.fields.controls, event.previousIndex, event.currentIndex);
+    moveItemInArray(this.fields.value, event.previousIndex, event.currentIndex);
+  }
+
+  toggleEnabled(): void {
+    const current = this.form.get('presenceFormEnabled')?.value;
     this.form.patchValue({ presenceFormEnabled: !current });
   }
 
-  async save() {
+  goBack(): void {
+    this.router.navigate(['/admin/workshops']);
+  }
+
+  async save(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.toast.error('Veuillez corriger les erreurs dans le formulaire');
       return;
     }
 
@@ -111,13 +142,13 @@ export class PresenceConfigComponent implements OnInit {
     this.error = '';
 
     const rawFields = this.form.value.fields as any[];
-    const fields: PresenceField[] = rawFields.map((f) => ({
+    const fields: PresenceField[] = rawFields.map(f => ({
       id: f.id,
       label: f.label,
       type: f.type as PresenceField['type'],
-      required: f.required,
-      placeholder: f.placeholder,
-      options: f.type === 'select'
+      required: f.required ?? false,
+      placeholder: f.placeholder ?? '',
+      options: f.type === 'select' && f.optionsText
         ? f.optionsText.split('\n').map((s: string) => s.trim()).filter(Boolean)
         : undefined,
     }));
@@ -132,15 +163,15 @@ export class PresenceConfigComponent implements OnInit {
         },
       });
       this.saved = true;
-      setTimeout(() => (this.saved = false), 3000);
+      this.toast.success('Configuration sauvegardée');
+      setTimeout(() => {
+        this.saved = false;
+      }, 3000);
     } catch {
-      this.error = 'Erreur lors de la sauvegarde. Réessaie.';
+      this.error = 'Erreur lors de la sauvegarde. Réessayez.';
+      this.toast.error(this.error);
     } finally {
       this.saving = false;
     }
-  }
-
-  private genId(): string {
-    return Math.random().toString(36).slice(2, 8);
   }
 }

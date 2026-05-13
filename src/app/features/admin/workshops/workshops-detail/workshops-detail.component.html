@@ -1,237 +1,193 @@
+<!-- workshops-detail.component.html -->
 @if (isOpen() && workshop) {
   <div class="modal-overlay" (click)="closeModal()">
-    <div
-      class="modal-container modal-container--large"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="modal-header">
-        <div class="modal-header__info">
-          <span
-            class="status-badge"
-            [class]="'status-badge--' + getStatusInfo(workshop.status).color"
-          >
-            {{ getStatusInfo(workshop.status).icon }}
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="modal-header" [class]="'modal-header--' + getStatusInfo(workshop.status).color">
+        <div class="modal-header__badges">
+          <span class="status-badge" [class]="'status-badge--' + getStatusInfo(workshop.status).color">
+            <i class="fas {{ getStatusInfo(workshop.status).icon }}"></i>
             {{ getStatusInfo(workshop.status).label }}
           </span>
-          <span class="badge badge--neutral">
-            {{ getLocationInfo(workshop.location).icon }}
+          <span class="location-badge">
+            <i class="fas {{ getLocationIconClass(workshop.location) }}"></i>
             {{ getLocationInfo(workshop.location).label }}
           </span>
         </div>
         <button class="modal-close" (click)="closeModal()">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <i class="fas fa-times"></i>
         </button>
       </div>
 
       <div class="modal-body">
         <h2 class="modal-title">{{ workshop.themeTitle }}</h2>
 
-        <div class="presenter-info">
-          <div class="presenter-avatar">👨‍🏫</div>
-          <div>
-            <div class="presenter-label">Présentateur</div>
-            <div class="presenter-name">{{ workshop.presenter }}</div>
+        <!-- Presenter Info -->
+        <div class="presenter-card">
+          <div class="presenter-card__avatar">
+            <i class="fas fa-chalkboard-user"></i>
+          </div>
+          <div class="presenter-card__info">
+            <span class="presenter-label">Présentateur</span>
+            <span class="presenter-name">{{ workshop.presenter }}</span>
           </div>
         </div>
 
+        <!-- Info Grid -->
         <div class="info-grid">
           <div class="info-card">
-            <div class="info-card__icon">📅</div>
-            <div class="info-card__content">
-              <div class="info-card__label">Date & Heure</div>
-              <div class="info-card__value">
-                {{ workshop.date | date: "EEEE dd MMMM yyyy" }}
-                <span class="time">{{ workshop.date | date: "HH:mm" }}</span>
-              </div>
+            <i class="fas fa-calendar-alt"></i>
+            <div>
+              <span class="info-label">Date & Heure</span>
+              <span class="info-value">{{ workshop.date | date:'EEEE dd MMMM yyyy' }}</span>
+              <span class="info-sub">{{ workshop.date | date:'HH:mm' }}</span>
             </div>
           </div>
-
           <div class="info-card">
-            <div class="info-card__icon">⏱️</div>
-            <div class="info-card__content">
-              <div class="info-card__label">Durée</div>
-              <div class="info-card__value">
-                {{ formatDuration(workshop.duration) }}
-              </div>
+            <i class="fas fa-hourglass-half"></i>
+            <div>
+              <span class="info-label">Durée</span>
+              <span class="info-value">{{ formatDuration(workshop.duration) }}</span>
             </div>
           </div>
-
           <div class="info-card">
-            <div class="info-card__icon">👥</div>
-            <div class="info-card__content">
-              <div class="info-card__label">Participants</div>
-              <div class="info-card__value">
-                {{ workshop.registrations.length || 0 }} inscrits
-              </div>
+            <i class="fas fa-users"></i>
+            <div>
+              <span class="info-label">Participants</span>
+              <span class="info-value">{{ (workshop.registrations.length || 0) + (guestRegistrations().length || 0) }} inscrits</span>
+              <span class="info-sub">{{ workshop.registrations.length || 0 }} membres · {{ guestRegistrations().length || 0 }} invités</span>
             </div>
           </div>
+          @if (workshop.maxParticipants) {
+            <div class="info-card">
+              <i class="fas fa-ticket-alt"></i>
+              <div>
+                <span class="info-label">Places max</span>
+                <span class="info-value">{{ workshop.maxParticipants }}</span>
+                <span class="info-sub">{{ getAvailablePlaces() }} restantes</span>
+              </div>
+            </div>
+          }
         </div>
 
+        <!-- Meet Link -->
         @if (workshop.meetLink) {
           <div class="meet-section">
-            <h4>Lien de connexion</h4>
-            <a
-              [href]="workshop.meetLink"
-              target="_blank"
-              rel="noopener"
-              class="meet-link"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-                />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
+            <h4><i class="fas fa-video"></i> Lien de connexion</h4>
+            <a [href]="workshop.meetLink" target="_blank" rel="noopener" class="meet-link">
+              <i class="fas fa-external-link-alt"></i>
               {{ workshop.meetLink }}
             </a>
           </div>
         }
 
-        <!-- Participants inscrits -->
-        @if (participants().length > 0) {
-          <div class="registrations-section">
-            <h4>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              Membres inscrits ({{ participants().length }})
-            </h4>
-            <div class="registrations-list">
+        <!-- Participants Section -->
+        <div class="participants-section">
+          <div class="participants-section__header">
+            <h4><i class="fas fa-users"></i> Membres inscrits</h4>
+            <span class="badge">{{ participants().length }}</span>
+          </div>
+
+          @if (loadingParticipants()) {
+            <div class="loading-participants">
+              <div class="spinner-sm"></div>
+              <span>Chargement des participants...</span>
+            </div>
+          } @else if (participants().length === 0) {
+            <div class="empty-participants">
+              <i class="fas fa-user-plus"></i>
+              <p>Aucun membre inscrit pour le moment</p>
+            </div>
+          } @else {
+            <div class="participants-list">
               @for (participant of participants(); track participant.uid) {
-                <div
-                  class="registration-item"
-                  (click)="openParticipantProfile(participant, $event)"
-                >
-                  <div class="registration-avatar">
-                    <span>{{
-                      participant.displayName.charAt(0).toUpperCase()
-                    }}</span>
+                <div class="participant-item" (click)="openParticipantProfile(participant, $event)">
+                  <div class="participant-item__avatar">
+                    <span>{{ participant.displayName.charAt(0).toUpperCase() }}</span>
                   </div>
-                  <div class="registration-info">
-                    <div class="registration-name">
-                      {{ participant.displayName }}
-                    </div>
-                    <div class="registration-promo">
-                      {{ participant.promo }}
-                    </div>
-                    <div class="registration-email">
-                      {{ participant.email }}
-                    </div>
+                  <div class="participant-item__info">
+                    <div class="participant-name">{{ participant.displayName }}</div>
+                    <div class="participant-email">{{ participant.email }}</div>
+                    <div class="participant-promo">{{ participant.promo }}</div>
                   </div>
-                  <div class="registration-status">
-                    <span class="badge badge--success">✓ Membre</span>
+                  <div class="participant-item__arrow">
+                    <i class="fas fa-chevron-right"></i>
                   </div>
                 </div>
               }
             </div>
-          </div>
-        }
+          }
+        </div>
 
-        <!-- Participants invités (inscription publique) -->
-        @if (guestRegistrations().length > 0) {
-          <div class="registrations-section">
-            <h4>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              Invités ({{ guestRegistrations().length }})
-            </h4>
-            <div class="registrations-list">
+        <!-- Guests Section -->
+        <div class="participants-section">
+          <div class="participants-section__header">
+            <h4><i class="fas fa-user-friends"></i> Invités</h4>
+            <span class="badge">{{ guestRegistrations().length }}</span>
+          </div>
+
+          @if (loadingGuests()) {
+            <div class="loading-participants">
+              <div class="spinner-sm"></div>
+              <span>Chargement des invités...</span>
+            </div>
+          } @else if (guestRegistrations().length === 0) {
+            <div class="empty-participants">
+              <i class="fas fa-user-plus"></i>
+              <p>Aucun invité inscrit pour le moment</p>
+            </div>
+          } @else {
+            <div class="participants-list">
               @for (guest of guestRegistrations(); track guest.id) {
-                <div
-                  class="registration-item"
-                  (click)="openGuestProfile(guest, $event)"
-                >
-                  <div class="registration-avatar">
+                <div class="participant-item" (click)="openGuestProfile(guest, $event)">
+                  <div class="participant-item__avatar participant-item__avatar--guest">
                     <span>{{ guest.fullName.charAt(0).toUpperCase() }}</span>
                   </div>
-                  <div class="registration-info">
-                    <div class="registration-name">{{ guest.fullName }}</div>
-                    <div class="registration-promo">
-                      {{ guest.establishment }} · {{ guest.level }}
-                    </div>
-                    <div class="registration-email">{{ guest.email }}</div>
+                  <div class="participant-item__info">
+                    <div class="participant-name">{{ guest.fullName }}</div>
+                    <div class="participant-email">{{ guest.email }}</div>
+                    <div class="participant-promo">{{ guest.establishment }} · {{ guest.level }}</div>
                   </div>
-                  <div class="registration-status">
+                  <div class="participant-item__status">
                     @if (guest.checkedIn) {
-                      <span class="badge badge--success">✓ Présent</span>
+                      <span class="status-badge status-badge--success">
+                        <i class="fas fa-check-circle"></i> Présent
+                      </span>
                     } @else {
-                      <span class="badge badge--neutral">⏳ En attente</span>
+                      <span class="status-badge status-badge--neutral">
+                        <i class="fas fa-clock"></i> En attente
+                      </span>
                     }
+                  </div>
+                  <div class="participant-item__arrow">
+                    <i class="fas fa-chevron-right"></i>
                   </div>
                 </div>
               }
             </div>
-          </div>
-        }
+          }
+        </div>
 
+        <!-- Presence Form Config -->
         @if (workshop.presenceFormEnabled && workshop.presenceFormConfig) {
           <div class="presence-section">
-            <h4>Formulaire de présence</h4>
+            <h4><i class="fas fa-clipboard-list"></i> Formulaire de présence</h4>
             <div class="presence-config">
               <div class="presence-config__header">
-                <span class="badge badge--success">✓ Activé</span>
-                <span
-                  >{{ workshop.presenceFormConfig.fields.length || 0 }} champs
-                  configurés</span
-                >
+                <span class="badge badge--success">
+                  <i class="fas fa-check-circle"></i> Activé
+                </span>
+                <span>{{ workshop.presenceFormConfig.fields.length || 0 }} champs configurés</span>
               </div>
-              @if (
-                workshop.presenceFormConfig.fields &&
-                workshop.presenceFormConfig.fields.length > 0
-              ) {
+              @if (workshop.presenceFormConfig.fields.length > 0) {
                 <div class="presence-fields">
-                  @for (
-                    field of workshop.presenceFormConfig.fields;
-                    track field.id
-                  ) {
+                  @for (field of workshop.presenceFormConfig.fields; track field.id) {
                     <div class="presence-field">
-                      <span class="presence-field__label">{{
-                        field.label
-                      }}</span>
+                      <i class="fas {{ getFieldIcon(field.type) }}"></i>
+                      <span class="presence-field__label">{{ field.label }}</span>
                       <span class="presence-field__type">{{ field.type }}</span>
                       @if (field.required) {
-                        <span class="presence-field__required"
-                          >Obligatoire</span
-                        >
+                        <span class="presence-field__required">Obligatoire</span>
                       }
                     </div>
                   }
@@ -242,53 +198,18 @@
         }
       </div>
 
+      <!-- Footer -->
       <div class="modal-footer">
-        <a
-          [routerLink]="['/admin/presence', workshop.id]"
-          class="btn btn--primary"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M9 11l3 3L22 4" />
-            <path
-              d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
-            />
-          </svg>
+        <a [routerLink]="['/admin/presence', workshop.id]" class="btn btn--primary">
+          <i class="fas fa-qrcode"></i>
           Configurer la présence
         </a>
         <button class="btn btn--ghost" (click)="onEdit()">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M17 3l4 4L7 21H3v-4L17 3z" />
-          </svg>
+          <i class="fas fa-edit"></i>
           Modifier
         </button>
         <button class="btn btn--danger" (click)="onDelete()">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="3 6 5 6 21 6" />
-            <path
-              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
-            />
-          </svg>
+          <i class="fas fa-trash-alt"></i>
           Supprimer
         </button>
       </div>
@@ -297,96 +218,122 @@
 }
 
 <!-- Participant Profile Modal -->
-<!-- Guest Profile Modal -->
-@if (showGuestModal() && selectedGuest()) {
-  <div class="profile-modal-overlay" (click)="closeGuestModal()">
+@if (showParticipantModal() && selectedParticipant()) {
+  <div class="profile-modal-overlay" (click)="closeParticipantModal()">
     <div class="profile-modal" (click)="$event.stopPropagation()">
       <div class="profile-modal__header">
         <div class="profile-modal__avatar">
-          <span>{{
-            (selectedGuest()?.fullName?.charAt(0) || "?").toUpperCase()
-          }}</span>
+          <span>{{ selectedParticipant()!.displayName.charAt(0).toUpperCase() }}</span>
         </div>
-        <button class="profile-modal__close" (click)="closeGuestModal()">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+        <button class="profile-modal__close" (click)="closeParticipantModal()">
+          <i class="fas fa-times"></i>
         </button>
       </div>
 
       <div class="profile-modal__content">
-        <h3 class="profile-modal__name">{{ selectedGuest()?.fullName }}</h3>
+        <h3 class="profile-modal__name">{{ selectedParticipant()!.displayName }}</h3>
 
         <div class="profile-info-list">
           <div class="profile-info-item">
-            <span class="profile-info-item__icon">📧</span>
+            <i class="fas fa-envelope"></i>
             <div>
-              <div class="profile-info-item__label">Email</div>
-              <div class="profile-info-item__value">
-                {{ selectedGuest()?.email }}
-              </div>
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ selectedParticipant()!.email }}</span>
             </div>
           </div>
-
           <div class="profile-info-item">
-            <span class="profile-info-item__icon">🏫</span>
+            <i class="fas fa-graduation-cap"></i>
             <div>
-              <div class="profile-info-item__label">Établissement</div>
-              <div class="profile-info-item__value">
-                {{ selectedGuest()?.establishment }}
-              </div>
+              <span class="info-label">Promotion</span>
+              <span class="info-value">{{ selectedParticipant()!.promo }}</span>
             </div>
           </div>
-
           <div class="profile-info-item">
-            <span class="profile-info-item__icon">📚</span>
+            <i class="fas fa-id-card"></i>
             <div>
-              <div class="profile-info-item__label">Niveau</div>
-              <div class="profile-info-item__value">
-                {{ selectedGuest()?.level }}
-              </div>
+              <span class="info-label">UID</span>
+              <span class="info-value info-value--mono">{{ selectedParticipant()!.uid | slice:0:8 }}...</span>
             </div>
           </div>
+        </div>
+      </div>
 
-          @if (selectedGuest()?.phone) {
+      <div class="profile-modal__footer">
+        <button class="btn btn--outline btn--full" (click)="closeParticipantModal()">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Guest Profile Modal -->
+@if (showGuestModal() && selectedGuest()) {
+  <div class="profile-modal-overlay" (click)="closeGuestModal()">
+    <div class="profile-modal" (click)="$event.stopPropagation()">
+      <div class="profile-modal__header profile-modal__header--guest">
+        <div class="profile-modal__avatar profile-modal__avatar--guest">
+          <span>{{ selectedGuest()!.fullName.charAt(0).toUpperCase() }}</span>
+        </div>
+        <button class="profile-modal__close" (click)="closeGuestModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="profile-modal__content">
+        <h3 class="profile-modal__name">{{ selectedGuest()!.fullName }}</h3>
+
+        <div class="profile-info-list">
+          <div class="profile-info-item">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ selectedGuest()!.email }}</span>
+            </div>
+          </div>
+          <div class="profile-info-item">
+            <i class="fas fa-university"></i>
+            <div>
+              <span class="info-label">Établissement</span>
+              <span class="info-value">{{ selectedGuest()!.establishment }}</span>
+            </div>
+          </div>
+          <div class="profile-info-item">
+            <i class="fas fa-chart-line"></i>
+            <div>
+              <span class="info-label">Niveau</span>
+              <span class="info-value">{{ selectedGuest()!.level }}</span>
+            </div>
+          </div>
+          @if (selectedGuest()!.phone) {
             <div class="profile-info-item">
-              <span class="profile-info-item__icon">📱</span>
+              <i class="fas fa-phone-alt"></i>
               <div>
-                <div class="profile-info-item__label">Téléphone</div>
-                <div class="profile-info-item__value">
-                  {{ selectedGuest()?.phone }}
-                </div>
+                <span class="info-label">Téléphone</span>
+                <span class="info-value">{{ selectedGuest()!.phone }}</span>
               </div>
             </div>
           }
-
           <div class="profile-info-item">
-            <span class="profile-info-item__icon">📅</span>
+            <i class="fas fa-calendar-check"></i>
             <div>
-              <div class="profile-info-item__label">Inscrit le</div>
-              <div class="profile-info-item__value">
-                {{ selectedGuest()?.registeredAt | date: "dd/MM/yyyy à HH:mm" }}
-              </div>
+              <span class="info-label">Inscrit le</span>
+              <span class="info-value">{{ selectedGuest()!.registeredAt | date:'dd/MM/yyyy à HH:mm' }}</span>
             </div>
           </div>
-
           <div class="profile-info-item">
-            <span class="profile-info-item__icon">✅</span>
+            <i class="fas fa-flag-checkered"></i>
             <div>
-              <div class="profile-info-item__label">Statut</div>
-              <div class="profile-info-item__value">
-                @if (selectedGuest()?.checkedIn) {
-                  <span class="badge badge--success">Présent</span>
+              <span class="info-label">Statut</span>
+              <div class="info-value">
+                @if (selectedGuest()!.checkedIn) {
+                  <span class="status-badge status-badge--success">
+                    <i class="fas fa-check-circle"></i> Présent
+                  </span>
                 } @else {
-                  <span class="badge badge--neutral">Non présent</span>
+                  <span class="status-badge status-badge--neutral">
+                    <i class="fas fa-clock"></i> Non présent
+                  </span>
                 }
               </div>
             </div>
@@ -395,21 +342,9 @@
       </div>
 
       <div class="profile-modal__footer">
-        @if (!selectedGuest()?.checkedIn) {
-          <button
-            class="btn btn--success btn--full"
-            (click)="checkInGuest(selectedGuest()!.id!)"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+        @if (!selectedGuest()!.checkedIn) {
+          <button class="btn btn--success btn--full" (click)="checkInGuest(selectedGuest()!.id!)">
+            <i class="fas fa-check-circle"></i>
             Valider la présence
           </button>
         }

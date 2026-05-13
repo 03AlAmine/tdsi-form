@@ -1,4 +1,5 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+// theme-detail.component.ts - Version améliorée
+import { Component, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Theme } from '../../../../core/model/models';
 
@@ -10,24 +11,29 @@ import { Theme } from '../../../../core/model/models';
   styleUrls: ['./theme-detail.component.scss']
 })
 export class ThemeDetailComponent {
-  @Input() theme: Theme | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() edit = new EventEmitter<Theme>();
   @Output() delete = new EventEmitter<Theme>();
 
+  theme: Theme | null = null;
   isOpen = signal(false);
 
   getDifficultyInfo(difficulty: string): { icon: string; color: string } {
-    switch (difficulty) {
-      case 'débutant':
-        return { icon: '🌱', color: 'var(--accent-success)' };
-      case 'intermédiaire':
-        return { icon: '📘', color: 'var(--accent-warning)' };
-      case 'avancé':
-        return { icon: '⚡', color: 'var(--accent-danger)' };
-      default:
-        return { icon: '📚', color: 'var(--text-tertiary)' };
-    }
+    const map: Record<string, { icon: string; color: string }> = {
+      'débutant': { icon: '🌱', color: 'var(--tech-success)' },
+      'intermédiaire': { icon: '📘', color: 'var(--tech-warning)' },
+      'avancé': { icon: '⚡', color: 'var(--tech-danger)' },
+    };
+    return map[difficulty] || { icon: '📚', color: 'var(--gray-500)' };
+  }
+
+  getStatusColor(status: string): string {
+    const map: Record<string, string> = {
+      'ouvert': 'success',
+      'complet': 'warning',
+      'fermé': 'danger',
+    };
+    return map[status] || 'neutral';
   }
 
   open(theme: Theme): void {
@@ -50,18 +56,9 @@ export class ThemeDetailComponent {
   }
 
   onDelete(): void {
-    if (this.theme && confirm(`Supprimer définitivement "${this.theme.title}" ?`)) {
+    if (this.theme) {
       this.delete.emit(this.theme);
       this.closeModal();
-    }
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'ouvert': return 'success';
-      case 'complet': return 'warning';
-      case 'fermé': return 'danger';
-      default: return 'neutral';
     }
   }
 }

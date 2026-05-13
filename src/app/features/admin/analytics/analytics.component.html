@@ -1,0 +1,161 @@
+<!-- analytics.component.html -->
+<div class="analytics">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">
+        <i class="fas fa-chart-line"></i>
+        Analytics
+      </h1>
+      <p class="page-header__subtitle">Statistiques et tendances de la plateforme</p>
+    </div>
+    <div class="date-range">
+      <select class="date-select" (change)="setDateRange($any($event.target).value)">
+        <option value="7">7 derniers jours</option>
+        <option value="30" selected>30 derniers jours</option>
+        <option value="90">3 derniers mois</option>
+        <option value="365">12 derniers mois</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring-inner"></div>
+      </div>
+      <p>Chargement des données...</p>
+    </div>
+  } @else {
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="kpi-card__value">{{ kpis().totalUsers }}</div>
+        <div class="kpi-card__label">Utilisateurs</div>
+        <div class="kpi-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ kpis().userGrowth }}%</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <i class="fas fa-chalkboard-user"></i>
+        </div>
+        <div class="kpi-card__value">{{ kpis().totalWorkshops }}</div>
+        <div class="kpi-card__label">Workshops</div>
+        <div class="kpi-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ kpis().workshopGrowth }}%</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="kpi-card__value">{{ kpis().totalRegistrations }}</div>
+        <div class="kpi-card__label">Inscriptions</div>
+        <div class="kpi-card__trend trend--up">
+          <i class="fas fa-arrow-up"></i>
+          <span>+{{ kpis().registrationGrowth }}%</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <i class="fas fa-percent"></i>
+        </div>
+        <div class="kpi-card__value">{{ kpis().participationRate }}%</div>
+        <div class="kpi-card__label">Taux participation</div>
+        <div class="kpi-card__trend" [class.trend--up]="kpis().participationTrend >= 0" [class.trend--down]="kpis().participationTrend < 0">
+          <i class="fas" [class.fa-arrow-up]="kpis().participationTrend >= 0" [class.fa-arrow-down]="kpis().participationTrend < 0"></i>
+          <span>{{ Math.abs(kpis().participationTrend) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-card__header">
+          <h3>Activité mensuelle</h3>
+          <div class="chart-legend">
+            <span><i class="fas fa-circle" style="color: #00d4ff"></i> Workshops</span>
+            <span><i class="fas fa-circle" style="color: #8b5cf6"></i> Inscriptions</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas #activityChart></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card__header">
+          <h3>Popularité des catégories</h3>
+        </div>
+        <div class="chart-container">
+          <canvas #categoryChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Popular Topics -->
+    <div class="topics-section">
+      <h3>Thématiques les plus populaires</h3>
+      <div class="topics-grid">
+        @for (topic of popularTopics(); track topic.name) {
+          <div class="topic-card">
+            <div class="topic-card__info">
+              <span class="topic-card__name">{{ topic.name }}</span>
+              <span class="topic-card__count">{{ topic.count }} inscriptions</span>
+            </div>
+            <div class="topic-card__bar">
+              <div class="topic-card__fill" [style.width.%]="topic.percentage"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-section">
+      <h3>Activité récente</h3>
+      <div class="recent-list">
+        @for (activity of recentActivities(); track activity.id) {
+          <div class="recent-item">
+            <div class="recent-item__icon">
+              <i class="fas" [class.fa-user-plus]="activity.type === 'inscription'" [class.fa-calendar-check]="activity.type === 'workshop'"></i>
+            </div>
+            <div class="recent-item__content">
+              <div class="recent-item__title">{{ activity.title }}</div>
+              <div class="recent-item__date">{{ activity.date | date:'dd MMM yyyy, HH:mm' }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="export-section">
+      <h3>Exporter les données</h3>
+      <div class="export-buttons">
+        <button class="btn btn--outline" (click)="exportData('csv')">
+          <i class="fas fa-file-csv"></i>
+          Exporter en CSV
+        </button>
+        <button class="btn btn--outline" (click)="exportData('pdf')">
+          <i class="fas fa-file-pdf"></i>
+          Exporter en PDF
+        </button>
+      </div>
+    </div>
+  }
+</div>
