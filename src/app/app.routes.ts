@@ -56,7 +56,7 @@ export const routes: Routes = [
             (m) => m.WorkshopsComponent,
           ),
       },
-      {
+    /*  {
         path: 'activites',
         loadComponent: () =>
           import('./features/activities/activities.component').then(
@@ -76,7 +76,7 @@ export const routes: Routes = [
           import('./features/activities/activity-register.component').then(
             (m) => m.ActivityRegisterComponent,
           ),
-      },
+      },*/
       // ── Espace membre (auth requis) ──
       {
         path: 'espace-membre',
@@ -90,7 +90,7 @@ export const routes: Routes = [
             pathMatch: 'full',
           },
           { path: 'workshops', redirectTo: '/workshops', pathMatch: 'full' },
-          { path: 'activites', redirectTo: '/activites', pathMatch: 'full' },
+       /*   { path: 'activites', redirectTo: '/activites', pathMatch: 'full' },*/
           // Pages membres exclusives
           {
             path: 'proposer',
@@ -170,7 +170,7 @@ export const routes: Routes = [
             (m) => m.PresenceConfigComponent,
           ),
       },
-      {
+    /*  {
         path: 'activites',
         loadComponent: () =>
           import('./features/admin/activities/admin-activities.component').then(
@@ -183,7 +183,7 @@ export const routes: Routes = [
           import('./features/admin/activities/activity-presence/activity-presence.component').then(
             (m) => m.ActivityPresenceComponent,
           ),
-      },
+      },*/
       {
         path: 'users',
         loadComponent: () =>

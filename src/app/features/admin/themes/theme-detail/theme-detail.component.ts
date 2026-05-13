@@ -8,7 +8,7 @@ import { Theme } from '../../../../core/model/models';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './theme-detail.component.html',
-  styleUrls: ['./theme-detail.component.scss']
+  styleUrls: ['./theme-detail.component.scss'],
 })
 export class ThemeDetailComponent {
   @Output() close = new EventEmitter<void>();
@@ -20,18 +20,33 @@ export class ThemeDetailComponent {
 
   getDifficultyInfo(difficulty: string): { icon: string; color: string } {
     const map: Record<string, { icon: string; color: string }> = {
-      'débutant': { icon: '🌱', color: 'var(--tech-success)' },
-      'intermédiaire': { icon: '📘', color: 'var(--tech-warning)' },
-      'avancé': { icon: '⚡', color: 'var(--tech-danger)' },
+      débutant: {
+        icon: 'fa-seedling',
+        color: 'var(--tech-success)',
+      },
+      intermédiaire: {
+        icon: 'fa-book',
+        color: 'var(--tech-warning)',
+      },
+      avancé: {
+        icon: 'fa-bolt',
+        color: 'var(--tech-danger)',
+      },
     };
-    return map[difficulty] || { icon: '📚', color: 'var(--gray-500)' };
+
+    return (
+      map[difficulty] || {
+        icon: 'fa-circle-question',
+        color: 'var(--gray-500)',
+      }
+    );
   }
 
   getStatusColor(status: string): string {
     const map: Record<string, string> = {
-      'ouvert': 'success',
-      'complet': 'warning',
-      'fermé': 'danger',
+      ouvert: 'success',
+      complet: 'warning',
+      fermé: 'danger',
     };
     return map[status] || 'neutral';
   }

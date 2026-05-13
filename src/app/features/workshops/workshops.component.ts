@@ -189,16 +189,16 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     return map[status] || 'neutral';
   }
 
-  getStatusIcon(status: string): string {
-    const map: Record<string, string> = {
-      planifié: '📋',
-      'en cours': '🔴',
-      terminé: '✅',
-      annulé: '❌',
-    };
-    return map[status] || '●';
-  }
+getStatusIcon(status: string): string {
+  const map: Record<string, string> = {
+    planifié: 'fa-clipboard-list',
+    'en cours': 'fa-circle-play',
+    terminé: 'fa-circle-check',
+    annulé: 'fa-circle-xmark',
+  };
 
+  return map[status] || 'fa-circle';
+}
   getLocationIcon(location: string): string {
     const map: Record<string, string> = {
       'en ligne': '💻',

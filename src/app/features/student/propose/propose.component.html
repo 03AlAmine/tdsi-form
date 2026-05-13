@@ -1,13 +1,14 @@
 <!-- propose.component.html -->
 <div class="propose-page">
-
   <!-- Hero Section -->
   <section class="propose-hero">
     <div class="container">
       <div class="propose-hero__content">
         <div class="propose-hero__badge">
           <span class="badge-glow"></span>
-          <span>✨ FORMULAIRE DE SOUMISSION</span>
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+          <span> FORMULAIRE DE SOUMISSION</span>
         </div>
         <h1 class="propose-hero__title">
           Proposer une
@@ -22,7 +23,6 @@
 
   <div class="container">
     <div class="propose-wrapper">
-
       @if (success()) {
         <!-- Success State -->
         <div class="success-card animate-slide-up">
@@ -46,7 +46,10 @@
               <i class="fas fa-plus"></i>
               Proposer une autre thématique
             </button>
-            <a routerLink="/espace-membre/mes-soumissions" class="btn btn--outline">
+            <a
+              routerLink="/espace-membre/mes-soumissions"
+              class="btn btn--outline"
+            >
               <i class="fas fa-file-alt"></i>
               Voir mes soumissions
             </a>
@@ -55,7 +58,6 @@
       } @else {
         <!-- Form -->
         <form [formGroup]="form" (ngSubmit)="submit()" class="propose-form">
-
           <!-- Section 1: Informations de base -->
           <div class="form-card">
             <div class="form-card__header">
@@ -103,7 +105,11 @@
                         <span>Suggestions IA</span>
                       </div>
                       @for (s of suggestions(); track s) {
-                        <button type="button" class="suggestion-item" (click)="pickSuggestion(s)">
+                        <button
+                          type="button"
+                          class="suggestion-item"
+                          (click)="pickSuggestion(s)"
+                        >
                           <i class="fas fa-arrow-right"></i>
                           {{ s }}
                         </button>
@@ -111,7 +117,7 @@
                     </div>
                   }
                 </div>
-                @if (isInvalid('proposedTitle')) {
+                @if (isInvalid("proposedTitle")) {
                   <span class="form-error">
                     <i class="fas fa-exclamation-circle"></i>
                     Titre requis (max 80 caractères)
@@ -119,7 +125,8 @@
                 }
                 <span class="form-hint">
                   <i class="fas fa-info-circle"></i>
-                  Soyez concis et précis — les suggestions apparaissent pendant la frappe
+                  Soyez concis et précis — les suggestions apparaissent pendant
+                  la frappe
                 </span>
               </div>
 
@@ -131,16 +138,24 @@
                     Catégorie
                   </label>
                   <div class="select-wrapper">
-                    <select formControlName="category" class="form-select" [class.error]="isInvalid('category')">
-                      <option value="" disabled>Sélectionner une catégorie</option>
+                    <select
+                      formControlName="category"
+                      class="form-select"
+                      [class.error]="isInvalid('category')"
+                    >
+                      <option value="" disabled>
+                        Sélectionner une catégorie
+                      </option>
                       @for (cat of categories; track cat) {
                         <option [value]="cat">{{ cat }}</option>
                       }
                     </select>
                     <i class="fas fa-chevron-down select-icon"></i>
                   </div>
-                  @if (isInvalid('category')) {
-                    <span class="form-error">Veuillez sélectionner une catégorie</span>
+                  @if (isInvalid("category")) {
+                    <span class="form-error"
+                      >Veuillez sélectionner une catégorie</span
+                    >
                   }
                 </div>
 
@@ -151,10 +166,20 @@
                   </label>
                   <div class="difficulty-selector">
                     @for (diff of difficulties; track diff.value) {
-                      <label class="difficulty-option" [class.active]="form.value.difficulty === diff.value">
-                        <input type="radio" formControlName="difficulty" [value]="diff.value" hidden />
+                      <label
+                        class="difficulty-option"
+                        [class.active]="form.value.difficulty === diff.value"
+                      >
+                        <input
+                          type="radio"
+                          formControlName="difficulty"
+                          [value]="diff.value"
+                          hidden
+                        />
                         <div class="difficulty-content">
-                          <span class="difficulty-icon">{{ getDifficultyIcon(diff.value) }}</span>
+                          <span class="difficulty-icon">{{
+                            getDifficultyIcon(diff.value)
+                          }}</span>
                           <div>
                             <div class="difficulty-label">{{ diff.label }}</div>
                             <div class="difficulty-desc">{{ diff.desc }}</div>
@@ -182,7 +207,9 @@
                     class="slider"
                   />
                   <div class="duration-value">
-                    <span class="value">{{ form.value.estimatedDuration }}</span>
+                    <span class="value">{{
+                      form.value.estimatedDuration
+                    }}</span>
                     <span class="unit">minutes</span>
                   </div>
                   <div class="duration-marks">
@@ -202,10 +229,17 @@
                   </div>
                   <div>
                     <div class="ai-title">Auto-complétion IA</div>
-                    <div class="ai-subtitle">Génère la description, objectifs, prérequis et matériel</div>
+                    <div class="ai-subtitle">
+                      Génère la description, objectifs, prérequis et matériel
+                    </div>
                   </div>
                 </div>
-                <button type="button" class="btn-ai" (click)="autoComplete()" [disabled]="aiLoading()">
+                <button
+                  type="button"
+                  class="btn-ai"
+                  (click)="autoComplete()"
+                  [disabled]="aiLoading()"
+                >
                   @if (aiLoading()) {
                     <div class="btn-loader"></div>
                     <span>Génération...</span>
@@ -226,7 +260,10 @@
               @if (aiUsed()) {
                 <div class="ai-used-badge">
                   <i class="fas fa-magic"></i>
-                  <span>Contenu généré par IA — vérifiez et adaptez si nécessaire</span>
+                  <span
+                    >Contenu généré par IA — vérifiez et adaptez si
+                    nécessaire</span
+                  >
                 </div>
               }
 
@@ -235,7 +272,9 @@
                 <label class="form-label required">
                   <i class="fas fa-align-left"></i>
                   Description
-                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                  @if (aiUsed()) {
+                    <span class="ai-tag">IA</span>
+                  }
                 </label>
                 <div class="textarea-wrapper">
                   <textarea
@@ -248,8 +287,10 @@
                   ></textarea>
                   <div class="textarea-border"></div>
                 </div>
-                @if (isInvalid('description')) {
-                  <span class="form-error">Description requise (minimum 50 caractères)</span>
+                @if (isInvalid("description")) {
+                  <span class="form-error"
+                    >Description requise (minimum 50 caractères)</span
+                  >
                 }
               </div>
             </div>
@@ -276,7 +317,9 @@
                 <label class="form-label required">
                   <i class="fas fa-graduation-cap"></i>
                   Objectifs pédagogiques
-                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                  @if (aiUsed()) {
+                    <span class="ai-tag">IA</span>
+                  }
                 </label>
                 <div class="textarea-wrapper">
                   <textarea
@@ -289,12 +332,13 @@
                   ></textarea>
                   <div class="textarea-border"></div>
                 </div>
-                @if (isInvalid('objectives')) {
+                @if (isInvalid("objectives")) {
                   <span class="form-error">Objectifs requis</span>
                 }
                 <span class="form-hint">
                   <i class="fas fa-lightbulb"></i>
-                  Ex: "À la fin de ce workshop, le participant sera capable de..."
+                  Ex: "À la fin de ce workshop, le participant sera capable
+                  de..."
                 </span>
               </div>
 
@@ -303,7 +347,9 @@
                 <label class="form-label">
                   <i class="fas fa-clipboard-list"></i>
                   Prérequis
-                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                  @if (aiUsed()) {
+                    <span class="ai-tag">IA</span>
+                  }
                 </label>
                 <div class="textarea-wrapper">
                   <textarea
@@ -322,7 +368,9 @@
                 <label class="form-label">
                   <i class="fas fa-tools"></i>
                   Matériel nécessaire
-                  @if (aiUsed()) { <span class="ai-tag">IA</span> }
+                  @if (aiUsed()) {
+                    <span class="ai-tag">IA</span>
+                  }
                 </label>
                 <div class="textarea-wrapper">
                   <textarea
@@ -373,11 +421,19 @@
 
           <!-- Form Actions -->
           <div class="form-actions">
-            <button type="button" class="btn btn--ghost" routerLink="/espace-membre/thematiques">
+            <button
+              type="button"
+              class="btn btn--ghost"
+              routerLink="/espace-membre/thematiques"
+            >
               <i class="fas fa-times"></i>
               Annuler
             </button>
-            <button type="submit" class="btn btn--primary" [disabled]="loading()">
+            <button
+              type="submit"
+              class="btn btn--primary"
+              [disabled]="loading()"
+            >
               @if (loading()) {
                 <div class="btn-loader"></div>
                 <span>Envoi en cours...</span>
@@ -388,10 +444,8 @@
               }
             </button>
           </div>
-
         </form>
       }
-
     </div>
   </div>
 </div>

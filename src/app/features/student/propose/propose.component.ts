@@ -85,9 +85,9 @@ export class ProposeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  getDifficultyIcon(value: string): string {
-    return this.difficulties.find(d => d.value === value)?.icon || '📚';
-  }
+getDifficultyIcon(value: string): string {
+  return this.difficulties.find(d => d.value === value)?.icon || 'fa-circle-question';
+}
 
   onTitleInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
@@ -153,7 +153,7 @@ export class ProposeComponent implements OnInit, OnDestroy {
       });
 
       this.aiUsed.set(true);
-      this.toastService.success('✨ Contenu généré par IA avec succès !');
+      this.toastService.success(' Contenu généré par IA avec succès !');
     } catch {
       this.aiError.set('Erreur IA. Vérifiez votre connexion et réessayez.');
     } finally {
