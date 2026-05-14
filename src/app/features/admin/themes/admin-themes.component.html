@@ -1,6 +1,5 @@
 <!-- admin-themes.component.html -->
 <div class="admin-themes">
-
   <!-- Header -->
   <div class="page-header">
     <div>
@@ -61,7 +60,9 @@
               type="text"
               formControlName="title"
               class="form-input"
-              [class.error]="form.get('title')?.invalid && form.get('title')?.touched"
+              [class.error]="
+                form.get('title')?.invalid && form.get('title')?.touched
+              "
               placeholder="Ex: Introduction à la Cryptographie"
             />
             <div class="input-border"></div>
@@ -82,10 +83,17 @@
             </div>
             <div>
               <div class="ai-title">Catégorisation IA</div>
-              <div class="ai-subtitle">Détecte automatiquement la catégorie, la difficulté et les tags</div>
+              <div class="ai-subtitle">
+                Détecte automatiquement la catégorie, la difficulté et les tags
+              </div>
             </div>
           </div>
-          <button type="button" class="btn-ai" (click)="autoCategorize()" [disabled]="aiLoading()">
+          <button
+            type="button"
+            class="btn-ai"
+            (click)="autoCategorize()"
+            [disabled]="aiLoading()"
+          >
             @if (aiLoading()) {
               <div class="btn-loader"></div>
               <span>Analyse...</span>
@@ -117,7 +125,11 @@
               Catégorie
             </label>
             <div class="select-wrapper">
-              <select formControlName="category" class="form-select" [class.ai-filled]="aiUsed()">
+              <select
+                formControlName="category"
+                class="form-select"
+                [class.ai-filled]="aiUsed()"
+              >
                 <option value="">Sélectionner une catégorie</option>
                 @for (cat of categories; track cat) {
                   <option [value]="cat">{{ cat }}</option>
@@ -126,8 +138,12 @@
               <i class="fas fa-chevron-down select-icon"></i>
               <div class="select-border"></div>
             </div>
-            @if (form.get("category")?.invalid && form.get("category")?.touched) {
-              <span class="form-error">Veuillez sélectionner une catégorie</span>
+            @if (
+              form.get("category")?.invalid && form.get("category")?.touched
+            ) {
+              <span class="form-error"
+                >Veuillez sélectionner une catégorie</span
+              >
             }
           </div>
 
@@ -137,11 +153,17 @@
               Difficulté
             </label>
             <div class="select-wrapper">
-              <select formControlName="difficulty" class="form-select" [class.ai-filled]="aiUsed()">
-                <option value="débutant">🌱 Débutant</option>
-                <option value="intermédiaire">📘 Intermédiaire</option>
-                <option value="avancé">⚡ Avancé</option>
-              </select>
+              <div class="select-wrapper">
+                <select
+                  formControlName="difficulty"
+                  class="form-select"
+                  [class.ai-filled]="aiUsed()"
+                >
+                  <option value="débutant">Débutant</option>
+                  <option value="intermédiaire">Intermédiaire</option>
+                  <option value="avancé">Avancé</option>
+                </select>
+              </div>
               <i class="fas fa-chevron-down select-icon"></i>
               <div class="select-border"></div>
             </div>
@@ -162,8 +184,12 @@
             ></textarea>
             <div class="textarea-border"></div>
           </div>
-          @if (form.get("description")?.invalid && form.get("description")?.touched) {
-            <span class="form-error">Description requise (min. 20 caractères)</span>
+          @if (
+            form.get("description")?.invalid && form.get("description")?.touched
+          ) {
+            <span class="form-error"
+              >Description requise (min. 20 caractères)</span
+            >
           }
         </div>
 
@@ -272,29 +298,45 @@
           <div class="theme-card__header">
             <div class="theme-card__badges">
               <span class="badge badge--primary">{{ theme.category }}</span>
-              <span class="badge" [class]="'badge--' + getStatusClass(theme.status)">
-                @if (theme.status === 'ouvert') { <i class="fas fa-circle"></i> }
+              <span
+                class="badge"
+                [class]="'badge--' + getStatusClass(theme.status)"
+              >
+                @if (theme.status === "ouvert") {
+                  <i class="fas fa-circle"></i>
+                }
                 {{ theme.status }}
               </span>
             </div>
             <div class="theme-card__difficulty">
               @switch (theme.difficulty) {
-                @case ("débutant") { <span><i class="fas fa-seedling"></i> Débutant</span> }
-                @case ("intermédiaire") { <span><i class="fas fa-book-open"></i> Intermédiaire</span> }
-                @case ("avancé") { <span><i class="fas fa-rocket"></i> Avancé</span> }
+                @case ("débutant") {
+                  <span><i class="fas fa-seedling"></i> Débutant</span>
+                }
+                @case ("intermédiaire") {
+                  <span><i class="fas fa-book-open"></i> Intermédiaire</span>
+                }
+                @case ("avancé") {
+                  <span><i class="fas fa-rocket"></i> Avancé</span>
+                }
               }
             </div>
           </div>
 
           <h3 class="theme-card__title">{{ theme.title }}</h3>
           <p class="theme-card__description">
-            {{ theme.description | slice:0:100 }}{{ theme.description.length > 100 ? '...' : '' }}
+            {{ theme.description | slice: 0 : 100
+            }}{{ theme.description.length > 100 ? "..." : "" }}
           </p>
 
           <div class="theme-card__stats">
             <div class="stat">
               <i class="fas fa-users"></i>
-              <span>{{ theme.currentParticipants }}/{{ theme.maxParticipants }}</span>
+              <span
+                >{{ theme.currentParticipants }}/{{
+                  theme.maxParticipants
+                }}</span
+              >
               <span class="stat-label">inscrits</span>
             </div>
             @if (theme.linkedWorkshop) {
@@ -329,10 +371,16 @@
                 <option value="fermé">Fermé</option>
               </select>
             </div>
-            <button class="action-btn action-btn--edit" (click)="editTheme(theme); $event.stopPropagation()">
+            <button
+              class="action-btn action-btn--edit"
+              (click)="editTheme(theme); $event.stopPropagation()"
+            >
               <i class="fas fa-edit"></i>
             </button>
-            <button class="action-btn action-btn--delete" (click)="deleteTheme(theme); $event.stopPropagation()">
+            <button
+              class="action-btn action-btn--delete"
+              (click)="deleteTheme(theme); $event.stopPropagation()"
+            >
               <i class="fas fa-trash-alt"></i>
             </button>
           </div>
@@ -342,8 +390,5 @@
   }
 
   <!-- Theme Detail Modal -->
-  <app-theme-detail
-    (edit)="editTheme($event)"
-    (delete)="deleteTheme($event)"
-  />
+  <app-theme-detail (edit)="editTheme($event)" (delete)="deleteTheme($event)" />
 </div>

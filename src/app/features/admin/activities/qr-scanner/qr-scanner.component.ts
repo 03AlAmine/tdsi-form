@@ -32,17 +32,12 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
       <div class="scanner-controls">
         @if (!scanning()) {
           <button class="btn btn--primary" (click)="startScanner()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
-            </svg>
+            <i class="fas fa-qrcode"></i>
             Démarrer le scanner
           </button>
         } @else {
           <button class="btn btn--ghost" (click)="stopScanner()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-            </svg>
+            <i class="fas fa-stop"></i>
             Arrêter
           </button>
         }
@@ -53,10 +48,7 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
         <div id="qr-scanner-reader" #readerEl></div>
         @if (!scanning()) {
           <div class="scanner-placeholder">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/>
-            </svg>
+            <i class="fas fa-qrcode fa-4x"></i>
             <p>Cliquez sur "Démarrer" pour activer la caméra</p>
           </div>
         }
@@ -79,13 +71,9 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
                                  [class.scan-result--error]="!lastResult()!.success">
           <div class="scan-result__icon">
             @if (lastResult()!.success) {
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+              <i class="fas fa-check"></i>
             } @else {
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
+              <i class="fas fa-times"></i>
             }
           </div>
           <div class="scan-result__info">
@@ -174,7 +162,7 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
       color: #475569;
       text-align: center;
 
-      svg { opacity: .35; }
+      i   { opacity: .35; font-size: 4rem; }
       p   { font-size: .875rem; margin: 0; }
     }
 

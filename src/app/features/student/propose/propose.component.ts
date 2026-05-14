@@ -22,11 +22,25 @@ const CATEGORIES: ThemeCategory[] = [
 ];
 
 const DIFFICULTIES = [
-  { value: 'débutant', label: 'Débutant', desc: 'Accessible à tous', icon: '🌱' },
-  { value: 'intermédiaire', label: 'Intermédiaire', desc: 'Connaissances de base requises', icon: '📘' },
-  { value: 'avancé', label: 'Avancé', desc: 'Bonnes connaissances techniques', icon: '⚡' },
+  {
+    value: 'débutant',
+    label: 'Débutant',
+    desc: 'Accessible à tous',
+    icon: 'fa-seedling',
+  },
+  {
+    value: 'intermédiaire',
+    label: 'Intermédiaire',
+    desc: 'Connaissances de base requises',
+    icon: 'fa-book',
+  },
+  {
+    value: 'avancé',
+    label: 'Avancé',
+    desc: 'Bonnes connaissances techniques',
+    icon: 'fa-bolt',
+  },
 ];
-
 @Component({
   selector: 'app-propose',
   standalone: true,
@@ -63,7 +77,10 @@ export class ProposeComponent implements OnInit, OnDestroy {
     proposedTitle: ['', [Validators.required, Validators.maxLength(80)]],
     category: ['', Validators.required],
     difficulty: ['intermédiaire', Validators.required],
-    estimatedDuration: [90, [Validators.required, Validators.min(30), Validators.max(480)]],
+    estimatedDuration: [
+      90,
+      [Validators.required, Validators.min(30), Validators.max(480)],
+    ],
     description: ['', [Validators.required, Validators.minLength(50)]],
     objectives: ['', Validators.required],
     prerequisites: [''],
@@ -85,9 +102,12 @@ export class ProposeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-getDifficultyIcon(value: string): string {
-  return this.difficulties.find(d => d.value === value)?.icon || 'fa-circle-question';
-}
+  getDifficultyIcon(value: string): string {
+    return (
+      this.difficulties.find((d) => d.value === value)?.icon ||
+      'fa-circle-question'
+    );
+  }
 
   onTitleInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
@@ -104,7 +124,9 @@ getDifficultyIcon(value: string): string {
     try {
       const category = this.form.value.category ?? '';
       const results = await this.aiService.suggestTitles(title, category);
-      this.suggestions.set(results.filter(s => s.toLowerCase() !== title.toLowerCase()));
+      this.suggestions.set(
+        results.filter((s) => s.toLowerCase() !== title.toLowerCase()),
+      );
       this.showSuggestions.set(this.suggestions().length > 0);
     } catch {
       // Silencieux
@@ -169,7 +191,9 @@ getDifficultyIcon(value: string): string {
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toastService.error('Veuillez corriger les erreurs dans le formulaire');
+      this.toastService.error(
+        'Veuillez corriger les erreurs dans le formulaire',
+      );
       return;
     }
 
@@ -187,7 +211,10 @@ getDifficultyIcon(value: string): string {
         proposedTitle: this.form.value.proposedTitle!,
         description: this.form.value.description!,
         category: this.form.value.category as ThemeCategory,
-        difficulty: this.form.value.difficulty as 'débutant' | 'intermédiaire' | 'avancé',
+        difficulty: this.form.value.difficulty as
+          | 'débutant'
+          | 'intermédiaire'
+          | 'avancé',
         objectives: this.form.value.objectives!,
         prerequisites: this.form.value.prerequisites ?? '',
         estimatedDuration: this.form.value.estimatedDuration!,

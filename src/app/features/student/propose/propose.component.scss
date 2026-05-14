@@ -296,7 +296,6 @@
    SELECT WRAPPER
    ============================================================ */
 .select-wrapper {
-  position: relative;
 
   .form-select {
     width: 100%;
@@ -432,7 +431,6 @@
    TEXTAREA
    ============================================================ */
 .textarea-wrapper {
-  position: relative;
 
   .form-textarea {
     width: 100%;
@@ -481,9 +479,7 @@
 /* ============================================================
    SUGGESTIONS DROPDOWN
    ============================================================ */
-.title-input-group {
-  position: relative;
-}
+
 
 .suggestions-dropdown {
   position: absolute;

@@ -56,7 +56,15 @@ export const routes: Routes = [
             (m) => m.WorkshopsComponent,
           ),
       },
-    /*  {
+      {
+        path: 'workshops/:id/meet',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/meet/jitsi-meet.component').then(
+            (m) => m.JitsiMeetComponent,
+          ),
+      },
+      /*  {
         path: 'activites',
         loadComponent: () =>
           import('./features/activities/activities.component').then(
@@ -90,7 +98,7 @@ export const routes: Routes = [
             pathMatch: 'full',
           },
           { path: 'workshops', redirectTo: '/workshops', pathMatch: 'full' },
-       /*   { path: 'activites', redirectTo: '/activites', pathMatch: 'full' },*/
+          /*   { path: 'activites', redirectTo: '/activites', pathMatch: 'full' },*/
           // Pages membres exclusives
           {
             path: 'proposer',
@@ -170,7 +178,7 @@ export const routes: Routes = [
             (m) => m.PresenceConfigComponent,
           ),
       },
-    /*  {
+      /*  {
         path: 'activites',
         loadComponent: () =>
           import('./features/admin/activities/admin-activities.component').then(

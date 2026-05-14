@@ -177,9 +177,12 @@
                           hidden
                         />
                         <div class="difficulty-content">
-                          <span class="difficulty-icon">{{
-                            getDifficultyIcon(diff.value)
-                          }}</span>
+                          <span class="difficulty-icon">
+                            <i
+                              class="fa-solid"
+                              [ngClass]="getDifficultyIcon(diff.value)"
+                            ></i>
+                          </span>
                           <div>
                             <div class="difficulty-label">{{ diff.label }}</div>
                             <div class="difficulty-desc">{{ diff.desc }}</div>

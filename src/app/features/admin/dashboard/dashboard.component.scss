@@ -318,6 +318,7 @@
 
   &__body {
     padding: 0;
+    overflow-x: auto;
   }
 }
 
@@ -512,4 +513,42 @@
 
 @keyframes spin-reverse {
   to { transform: rotate(-360deg); }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (≤ 480px)
+   ============================================================ */
+@media (max-width: 480px) {
+  .dashboard {
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    &__title {
+      font-size: 1.25rem;
+    }
+  }
+
+  .stat-card {
+    &__value {
+      font-size: 1.4rem;
+    }
+  }
+
+  .data-table {
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+
+  .admin-table {
+    th, td {
+      padding: 0.625rem 0.875rem;
+      font-size: 0.8125rem;
+    }
+  }
 }

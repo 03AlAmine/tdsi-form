@@ -67,7 +67,9 @@ export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
     if (!target.closest('.user-menu')) {
       this.userMenuOpen.set(false);
     }
-    if (!target.closest('.mobile-menu-btn') && !target.closest('.mobile-nav')) {
+    if (!target.closest('.mobile-menu-btn') &&
+        !target.closest('.mobile-nav') &&
+        !target.closest('.mobile-nav-overlay')) {
       this.mobileMenuOpen.set(false);
       document.body.style.overflow = '';
     }
@@ -76,6 +78,7 @@ export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.mobileMenuOpen.set(false);
+    this.userMenuOpen.set(false);
     document.body.style.overflow = '';
   }
 

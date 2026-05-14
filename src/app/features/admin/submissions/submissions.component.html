@@ -1,6 +1,5 @@
 <!-- submissions.component.html -->
 <div class="submissions">
-
   <!-- Header -->
   <div class="page-header">
     <div>
@@ -23,14 +22,20 @@
   <div class="filters-section">
     <div class="filters-scroll">
       @for (filter of filters; track filter.value) {
-        <button class="filter-chip"
-                [class.active]="activeFilter() === filter.value"
-                (click)="setFilter(filter.value)">
+        <button
+          class="filter-chip"
+          [class.active]="activeFilter() === filter.value"
+          (click)="setFilter(filter.value)"
+        >
           <i class="fas {{ filter.icon }}"></i>
           {{ filter.label }}
-          @if (filter.value === 'en attente' && pendingCount() > 0) {
-            <span class="filter-count">{{ pendingCount() }}</span>
-          }
+          <!-- ✅ Ajout des badges compteurs pour chaque filtre -->
+          <span
+            class="filter-count"
+            [class]="getFilterCountClass(filter.value)"
+          >
+            {{ getFilterCount(filter.value) }}
+          </span>
         </button>
       }
     </div>
@@ -45,21 +50,30 @@
       <h3>Aucune soumission</h3>
       <p>
         @switch (activeFilter()) {
-          @case ('en attente') { Aucune soumission en attente de validation. }
-          @case ('approuvé') { Aucune soumission approuvée pour le moment. }
-          @case ('refusé') { Aucune soumission refusée. }
-          @default { Aucune soumission trouvée. }
+          @case ("en attente") {
+            Aucune soumission en attente de validation.
+          }
+          @case ("approuvé") {
+            Aucune soumission approuvée pour le moment.
+          }
+          @case ("refusé") {
+            Aucune soumission refusée.
+          }
+          @default {
+            Aucune soumission trouvée.
+          }
         }
       </p>
     </div>
   } @else {
     <div class="submissions-list">
       @for (sub of filteredSubmissions(); track sub.id) {
-        <div class="submission-card"
-             [class.status-pending]="sub.status === 'en attente'"
-             [class.status-approved]="sub.status === 'approuvé'"
-             [class.status-refused]="sub.status === 'refusé'">
-
+        <div
+          class="submission-card"
+          [class.status-pending]="sub.status === 'en attente'"
+          [class.status-approved]="sub.status === 'approuvé'"
+          [class.status-refused]="sub.status === 'refusé'"
+        >
           <!-- Status Bar -->
           <div class="submission-card__status-bar"></div>
 
@@ -79,12 +93,15 @@
                   </span>
                   <span class="meta-date">
                     <i class="fas fa-calendar-alt"></i>
-                    {{ sub.submittedAt | date:'dd/MM/yyyy à HH:mm' }}
+                    {{ sub.submittedAt | date: "dd/MM/yyyy à HH:mm" }}
                   </span>
                 </div>
               </div>
               <div class="submission-card__status-badge">
-                <span class="status-badge" [class]="'status-badge--' + getStatusClass(sub.status)">
+                <span
+                  class="status-badge"
+                  [class]="'status-badge--' + getStatusClass(sub.status)"
+                >
                   <i class="fas {{ getStatusIcon(sub.status) }}"></i>
                   {{ sub.status }}
                 </span>
@@ -133,7 +150,9 @@
                 </div>
                 <div>
                   <span class="detail-label">Durée estimée</span>
-                  <p class="detail-value">{{ sub.estimatedDuration }} minutes</p>
+                  <p class="detail-value">
+                    {{ sub.estimatedDuration }} minutes
+                  </p>
                 </div>
               </div>
               <div class="detail-card">
@@ -144,10 +163,23 @@
                   <span class="detail-label">Difficulté proposée</span>
                   <p class="detail-value">
                     @switch (sub.difficulty) {
-                      @case ('débutant') { <span><i class="fas fa-seedling"></i> Débutant</span> }
-                      @case ('intermédiaire') { <span><i class="fas fa-book-open"></i> Intermédiaire</span> }
-                      @case ('avancé') { <span><i class="fas fa-rocket"></i> Avancé</span> }
-                      @default { <span><i class="fas fa-question-circle"></i> Non spécifiée</span> }
+                      @case ("débutant") {
+                        <span><i class="fas fa-seedling"></i> Débutant</span>
+                      }
+                      @case ("intermédiaire") {
+                        <span
+                          ><i class="fas fa-book-open"></i> Intermédiaire</span
+                        >
+                      }
+                      @case ("avancé") {
+                        <span><i class="fas fa-rocket"></i> Avancé</span>
+                      }
+                      @default {
+                        <span
+                          ><i class="fas fa-question-circle"></i> Non
+                          spécifiée</span
+                        >
+                      }
                     }
                   </p>
                 </div>
@@ -155,27 +187,40 @@
             </div>
 
             <!-- Admin Comment -->
-            @if (sub.adminComment && sub.status !== 'en attente') {
-              <div class="admin-comment" [class]="'admin-comment--' + getStatusClass(sub.status)">
+            @if (sub.adminComment && sub.status !== "en attente") {
+              <div
+                class="admin-comment"
+                [class]="'admin-comment--' + getStatusClass(sub.status)"
+              >
                 <div class="admin-comment__header">
                   <i class="fas fa-user-shield"></i>
                   <span>Commentaire administrateur</span>
-                  <span class="admin-comment__date">{{ sub.updatedAt | date:'dd MMM yyyy' }}</span>
+                  <span class="admin-comment__date">{{
+                    sub.updatedAt | date: "dd MMM yyyy"
+                  }}</span>
                 </div>
                 <p class="admin-comment__text">{{ sub.adminComment }}</p>
               </div>
             }
 
             <!-- AI Analysis Section (Pending only) -->
-            @if (sub.status === 'en attente') {
+            @if (sub.status === "en attente") {
               <div class="ai-section">
-                <button class="btn-ai" (click)="analyzeSummary(sub)" [disabled]="isSummaryLoading(sub.id!)">
+                <button
+                  class="btn-ai"
+                  (click)="analyzeSummary(sub)"
+                  [disabled]="isSummaryLoading(sub.id!)"
+                >
                   @if (isSummaryLoading(sub.id!)) {
                     <div class="btn-loader"></div>
                     <span>Analyse en cours...</span>
                   } @else if (getSummary(sub.id!)) {
                     <i class="fas fa-brain"></i>
-                    <span>{{ isSummaryExpanded(sub.id!) ? 'Masquer l\'analyse' : 'Voir l\'analyse IA' }}</span>
+                    <span>{{
+                      isSummaryExpanded(sub.id!)
+                        ? "Masquer l'analyse"
+                        : "Voir l'analyse IA"
+                    }}</span>
                   } @else {
                     <i class="fas fa-magic"></i>
                     <span>Analyser avec l'IA</span>
@@ -196,8 +241,15 @@
                         <i class="fas fa-brain"></i>
                         <span>ANALYSE IA</span>
                       </div>
-                      <span class="verdict-badge" [class]="'verdict--' + getSummary(sub.id!)!.verdict">
-                        <i class="fas {{ getVerdictIcon(getSummary(sub.id!)!.verdict) }}"></i>
+                      <span
+                        class="verdict-badge"
+                        [class]="'verdict--' + getSummary(sub.id!)!.verdict"
+                      >
+                        <i
+                          class="fas {{
+                            getVerdictIcon(getSummary(sub.id!)!.verdict)
+                          }}"
+                        ></i>
                         Dossier {{ getSummary(sub.id!)!.verdict }}
                       </span>
                     </div>
@@ -212,7 +264,10 @@
                             <span>Points forts</span>
                           </div>
                           <ul>
-                            @for (point of getSummary(sub.id!)!.points_forts; track point) {
+                            @for (
+                              point of getSummary(sub.id!)!.points_forts;
+                              track point
+                            ) {
                               <li>{{ point }}</li>
                             }
                           </ul>
@@ -225,7 +280,10 @@
                             <span>À améliorer</span>
                           </div>
                           <ul>
-                            @for (point of getSummary(sub.id!)!.points_faibles; track point) {
+                            @for (
+                              point of getSummary(sub.id!)!.points_faibles;
+                              track point
+                            ) {
                               <li>{{ point }}</li>
                             }
                           </ul>
@@ -237,7 +295,9 @@
                       <div class="ai-suggestion__header">
                         <i class="fas fa-comment-dots"></i>
                         <span>Commentaire suggéré</span>
-                        <span class="suggestion-hint">pré-rempli ci-dessous — modifiable</span>
+                        <span class="suggestion-hint"
+                          >pré-rempli ci-dessous — modifiable</span
+                        >
                       </div>
                     </div>
                   </div>
@@ -246,7 +306,7 @@
             }
 
             <!-- Actions (Pending only) -->
-            @if (sub.status === 'en attente') {
+            @if (sub.status === "en attente") {
               <div class="action-section">
                 <div class="comment-field">
                   <label class="form-label">
@@ -254,16 +314,22 @@
                     Commentaire (optionnel)
                   </label>
                   <div class="textarea-wrapper">
-                    <textarea class="form-textarea"
-                              [ngModel]="commentText()[sub.id!]"
-                              (ngModelChange)="updateComment(sub.id!, $event)"
-                              placeholder="Ajouter un commentaire pour l'étudiant..."
-                              rows="2"></textarea>
+                    <textarea
+                      class="form-textarea"
+                      [ngModel]="commentText()[sub.id!]"
+                      (ngModelChange)="updateComment(sub.id!, $event)"
+                      placeholder="Ajouter un commentaire pour l'étudiant..."
+                      rows="2"
+                    ></textarea>
                     <div class="textarea-border"></div>
                   </div>
                 </div>
                 <div class="action-buttons">
-                  <button class="btn btn--success" [disabled]="processingId() === sub.id" (click)="approve(sub)">
+                  <button
+                    class="btn btn--success"
+                    [disabled]="processingId() === sub.id"
+                    (click)="approve(sub)"
+                  >
                     @if (processingId() === sub.id) {
                       <div class="btn-loader"></div>
                       <span>Traitement...</span>
@@ -272,7 +338,11 @@
                       <span>Approuver & publier</span>
                     }
                   </button>
-                  <button class="btn btn--danger" [disabled]="processingId() === sub.id" (click)="refuse(sub)">
+                  <button
+                    class="btn btn--danger"
+                    [disabled]="processingId() === sub.id"
+                    (click)="refuse(sub)"
+                  >
                     @if (processingId() === sub.id) {
                       <div class="btn-loader"></div>
                       <span>Traitement...</span>
@@ -286,7 +356,7 @@
             }
 
             <!-- Published Badge -->
-            @if (sub.status === 'approuvé') {
+            @if (sub.status === "approuvé") {
               <div class="published-badge">
                 <i class="fas fa-check-circle"></i>
                 <span>Thématique publiée dans le catalogue</span>

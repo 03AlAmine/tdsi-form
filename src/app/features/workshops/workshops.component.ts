@@ -1,7 +1,7 @@
-// workshops.component.ts - Version améliorée
+// workshops.component.ts
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { WorkshopService } from '../../core/services/workshop.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AiService } from '../../core/services/ai.service';
@@ -21,6 +21,7 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private aiService = inject(AiService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
 
   workshops = signal<Workshop[]>([]);
   loading = signal(true);
@@ -35,7 +36,7 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   defaultObjectives = [
     'Maîtriser les concepts fondamentaux du sujet',
     'Savoir mettre en pratique les techniques apprises',
-    'Développer des compétences opérationnelles'
+    'Développer des compétences opérationnelles',
   ];
 
   isLoggedIn = () => this.authService.isLoggedIn;
@@ -161,6 +162,15 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ✅ Jitsi — accès protégé par auth
+  joinMeet(workshop: Workshop): void {
+    if (!this.isLoggedIn()) {
+      this.toastService.error('🔒 Connecte-toi pour accéder au meet.');
+      return;
+    }
+    this.router.navigate(['/workshops', workshop.id, 'meet']);
+  }
+
   getRegistrationPercent(workshop: Workshop): number {
     const registrations = workshop.registrations?.length || 0;
     const max = workshop.maxParticipants || 30;
@@ -176,7 +186,7 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   myRegistrationsCount(): number {
     const userId = this.authService.currentUser?.uid;
     if (!userId) return 0;
-    return this.workshops().filter(w => w.registrations?.includes(userId)).length;
+    return this.workshops().filter((w) => w.registrations?.includes(userId)).length;
   }
 
   getStatusClass(status: string): string {
@@ -189,16 +199,16 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     return map[status] || 'neutral';
   }
 
-getStatusIcon(status: string): string {
-  const map: Record<string, string> = {
-    planifié: 'fa-clipboard-list',
-    'en cours': 'fa-circle-play',
-    terminé: 'fa-circle-check',
-    annulé: 'fa-circle-xmark',
-  };
+  getStatusIcon(status: string): string {
+    const map: Record<string, string> = {
+      planifié: 'fa-clipboard-list',
+      'en cours': 'fa-circle-play',
+      terminé: 'fa-circle-check',
+      annulé: 'fa-circle-xmark',
+    };
+    return map[status] || 'fa-circle';
+  }
 
-  return map[status] || 'fa-circle';
-}
   getLocationIcon(location: string): string {
     const map: Record<string, string> = {
       'en ligne': '💻',

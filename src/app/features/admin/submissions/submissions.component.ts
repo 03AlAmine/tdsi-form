@@ -193,4 +193,34 @@ export class SubmissionsComponent {
       this.processingId.set(null);
     }
   }
+    getFilterCount(filter: FilterType): number {
+    switch (filter) {
+      case 'en attente':
+        return this.allSubmissions().filter(s => s.status === 'en attente').length;
+      case 'approuvé':
+        return this.allSubmissions().filter(s => s.status === 'approuvé').length;
+      case 'refusé':
+        return this.allSubmissions().filter(s => s.status === 'refusé').length;
+      case 'all':
+        return this.allSubmissions().length;
+      default:
+        return 0;
+    }
+  }
+
+  // ✅ Obtenir la classe CSS du compteur selon le type
+  getFilterCountClass(filter: FilterType): string {
+    switch (filter) {
+      case 'en attente':
+        return 'count-pending';
+      case 'approuvé':
+        return 'count-approved';
+      case 'refusé':
+        return 'count-refused';
+      case 'all':
+        return 'count-all';
+      default:
+        return '';
+    }
+  }
 }

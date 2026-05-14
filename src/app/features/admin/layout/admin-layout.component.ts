@@ -41,12 +41,12 @@ export class AdminLayoutComponent {
   // Navigation items avec les nouveaux composants
   navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: 'fa-chart-line', badge: null },
-    { path: '/admin/analytics', label: 'Analytics', icon: 'fa-chart-simple', badge: null },  // NOUVEAU
+    { path: '/admin/analytics', label: 'Analytics', icon: 'fa-chart-simple', badge: null },  
     { path: '/admin/themes', label: 'Thématiques', icon: 'fa-layer-group', badge: null },
     { path: '/admin/soumissions', label: 'Soumissions', icon: 'fa-file-alt', badge: null },
     { path: '/admin/workshops', label: 'Workshops', icon: 'fa-chalkboard-user', badge: null },
-    { path: '/admin/activites', label: 'Activités', icon: 'fa-calendar-alt', badge: null },
-    { path: '/admin/users', label: 'Utilisateurs', icon: 'fa-users', badge: null },  // NOUVEAU
+ /*   { path: '/admin/activites', label: 'Activités', icon: 'fa-calendar-alt', badge: null },*/
+    { path: '/admin/users', label: 'Utilisateurs', icon: 'fa-users', badge: null },
   ];
 
   toggleSidebar(): void {

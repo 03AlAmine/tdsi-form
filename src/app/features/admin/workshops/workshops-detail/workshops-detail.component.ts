@@ -20,7 +20,7 @@ interface ParticipantInfo {
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './workshops-detail.component.html',
-  styleUrls: ['./workshops-detail.component.scss']
+  styleUrls: ['./workshops-detail.component.scss'],
 })
 export class WorkshopDetailComponent {
   @Output() close = new EventEmitter<void>();
@@ -47,7 +47,7 @@ export class WorkshopDetailComponent {
 
     await Promise.all([
       this.loadParticipantsInfo(),
-      this.loadGuestRegistrations()
+      this.loadGuestRegistrations(),
     ]);
   }
 
@@ -66,7 +66,7 @@ export class WorkshopDetailComponent {
     this.loadingParticipants.set(true);
     try {
       const snaps = await Promise.all(
-        this.workshop.registrations.map(uid => getDoc(doc(db, 'users', uid)))
+        this.workshop.registrations.map((uid) => getDoc(doc(db, 'users', uid))),
       );
 
       const participantsList: ParticipantInfo[] = snaps.map((userSnap, i) => {
@@ -77,10 +77,15 @@ export class WorkshopDetailComponent {
             uid,
             displayName: data['displayName'] || 'Inconnu',
             email: data['email'] || 'Non disponible',
-            promo: data['promo'] || 'Non spécifié'
+            promo: data['promo'] || 'Non spécifié',
           };
         }
-        return { uid, displayName: 'Utilisateur inconnu', email: 'Non disponible', promo: 'Non spécifié' };
+        return {
+          uid,
+          displayName: 'Utilisateur inconnu',
+          email: 'Non disponible',
+          promo: 'Non spécifié',
+        };
       });
 
       this.participants.set(participantsList);
@@ -99,7 +104,10 @@ export class WorkshopDetailComponent {
 
     this.loadingGuests.set(true);
     try {
-      const guests = await this.publicRegistrationService.getRegistrationsByWorkshop(this.workshop.id);
+      const guests =
+        await this.publicRegistrationService.getRegistrationsByWorkshop(
+          this.workshop.id,
+        );
       this.guestRegistrations.set(guests);
     } catch {
       this.guestRegistrations.set([]);
@@ -110,7 +118,9 @@ export class WorkshopDetailComponent {
 
   getAvailablePlaces(): number {
     if (!this.workshop?.maxParticipants) return 0;
-    const total = (this.workshop.registrations?.length || 0) + this.guestRegistrations().length;
+    const total =
+      (this.workshop.registrations?.length || 0) +
+      this.guestRegistrations().length;
     return Math.max(0, this.workshop.maxParticipants - total);
   }
 
@@ -121,7 +131,7 @@ export class WorkshopDetailComponent {
       number: 'fa-hashtag',
       textarea: 'fa-align-left',
       select: 'fa-caret-down',
-      checkbox: 'fa-check-square'
+      checkbox: 'fa-check-square',
     };
     return icons[type] || 'fa-pen';
   }
@@ -168,21 +178,36 @@ export class WorkshopDetailComponent {
     }
   }
 
-  getStatusInfo(status: string): { label: string; icon: string; color: string } {
-    const map: Record<string, { label: string; icon: string; color: string }> = {
-      'planifié': { label: 'Planifié', icon: 'fa-clock', color: 'info' },
-      'en cours': { label: 'En cours', icon: 'fa-play-circle', color: 'primary' },
-      'terminé': { label: 'Terminé', icon: 'fa-check-circle', color: 'success' },
-      'annulé': { label: 'Annulé', icon: 'fa-ban', color: 'danger' }
-    };
-    return map[status] || { label: status, icon: 'fa-circle', color: 'neutral' };
+  getStatusInfo(status: string): {
+    label: string;
+    icon: string;
+    color: string;
+  } {
+    const map: Record<string, { label: string; icon: string; color: string }> =
+      {
+        planifié: { label: 'Planifié', icon: 'fa-clock', color: 'info' },
+        'en cours': {
+          label: 'En cours',
+          icon: 'fa-play-circle',
+          color: 'primary',
+        },
+        terminé: {
+          label: 'Terminé',
+          icon: 'fa-check-circle',
+          color: 'success',
+        },
+        annulé: { label: 'Annulé', icon: 'fa-ban', color: 'danger' },
+      };
+    return (
+      map[status] || { label: status, icon: 'fa-circle', color: 'neutral' }
+    );
   }
 
   getLocationInfo(location: string): { icon: string; label: string } {
     const map: Record<string, { icon: string; label: string }> = {
       'en ligne': { icon: 'fa-wifi', label: 'En ligne' },
-      'présentiel': { icon: 'fa-building', label: 'Présentiel' },
-      'hybride': { icon: 'fa-sync-alt', label: 'Hybride' }
+      présentiel: { icon: 'fa-building', label: 'Présentiel' },
+      hybride: { icon: 'fa-sync-alt', label: 'Hybride' },
     };
     return map[location] || { icon: 'fa-map-marker-alt', label: location };
   }

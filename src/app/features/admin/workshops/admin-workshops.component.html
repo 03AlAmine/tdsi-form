@@ -1,6 +1,5 @@
 <!-- admin-workshops.component.html -->
 <div class="admin-workshops">
-
   <!-- Header -->
   <div class="page-header">
     <div>
@@ -39,7 +38,11 @@
             Thématique
           </label>
           <div class="select-wrapper">
-            <select formControlName="themeId" class="form-select" (change)="onThemeChange($event)">
+            <select
+              formControlName="themeId"
+              class="form-select"
+              (change)="onThemeChange($event)"
+            >
               <option value="">Sélectionner une thématique</option>
               @for (theme of themes(); track theme.id) {
                 <option [value]="theme.id">{{ theme.title }}</option>
@@ -48,7 +51,7 @@
             <i class="fas fa-chevron-down select-icon"></i>
             <div class="select-border"></div>
           </div>
-          @if (isInvalid('themeId')) {
+          @if (isInvalid("themeId")) {
             <span class="form-error">
               <i class="fas fa-exclamation-circle"></i>
               Veuillez sélectionner une thématique
@@ -63,11 +66,15 @@
               Présentateur
             </label>
             <div class="input-wrapper">
-              <input type="text" formControlName="presenter" class="form-input"
-                     placeholder="Nom du présentateur" />
+              <input
+                type="text"
+                formControlName="presenter"
+                class="form-input"
+                placeholder="Nom du présentateur"
+              />
               <div class="input-border"></div>
             </div>
-            @if (isInvalid('presenter')) {
+            @if (isInvalid("presenter")) {
               <span class="form-error">Nom du présentateur requis</span>
             }
           </div>
@@ -78,12 +85,18 @@
               Durée (minutes)
             </label>
             <div class="input-wrapper">
-              <input type="number" formControlName="duration" class="form-input"
-                     min="15" max="480" step="15" />
+              <input
+                type="number"
+                formControlName="duration"
+                class="form-input"
+                min="15"
+                max="480"
+                step="15"
+              />
               <div class="input-border"></div>
             </div>
             <span class="form-hint">Entre 15 et 480 minutes</span>
-            @if (isInvalid('duration')) {
+            @if (isInvalid("duration")) {
               <span class="form-error">Durée invalide</span>
             }
           </div>
@@ -96,10 +109,15 @@
               Date
             </label>
             <div class="input-wrapper">
-              <input type="date" formControlName="date" class="form-input" [min]="minDate" />
+              <input
+                type="date"
+                formControlName="date"
+                class="form-input"
+                [min]="minDate"
+              />
               <div class="input-border"></div>
             </div>
-            @if (isInvalid('date')) {
+            @if (isInvalid("date")) {
               <span class="form-error">Date requise</span>
             }
           </div>
@@ -113,7 +131,7 @@
               <input type="time" formControlName="time" class="form-input" />
               <div class="input-border"></div>
             </div>
-            @if (isInvalid('time')) {
+            @if (isInvalid("time")) {
               <span class="form-error">Heure requise</span>
             }
           </div>
@@ -142,11 +160,17 @@
               Lien Meet/Zoom
             </label>
             <div class="input-wrapper">
-              <input type="url" formControlName="meetLink" class="form-input"
-                     placeholder="https://meet.google.com/..." />
+              <input
+                type="url"
+                formControlName="meetLink"
+                class="form-input"
+                placeholder="https://meet.google.com/..."
+              />
               <div class="input-border"></div>
             </div>
-            <span class="form-hint">Optionnel - pour les sessions en ligne</span>
+            <span class="form-hint"
+              >Optionnel - pour les sessions en ligne</span
+            >
           </div>
         </div>
 
@@ -156,8 +180,13 @@
             Max participants
           </label>
           <div class="input-wrapper">
-            <input type="number" formControlName="maxParticipants" class="form-input"
-                   min="1" max="1000" />
+            <input
+              type="number"
+              formControlName="maxParticipants"
+              class="form-input"
+              min="1"
+              max="1000"
+            />
             <div class="input-border"></div>
           </div>
           <span class="form-hint">Optionnel - limite de places</span>
@@ -184,7 +213,7 @@
   }
 
   <!-- Loading State -->
-  @if (workshops().length === 0 && !loading()) {
+  @if (loading()) {
     <div class="loading-state">
       <div class="loading-spinner">
         <div class="spinner-ring"></div>
@@ -209,29 +238,58 @@
     <!-- Workshops Grid -->
     <div class="workshops-grid">
       @for (workshop of workshops(); track workshop.id) {
-        <div class="workshop-card"
-             [class.workshop-card--canceled]="workshop.status === 'annulé'"
-             (click)="openWorkshopDetail(workshop)">
-
+        <div
+          class="workshop-card"
+          [class.workshop-card--canceled]="workshop.status === 'annulé'"
+          (click)="openWorkshopDetail(workshop)"
+        >
           <div class="workshop-card__header">
             <div class="workshop-card__badges">
-              <span class="status-badge" [class]="'status-badge--' + getStatusBadgeClass(workshop.status)">
+              <span
+                class="status-badge"
+                [class]="
+                  'status-badge--' + getStatusBadgeClass(workshop.status)
+                "
+              >
                 <i class="fas {{ getStatusIcon(workshop.status) }}"></i>
                 {{ workshop.status }}
               </span>
               <span class="location-badge">
-                <i class="fas {{ getLocationIconClass(workshop.location) }}"></i>
+                <i
+                  class="fas {{ getLocationIconClass(workshop.location) }}"
+                ></i>
                 {{ workshop.location }}
               </span>
             </div>
-            <div class="workshop-card__actions" (click)="$event.stopPropagation()">
-              <button class="action-btn" title="QR Code" (click)="openQr(workshop)">
+            <div
+              class="workshop-card__actions"
+              (click)="$event.stopPropagation()"
+            >
+              <button
+                class="action-btn"
+                title="Modifier"
+                (click)="openEditModal(workshop)"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+              <button
+                class="action-btn"
+                title="QR Code"
+                (click)="openQr(workshop)"
+              >
                 <i class="fas fa-qrcode"></i>
               </button>
-              <a [routerLink]="['/admin/presence', workshop.id]" class="action-btn" title="Configurer présence">
+              <a
+                [routerLink]="['/admin/presence', workshop.id]"
+                class="action-btn"
+                title="Configurer présence"
+              >
                 <i class="fas fa-clipboard-list"></i>
               </a>
-              <button class="action-btn action-btn--delete" (click)="deleteWorkshop(workshop)">
+              <button
+                class="action-btn action-btn--delete"
+                (click)="deleteWorkshop(workshop)"
+              >
                 <i class="fas fa-trash-alt"></i>
               </button>
             </div>
@@ -247,7 +305,10 @@
           <div class="workshop-card__details">
             <div class="detail">
               <i class="fas fa-calendar-alt"></i>
-              <span>{{ workshop.date | date:'dd/MM/yyyy' }} à {{ workshop.date | date:'HH:mm' }}</span>
+              <span
+                >{{ workshop.date | date: "dd/MM/yyyy" }} à
+                {{ workshop.date | date: "HH:mm" }}</span
+              >
             </div>
             <div class="detail">
               <i class="fas fa-hourglass-half"></i>
@@ -260,7 +321,10 @@
           </div>
 
           @if (workshop.meetLink) {
-            <div class="workshop-card__meet-link" (click)="$event.stopPropagation()">
+            <div
+              class="workshop-card__meet-link"
+              (click)="$event.stopPropagation()"
+            >
               <a [href]="workshop.meetLink" target="_blank" rel="noopener">
                 <i class="fas fa-video"></i>
                 Lien de connexion
@@ -276,7 +340,11 @@
           }
 
           <div class="workshop-card__footer" (click)="$event.stopPropagation()">
-            <select class="status-select" [value]="workshop.status" (change)="updateStatus(workshop, $event)">
+            <select
+              class="status-select"
+              [value]="workshop.status"
+              (change)="updateStatus(workshop, $event)"
+            >
               <option value="planifié">📋 Planifié</option>
               <option value="en cours">▶️ En cours</option>
               <option value="terminé">✅ Terminé</option>
@@ -312,7 +380,10 @@
             </div>
             <p class="qr-card__label">Membres connectés</p>
             <p class="qr-card__desc">Redirige vers le formulaire de présence</p>
-            <button class="btn btn--primary btn--sm btn--full" (click)="downloadQr('presence', qrWorkshop()!)">
+            <button
+              class="btn btn--primary btn--sm btn--full"
+              (click)="downloadQr('presence', qrWorkshop()!)"
+            >
               <i class="fas fa-download"></i>
               Télécharger
             </button>
@@ -327,8 +398,13 @@
               <img [src]="getPublicQr(qrWorkshop()!.id!)" alt="QR Public" />
             </div>
             <p class="qr-card__label">Visiteurs / Invités</p>
-            <p class="qr-card__desc">Redirige vers la page d'inscription publique</p>
-            <button class="btn btn--outline btn--sm btn--full" (click)="downloadQr('public', qrWorkshop()!)">
+            <p class="qr-card__desc">
+              Redirige vers la page d'inscription publique
+            </p>
+            <button
+              class="btn btn--outline btn--sm btn--full"
+              (click)="downloadQr('public', qrWorkshop()!)"
+            >
               <i class="fas fa-download"></i>
               Télécharger
             </button>
@@ -342,10 +418,243 @@
       </div>
     </div>
   }
+  <!-- admin-workshops.component.html - Ajouter à la fin du fichier, après le QR modal -->
 
+  <!-- Edit Workshop Modal -->
+  @if (editingWorkshop()) {
+    <div class="modal-overlay" (click)="closeEditModal()">
+      <div
+        class="modal-container modal-container--large"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="modal-header">
+          <div class="modal-header__title">
+            <i class="fas fa-edit"></i>
+            <h3>Modifier le workshop</h3>
+          </div>
+          <button class="modal-close" (click)="closeEditModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form
+          [formGroup]="editForm"
+          (ngSubmit)="updateWorkshop()"
+          class="edit-form"
+        >
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label required">
+                <i class="fas fa-layer-group"></i>
+                Thématique
+              </label>
+              <div class="select-wrapper">
+                <select
+                  formControlName="themeId"
+                  class="form-select"
+                  (change)="onEditThemeChange($event)"
+                >
+                  <option value="">Sélectionner une thématique</option>
+                  @for (theme of themes(); track theme.id) {
+                    <option [value]="theme.id">{{ theme.title }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+                <div class="select-border"></div>
+              </div>
+              @if (isEditInvalid("themeId")) {
+                <span class="form-error"
+                  >Veuillez sélectionner une thématique</span
+                >
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-user"></i>
+                  Présentateur
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="text"
+                    formControlName="presenter"
+                    class="form-input"
+                    placeholder="Nom du présentateur"
+                  />
+                  <div class="input-border"></div>
+                </div>
+                @if (isEditInvalid("presenter")) {
+                  <span class="form-error">Nom du présentateur requis</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-hourglass-half"></i>
+                  Durée (minutes)
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="number"
+                    formControlName="duration"
+                    class="form-input"
+                    min="15"
+                    max="480"
+                    step="15"
+                  />
+                  <div class="input-border"></div>
+                </div>
+                <span class="form-hint">Entre 15 et 480 minutes</span>
+                @if (isEditInvalid("duration")) {
+                  <span class="form-error">Durée invalide</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-calendar-alt"></i>
+                  Date
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="date"
+                    formControlName="date"
+                    class="form-input"
+                    [min]="minDate"
+                  />
+                  <div class="input-border"></div>
+                </div>
+                @if (isEditInvalid("date")) {
+                  <span class="form-error">Date requise</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label required">
+                  <i class="fas fa-clock"></i>
+                  Heure
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="time"
+                    formControlName="time"
+                    class="form-input"
+                  />
+                  <div class="input-border"></div>
+                </div>
+                @if (isEditInvalid("time")) {
+                  <span class="form-error">Heure requise</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-map-marker-alt"></i>
+                  Format
+                </label>
+                <div class="select-wrapper">
+                  <select formControlName="location" class="form-select">
+                    <option value="en ligne">💻 En ligne</option>
+                    <option value="présentiel">🏛️ Présentiel</option>
+                    <option value="hybride">🔄 Hybride</option>
+                  </select>
+                  <i class="fas fa-chevron-down select-icon"></i>
+                  <div class="select-border"></div>
+                </div>
+              </div>
+
+              <!-- admin-workshops.component.html - Ajouter dans le formulaire d'édition -->
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-video"></i>
+                    Lien Meet/Zoom
+                  </label>
+                  <div class="input-wrapper">
+                    <input
+                      type="url"
+                      formControlName="meetLink"
+                      class="form-input"
+                      placeholder="https://meet.jit.si/tdsi-..."
+                    />
+                    <div class="input-border"></div>
+                  </div>
+                  <span class="form-hint"
+                    >Optionnel - laissez vide pour générer automatiquement</span
+                  >
+                </div>
+
+                <!-- ✅ Bouton pour générer Jitsi -->
+                <div class="form-group">
+                  <label class="form-label">&nbsp;</label>
+                  <button
+                    type="button"
+                    class="btn btn--outline btn--sm"
+                    (click)="generateJitsiLink()"
+                  >
+                    <i class="fas fa-magic"></i>
+                    Générer un lien Jitsi
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-users"></i>
+                Max participants
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  formControlName="maxParticipants"
+                  class="form-input"
+                  min="1"
+                  max="1000"
+                />
+                <div class="input-border"></div>
+              </div>
+              <span class="form-hint">Optionnel - limite de places</span>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn--ghost"
+              (click)="closeEditModal()"
+            >
+              <i class="fas fa-times"></i>
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="btn btn--primary"
+              [disabled]="editSaving()"
+            >
+              @if (editSaving()) {
+                <div class="btn-loader"></div>
+                <span>Sauvegarde...</span>
+              } @else {
+                <i class="fas fa-save"></i>
+                <span>Enregistrer les modifications</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
   <!-- Workshop Detail Modal -->
   <app-workshop-detail
     (edit)="editWorkshop($event)"
-    (delete)="deleteWorkshop($event)">
+    (delete)="deleteWorkshop($event)"
+  >
   </app-workshop-detail>
 </div>

@@ -3,9 +3,15 @@
   <div class="modal-overlay" (click)="closeModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <!-- Header -->
-      <div class="modal-header" [class]="'modal-header--' + getStatusInfo(workshop.status).color">
+      <div
+        class="modal-header"
+        [class]="'modal-header--' + getStatusInfo(workshop.status).color"
+      >
         <div class="modal-header__badges">
-          <span class="status-badge" [class]="'status-badge--' + getStatusInfo(workshop.status).color">
+          <span
+            class="status-badge"
+            [class]="'status-badge--' + getStatusInfo(workshop.status).color"
+          >
             <i class="fas {{ getStatusInfo(workshop.status).icon }}"></i>
             {{ getStatusInfo(workshop.status).label }}
           </span>
@@ -39,23 +45,36 @@
             <i class="fas fa-calendar-alt"></i>
             <div>
               <span class="info-label">Date & Heure</span>
-              <span class="info-value">{{ workshop.date | date:'EEEE dd MMMM yyyy' }}</span>
-              <span class="info-sub">{{ workshop.date | date:'HH:mm' }}</span>
+              <span class="info-value">{{
+                workshop.date | date: "EEEE dd MMMM yyyy"
+              }}</span>
+              <span class="info-sub">{{ workshop.date | date: "HH:mm" }}</span>
             </div>
           </div>
           <div class="info-card">
             <i class="fas fa-hourglass-half"></i>
             <div>
               <span class="info-label">Durée</span>
-              <span class="info-value">{{ formatDuration(workshop.duration) }}</span>
+              <span class="info-value">{{
+                formatDuration(workshop.duration)
+              }}</span>
             </div>
           </div>
           <div class="info-card">
             <i class="fas fa-users"></i>
             <div>
               <span class="info-label">Participants</span>
-              <span class="info-value">{{ (workshop.registrations.length || 0) + (guestRegistrations().length || 0) }} inscrits</span>
-              <span class="info-sub">{{ workshop.registrations.length || 0 }} membres · {{ guestRegistrations().length || 0 }} invités</span>
+              <span class="info-value"
+                >{{
+                  (workshop.registrations.length || 0) +
+                    (guestRegistrations().length || 0)
+                }}
+                inscrits</span
+              >
+              <span class="info-sub"
+                >{{ workshop.registrations.length || 0 }} membres ·
+                {{ guestRegistrations().length || 0 }} invités</span
+              >
             </div>
           </div>
           @if (workshop.maxParticipants) {
@@ -64,17 +83,27 @@
               <div>
                 <span class="info-label">Places max</span>
                 <span class="info-value">{{ workshop.maxParticipants }}</span>
-                <span class="info-sub">{{ getAvailablePlaces() }} restantes</span>
+                <span class="info-sub"
+                  >{{ getAvailablePlaces() }} restantes</span
+                >
               </div>
             </div>
           }
         </div>
 
         <!-- Meet Link -->
+        <!-- REMPLACE ce bloc dans workshops-detail.component.html -->
+
         @if (workshop.meetLink) {
           <div class="meet-section">
             <h4><i class="fas fa-video"></i> Lien de connexion</h4>
-            <a [href]="workshop.meetLink" target="_blank" rel="noopener" class="meet-link">
+            <!-- Vue admin : le lien reste accessible directement -->
+            <a
+              [href]="workshop.meetLink"
+              target="_blank"
+              rel="noopener"
+              class="meet-link"
+            >
               <i class="fas fa-external-link-alt"></i>
               {{ workshop.meetLink }}
             </a>
@@ -101,12 +130,19 @@
           } @else {
             <div class="participants-list">
               @for (participant of participants(); track participant.uid) {
-                <div class="participant-item" (click)="openParticipantProfile(participant, $event)">
+                <div
+                  class="participant-item"
+                  (click)="openParticipantProfile(participant, $event)"
+                >
                   <div class="participant-item__avatar">
-                    <span>{{ participant.displayName.charAt(0).toUpperCase() }}</span>
+                    <span>{{
+                      participant.displayName.charAt(0).toUpperCase()
+                    }}</span>
                   </div>
                   <div class="participant-item__info">
-                    <div class="participant-name">{{ participant.displayName }}</div>
+                    <div class="participant-name">
+                      {{ participant.displayName }}
+                    </div>
                     <div class="participant-email">{{ participant.email }}</div>
                     <div class="participant-promo">{{ participant.promo }}</div>
                   </div>
@@ -139,14 +175,21 @@
           } @else {
             <div class="participants-list">
               @for (guest of guestRegistrations(); track guest.id) {
-                <div class="participant-item" (click)="openGuestProfile(guest, $event)">
-                  <div class="participant-item__avatar participant-item__avatar--guest">
+                <div
+                  class="participant-item"
+                  (click)="openGuestProfile(guest, $event)"
+                >
+                  <div
+                    class="participant-item__avatar participant-item__avatar--guest"
+                  >
                     <span>{{ guest.fullName.charAt(0).toUpperCase() }}</span>
                   </div>
                   <div class="participant-item__info">
                     <div class="participant-name">{{ guest.fullName }}</div>
                     <div class="participant-email">{{ guest.email }}</div>
-                    <div class="participant-promo">{{ guest.establishment }} · {{ guest.level }}</div>
+                    <div class="participant-promo">
+                      {{ guest.establishment }} · {{ guest.level }}
+                    </div>
                   </div>
                   <div class="participant-item__status">
                     @if (guest.checkedIn) {
@@ -171,23 +214,35 @@
         <!-- Presence Form Config -->
         @if (workshop.presenceFormEnabled && workshop.presenceFormConfig) {
           <div class="presence-section">
-            <h4><i class="fas fa-clipboard-list"></i> Formulaire de présence</h4>
+            <h4>
+              <i class="fas fa-clipboard-list"></i> Formulaire de présence
+            </h4>
             <div class="presence-config">
               <div class="presence-config__header">
                 <span class="badge badge--success">
                   <i class="fas fa-check-circle"></i> Activé
                 </span>
-                <span>{{ workshop.presenceFormConfig.fields.length || 0 }} champs configurés</span>
+                <span
+                  >{{ workshop.presenceFormConfig.fields.length || 0 }} champs
+                  configurés</span
+                >
               </div>
               @if (workshop.presenceFormConfig.fields.length > 0) {
                 <div class="presence-fields">
-                  @for (field of workshop.presenceFormConfig.fields; track field.id) {
+                  @for (
+                    field of workshop.presenceFormConfig.fields;
+                    track field.id
+                  ) {
                     <div class="presence-field">
                       <i class="fas {{ getFieldIcon(field.type) }}"></i>
-                      <span class="presence-field__label">{{ field.label }}</span>
+                      <span class="presence-field__label">{{
+                        field.label
+                      }}</span>
                       <span class="presence-field__type">{{ field.type }}</span>
                       @if (field.required) {
-                        <span class="presence-field__required">Obligatoire</span>
+                        <span class="presence-field__required"
+                          >Obligatoire</span
+                        >
                       }
                     </div>
                   }
@@ -199,20 +254,21 @@
       </div>
 
       <!-- Footer -->
-      <div class="modal-footer">
-        <a [routerLink]="['/admin/presence', workshop.id]" class="btn btn--primary">
-          <i class="fas fa-qrcode"></i>
-          Configurer la présence
-        </a>
-        <button class="btn btn--ghost" (click)="onEdit()">
-          <i class="fas fa-edit"></i>
-          Modifier
-        </button>
-        <button class="btn btn--danger" (click)="onDelete()">
-          <i class="fas fa-trash-alt"></i>
-          Supprimer
-        </button>
-      </div>
+<div class="modal-footer">
+  <a [routerLink]="['/admin/presence', workshop.id]" class="btn btn--primary">
+    <i class="fas fa-qrcode"></i>
+    Configurer la présence
+  </a>
+  <!-- ✅ Remplacer le bouton Modifier -->
+  <button class="btn btn--primary" (click)="onEdit()">
+    <i class="fas fa-edit"></i>
+    Modifier
+  </button>
+  <button class="btn btn--danger" (click)="onDelete()">
+    <i class="fas fa-trash-alt"></i>
+    Supprimer
+  </button>
+</div>
     </div>
   </div>
 }
@@ -223,7 +279,9 @@
     <div class="profile-modal" (click)="$event.stopPropagation()">
       <div class="profile-modal__header">
         <div class="profile-modal__avatar">
-          <span>{{ selectedParticipant()!.displayName.charAt(0).toUpperCase() }}</span>
+          <span>{{
+            selectedParticipant()!.displayName.charAt(0).toUpperCase()
+          }}</span>
         </div>
         <button class="profile-modal__close" (click)="closeParticipantModal()">
           <i class="fas fa-times"></i>
@@ -231,7 +289,9 @@
       </div>
 
       <div class="profile-modal__content">
-        <h3 class="profile-modal__name">{{ selectedParticipant()!.displayName }}</h3>
+        <h3 class="profile-modal__name">
+          {{ selectedParticipant()!.displayName }}
+        </h3>
 
         <div class="profile-info-list">
           <div class="profile-info-item">
@@ -252,14 +312,19 @@
             <i class="fas fa-id-card"></i>
             <div>
               <span class="info-label">UID</span>
-              <span class="info-value info-value--mono">{{ selectedParticipant()!.uid | slice:0:8 }}...</span>
+              <span class="info-value info-value--mono"
+                >{{ selectedParticipant()!.uid | slice: 0 : 8 }}...</span
+              >
             </div>
           </div>
         </div>
       </div>
 
       <div class="profile-modal__footer">
-        <button class="btn btn--outline btn--full" (click)="closeParticipantModal()">
+        <button
+          class="btn btn--outline btn--full"
+          (click)="closeParticipantModal()"
+        >
           Fermer
         </button>
       </div>
@@ -295,7 +360,9 @@
             <i class="fas fa-university"></i>
             <div>
               <span class="info-label">Établissement</span>
-              <span class="info-value">{{ selectedGuest()!.establishment }}</span>
+              <span class="info-value">{{
+                selectedGuest()!.establishment
+              }}</span>
             </div>
           </div>
           <div class="profile-info-item">
@@ -318,7 +385,9 @@
             <i class="fas fa-calendar-check"></i>
             <div>
               <span class="info-label">Inscrit le</span>
-              <span class="info-value">{{ selectedGuest()!.registeredAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+              <span class="info-value">{{
+                selectedGuest()!.registeredAt | date: "dd/MM/yyyy à HH:mm"
+              }}</span>
             </div>
           </div>
           <div class="profile-info-item">
@@ -343,7 +412,10 @@
 
       <div class="profile-modal__footer">
         @if (!selectedGuest()!.checkedIn) {
-          <button class="btn btn--success btn--full" (click)="checkInGuest(selectedGuest()!.id!)">
+          <button
+            class="btn btn--success btn--full"
+            (click)="checkInGuest(selectedGuest()!.id!)"
+          >
             <i class="fas fa-check-circle"></i>
             Valider la présence
           </button>

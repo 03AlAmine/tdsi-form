@@ -1,7 +1,8 @@
 // not-found.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-not-found',
@@ -29,7 +30,9 @@ import { CommonModule } from '@angular/common';
           <div class="error-code">
             <div class="code-wrapper">
               <span class="digit" [style.animation-delay]="'0s'">4</span>
-              <span class="digit digit--accent" [style.animation-delay]="'0.1s'">0</span>
+              <span class="digit digit--accent" [style.animation-delay]="'0.1s'"
+                >0</span
+              >
               <span class="digit" [style.animation-delay]="'0.2s'">4</span>
             </div>
             <div class="code-glow"></div>
@@ -55,7 +58,9 @@ import { CommonModule } from '@angular/common';
               </div>
               <div class="terminal-line terminal-line--suggestion">
                 <span class="suggestion-icon">➜</span>
-                <span class="suggestion-text">Essayez l'une des pages ci-dessous</span>
+                <span class="suggestion-text"
+                  >Essayez l'une des pages ci-dessous</span
+                >
               </div>
             </div>
           </div>
@@ -69,14 +74,17 @@ import { CommonModule } from '@angular/common';
 
           <!-- Actions -->
           <div class="not-found-actions">
-            <a routerLink="/" class="btn btn--primary">
+            <!-- ✅ Correction: Rediriger vers le bon espace selon connexion -->
+            <a [routerLink]="homeLink" class="btn btn--primary">
               <i class="fas fa-home"></i>
               Retour à l'accueil
             </a>
-            <a routerLink="/connexion" class="btn btn--outline">
-              <i class="fas fa-key"></i>
-              Se connecter
-            </a>
+            @if (!isLoggedIn()) {
+              <a routerLink="/connexion" class="btn btn--outline">
+                <i class="fas fa-key"></i>
+                Se connecter
+              </a>
+            }
           </div>
 
           <!-- Quick Links -->
@@ -91,14 +99,9 @@ import { CommonModule } from '@angular/common';
               <i class="fas fa-chalkboard-user"></i>
               Workshops
             </a>
-            <span class="separator">•</span>
-            <a routerLink="/activites">
-              <i class="fas fa-calendar-alt"></i>
-              Événements
-            </a>
             @if (isLoggedIn()) {
               <span class="separator">•</span>
-              <a routerLink="/espace-membre">
+              <a [routerLink]="memberSpaceLink">
                 <i class="fas fa-user-circle"></i>
                 Mon espace
               </a>
@@ -108,455 +111,541 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styles: [`
-    .not-found-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, #0a0e27, #0f1235);
-    }
+  styles: [
+    `
+      .not-found-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0a0e27, #0f1235);
+      }
 
-    /* ============================================================
+      /* ============================================================
        BACKGROUND
        ============================================================ */
-    .not-found-bg {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
+      .not-found-bg {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
 
-    .bg-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      animation: gridMove 20s linear infinite;
-    }
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: gridMove 20s linear infinite;
+      }
 
-    .bg-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(ellipse, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
-      filter: blur(60px);
-      animation: glowPulse 4s ease-in-out infinite;
-    }
+      .bg-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(
+          ellipse,
+          rgba(0, 212, 255, 0.08) 0%,
+          transparent 70%
+        );
+        filter: blur(60px);
+        animation: glowPulse 4s ease-in-out infinite;
+      }
 
-    .bg-particles {
-      position: absolute;
-      inset: 0;
-    }
+      .bg-particles {
+        position: absolute;
+        inset: 0;
+      }
 
-    .particle {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background: var(--tech-cyan);
-      border-radius: 50%;
-      opacity: 0;
-      animation: floatParticle 6s ease-in-out infinite;
-
-      &:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
-      &:nth-child(2) { top: 70%; left: 85%; animation-delay: 1s; }
-      &:nth-child(3) { top: 35%; left: 25%; animation-delay: 2s; }
-      &:nth-child(4) { top: 80%; left: 55%; animation-delay: 0.5s; }
-      &:nth-child(5) { top: 45%; left: 75%; animation-delay: 1.5s; }
-      &:nth-child(6) { top: 90%; left: 40%; animation-delay: 2.5s; }
-    }
-
-    @keyframes gridMove {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(50px, 50px); }
-    }
-
-    @keyframes glowPulse {
-      0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.2); }
-    }
-
-    @keyframes floatParticle {
-      0%, 100% {
+      .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: var(--tech-cyan);
+        border-radius: 50%;
         opacity: 0;
-        transform: translateY(0) scale(1);
-      }
-      25% {
-        opacity: 0.8;
-        transform: translateY(-40px) scale(1.5);
-      }
-      50% {
-        opacity: 0.3;
-        transform: translateY(-20px) scale(1);
-      }
-      75% {
-        opacity: 1;
-        transform: translateY(-60px) scale(1.8);
-      }
-    }
+        animation: floatParticle 6s ease-in-out infinite;
 
-    /* ============================================================
+        &:nth-child(1) {
+          top: 15%;
+          left: 10%;
+          animation-delay: 0s;
+        }
+        &:nth-child(2) {
+          top: 70%;
+          left: 85%;
+          animation-delay: 1s;
+        }
+        &:nth-child(3) {
+          top: 35%;
+          left: 25%;
+          animation-delay: 2s;
+        }
+        &:nth-child(4) {
+          top: 80%;
+          left: 55%;
+          animation-delay: 0.5s;
+        }
+        &:nth-child(5) {
+          top: 45%;
+          left: 75%;
+          animation-delay: 1.5s;
+        }
+        &:nth-child(6) {
+          top: 90%;
+          left: 40%;
+          animation-delay: 2.5s;
+        }
+      }
+
+      @keyframes gridMove {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(50px, 50px);
+        }
+      }
+
+      @keyframes glowPulse {
+        0%,
+        100% {
+          opacity: 0.4;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: translate(-50%, -50%) scale(1.2);
+        }
+      }
+
+      @keyframes floatParticle {
+        0%,
+        100% {
+          opacity: 0;
+          transform: translateY(0) scale(1);
+        }
+        25% {
+          opacity: 0.8;
+          transform: translateY(-40px) scale(1.5);
+        }
+        50% {
+          opacity: 0.3;
+          transform: translateY(-20px) scale(1);
+        }
+        75% {
+          opacity: 1;
+          transform: translateY(-60px) scale(1.8);
+        }
+      }
+
+      /* ============================================================
        CARD
        ============================================================ */
-    .not-found-container {
-      position: relative;
-      z-index: 10;
-      width: 100%;
-      padding: 2rem;
-      display: flex;
-      justify-content: center;
-    }
-
-    .not-found-card {
-      background: var(--glass-bg);
-      backdrop-filter: var(--backdrop-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-2xl);
-      padding: 3rem 2.5rem;
-      max-width: 550px;
-      width: 100%;
-      text-align: center;
-      animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      box-shadow: var(--shadow-glow);
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
+      .not-found-container {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
 
-    /* ============================================================
+      .not-found-card {
+        background: var(--glass-bg);
+        backdrop-filter: var(--backdrop-blur);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-2xl);
+        padding: 3rem 2.5rem;
+        max-width: 550px;
+        width: 100%;
+        text-align: center;
+        animation: fadeUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        box-shadow: var(--shadow-glow);
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ============================================================
        ERROR CODE
        ============================================================ */
-    .error-code {
-      position: relative;
-      margin-bottom: 1.5rem;
-    }
-
-    .code-wrapper {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .digit {
-      font-size: clamp(5rem, 15vw, 8rem);
-      font-weight: 800;
-      font-family: var(--font-display);
-      line-height: 1;
-      color: var(--white);
-      opacity: 0;
-      animation: digitPop 0.4s ease-out forwards;
-
-      &--accent {
-        background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        text-shadow: none;
+      .error-code {
+        position: relative;
+        margin-bottom: 1.5rem;
       }
-    }
 
-    @keyframes digitPop {
-      0% {
+      .code-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .digit {
+        font-size: clamp(5rem, 15vw, 8rem);
+        font-weight: 800;
+        font-family: var(--font-display);
+        line-height: 1;
+        color: var(--white);
         opacity: 0;
-        transform: scale(0.5);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
+        animation: digitPop 0.4s ease-out forwards;
 
-    .code-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 200px;
-      height: 80px;
-      background: radial-gradient(ellipse, rgba(0, 212, 255, 0.15), transparent);
-      filter: blur(20px);
-      pointer-events: none;
-    }
+        &--accent {
+          background: linear-gradient(
+            135deg,
+            var(--tech-cyan),
+            var(--tech-purple)
+          );
+          background-clip: text;
+          -webkit-background-clip: text;
+          color: transparent;
+          text-shadow: none;
+        }
+      }
 
-    /* ============================================================
+      @keyframes digitPop {
+        0% {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .code-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 80px;
+        background: radial-gradient(
+          ellipse,
+          rgba(0, 212, 255, 0.15),
+          transparent
+        );
+        filter: blur(20px);
+        pointer-events: none;
+      }
+
+      /* ============================================================
        TERMINAL
        ============================================================ */
-    .terminal {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(0, 212, 255, 0.15);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      margin-bottom: 2rem;
-      text-align: left;
-    }
-
-    .terminal-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      background: rgba(0, 0, 0, 0.3);
-      border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-    }
-
-    .terminal-dots {
-      display: flex;
-      gap: 0.5rem;
-
-      span {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-
-        &:nth-child(1) { background: #ff5f56; }
-        &:nth-child(2) { background: #ffbd2e; }
-        &:nth-child(3) { background: #27c93f; }
-      }
-    }
-
-    .terminal-title {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: var(--gray-500);
-    }
-
-    .terminal-body {
-      padding: 1rem;
-    }
-
-    .terminal-line {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 0.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.8125rem;
-      margin-bottom: 0.5rem;
-
-      &:last-child {
-        margin-bottom: 0;
+      .terminal {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        text-align: left;
       }
 
-      &--error {
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-        border-top: 1px solid rgba(239, 68, 68, 0.2);
-      }
-
-      &--suggestion {
-        margin-top: 0.5rem;
-        color: var(--gray-500);
-      }
-    }
-
-    .prompt {
-      color: var(--tech-success);
-    }
-
-    .command {
-      color: var(--gray-300);
-    }
-
-    .cursor {
-      color: var(--tech-cyan);
-      font-weight: bold;
-
-      &.blink {
-        animation: blink 1s step-end infinite;
-      }
-    }
-
-    .error-icon {
-      color: var(--tech-danger);
-    }
-
-    .error-text {
-      color: var(--tech-danger);
-    }
-
-    .suggestion-icon {
-      color: var(--tech-cyan);
-    }
-
-    .suggestion-text {
-      color: var(--gray-400);
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
-    /* ============================================================
-       TEXT
-       ============================================================ */
-    .not-found-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-      background: linear-gradient(135deg, var(--white), var(--gray-300));
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    .not-found-message {
-      font-size: 0.875rem;
-      color: var(--gray-400);
-      line-height: 1.6;
-      margin-bottom: 2rem;
-    }
-
-    /* ============================================================
-       ACTIONS
-       ============================================================ */
-    .not-found-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 2rem;
-    }
-
-    /* ============================================================
-       QUICK LINKS
-       ============================================================ */
-    .quick-links {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(0, 212, 255, 0.08);
-
-      &__label {
-        font-family: var(--font-mono);
-        font-size: 0.6875rem;
-        color: var(--gray-500);
-        letter-spacing: 1px;
-      }
-
-      a {
-        display: inline-flex;
+      .terminal-header {
+        display: flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 0.5rem;
+
+        span {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+
+          &:nth-child(1) {
+            background: #ff5f56;
+          }
+          &:nth-child(2) {
+            background: #ffbd2e;
+          }
+          &:nth-child(3) {
+            background: #27c93f;
+          }
+        }
+      }
+
+      .terminal-title {
+        font-family: var(--font-mono);
         font-size: 0.75rem;
-        color: var(--tech-cyan);
-        text-decoration: none;
-        transition: all var(--transition-fast);
-
-        i {
-          font-size: 0.6875rem;
-        }
-
-        &:hover {
-          color: var(--white);
-          transform: translateX(2px);
-        }
+        color: var(--gray-500);
       }
 
-      .separator {
-        color: var(--gray-600);
-        font-size: 0.75rem;
-      }
-    }
-
-    /* ============================================================
-       BUTTONS
-       ============================================================ */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.625rem 1.25rem;
-      border-radius: var(--radius-lg);
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      text-decoration: none;
-      border: none;
-
-      &--primary {
-        background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
-        color: white;
-        box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
-        }
-      }
-
-      &--outline {
-        background: transparent;
-        color: var(--gray-400);
-        border: 1px solid var(--gray-700);
-
-        &:hover {
-          border-color: var(--tech-cyan);
-          color: var(--tech-cyan);
-        }
-      }
-
-      i {
-        font-size: 0.875rem;
-      }
-    }
-
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
-    @media (max-width: 640px) {
-      .not-found-card {
-        padding: 2rem 1.5rem;
+      .terminal-body {
+        padding: 1rem;
       }
 
       .terminal-line {
+        display: flex;
         flex-wrap: wrap;
-      }
+        align-items: baseline;
+        gap: 0.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        margin-bottom: 0.5rem;
 
-      .not-found-actions {
-        flex-direction: column;
+        &:last-child {
+          margin-bottom: 0;
+        }
 
-        .btn {
-          width: 100%;
-          justify-content: center;
+        &--error {
+          margin-top: 0.5rem;
+          padding-top: 0.5rem;
+          border-top: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        &--suggestion {
+          margin-top: 0.5rem;
+          color: var(--gray-500);
         }
       }
 
-      .quick-links {
-        flex-direction: column;
-        gap: 0.375rem;
+      .prompt {
+        color: var(--tech-success);
       }
-    }
-  `]
+
+      .command {
+        color: var(--gray-300);
+      }
+
+      .cursor {
+        color: var(--tech-cyan);
+        font-weight: bold;
+
+        &.blink {
+          animation: blink 1s step-end infinite;
+        }
+      }
+
+      .error-icon {
+        color: var(--tech-danger);
+      }
+
+      .error-text {
+        color: var(--tech-danger);
+      }
+
+      .suggestion-icon {
+        color: var(--tech-cyan);
+      }
+
+      .suggestion-text {
+        color: var(--gray-400);
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ============================================================
+       TEXT
+       ============================================================ */
+      .not-found-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        background: linear-gradient(135deg, var(--white), var(--gray-300));
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+
+      .not-found-message {
+        font-size: 0.875rem;
+        color: var(--gray-400);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+
+      /* ============================================================
+       ACTIONS
+       ============================================================ */
+      .not-found-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
+
+      /* ============================================================
+       QUICK LINKS
+       ============================================================ */
+      .quick-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0, 212, 255, 0.08);
+
+        &__label {
+          font-family: var(--font-mono);
+          font-size: 0.6875rem;
+          color: var(--gray-500);
+          letter-spacing: 1px;
+        }
+
+        a {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.375rem;
+          font-size: 0.75rem;
+          color: var(--tech-cyan);
+          text-decoration: none;
+          transition: all var(--transition-fast);
+
+          i {
+            font-size: 0.6875rem;
+          }
+
+          &:hover {
+            color: var(--white);
+            transform: translateX(2px);
+          }
+        }
+
+        .separator {
+          color: var(--gray-600);
+          font-size: 0.75rem;
+        }
+      }
+
+      /* ============================================================
+       BUTTONS
+       ============================================================ */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        text-decoration: none;
+        border: none;
+
+        &--primary {
+          background: linear-gradient(
+            135deg,
+            var(--tech-cyan),
+            var(--tech-blue)
+          );
+          color: white;
+          box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+          }
+        }
+
+        &--outline {
+          background: transparent;
+          color: var(--gray-400);
+          border: 1px solid var(--gray-700);
+
+          &:hover {
+            border-color: var(--tech-cyan);
+            color: var(--tech-cyan);
+          }
+        }
+
+        i {
+          font-size: 0.875rem;
+        }
+      }
+
+      /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+      @media (max-width: 640px) {
+        .not-found-card {
+          padding: 2rem 1.5rem;
+        }
+
+        .terminal-line {
+          flex-wrap: wrap;
+        }
+
+        .not-found-actions {
+          flex-direction: column;
+
+          .btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
+        .quick-links {
+          flex-direction: column;
+          gap: 0.375rem;
+        }
+      }
+    `,
+  ],
 })
 export class NotFoundComponent implements OnInit, OnDestroy {
+  private authService = inject(AuthService);
+
   path = window.location.pathname;
   cursorVisible = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
-  private authService: any;
 
   isLoggedIn(): boolean {
-    // Implémentez selon votre service d'auth
-    return false;
+    return this.authService.isLoggedIn;
+  }
+
+  // ✅ Lien d'accueil dynamique
+  get homeLink(): string {
+    if (this.isLoggedIn()) {
+      const user = this.authService.currentUser;
+      if (user?.role === 'admin') {
+        return '/admin/dashboard';
+      }
+      return '/espace-membre/thematiques';
+    }
+    return '/';
+  }
+
+  // ✅ Lien espace membre
+  get memberSpaceLink(): string {
+    const user = this.authService.currentUser;
+    if (user?.role === 'admin') {
+      return '/admin/dashboard';
+    }
+    return '/espace-membre/thematiques';
   }
 
   ngOnInit() {

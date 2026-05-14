@@ -1,15 +1,26 @@
+<!-- shell-layout.component.html -->
 <div class="shell-layout">
   <app-tech-background />
 
-  <app-shell-navbar />
-
-  <main class="shell-main">
-    <div class="page-transition">
-      <router-outlet />
+  @if (!authReady()) {
+    <div class="initial-loader">
+      <div class="loader-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring-inner"></div>
+      </div>
+      <p class="loader-text">Vérification de votre session...</p>
     </div>
-  </main>
+  } @else {
+    <app-shell-navbar />
 
-  <app-public-footer />
-  <app-toast />
-  <app-confirm-modal />
+    <main class="shell-main">
+      <div class="page-transition">
+        <router-outlet />
+      </div>
+    </main>
+
+    <app-public-footer />
+    <app-toast />
+    <app-confirm-modal />
+  }
 </div>

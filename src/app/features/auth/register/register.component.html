@@ -9,16 +9,7 @@
 
   <div class="register-card">
     <a routerLink="/" class="register-card__back">
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
+      <i class="fas fa-chevron-left"></i>
       Retour
     </a>
 
@@ -30,18 +21,7 @@
 
     @if (error()) {
       <div class="alert alert--error animate-fade-in" role="alert">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
+        <i class="fas fa-exclamation-circle"></i>
         {{ error() }}
       </div>
     }
@@ -135,17 +115,7 @@
               (click)="togglePassword()"
               aria-label="Afficher/masquer le mot de passe"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
+              <i [class]="showPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </button>
           </div>
           @if (isInvalid("password")) {
@@ -175,17 +145,7 @@
               (click)="toggleConfirmPassword()"
               aria-label="Afficher/masquer la confirmation"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
+              <i [class]="showConfirmPassword() ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </button>
           </div>
         </div>
@@ -215,16 +175,7 @@
       Déjà membre ?
       <a routerLink="/connexion" class="register-card__link">
         Se connecter
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
+        <i class="fas fa-arrow-right"></i>
       </a>
     </p>
   </div>
