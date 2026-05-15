@@ -1,9 +1,10 @@
-// propose.component.ts - Version améliorée
+// propose.component.ts - Version avec vérification doublon + catégorisation automatique
+
 import { Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil, firstValueFrom } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { AiService } from '../../../core/services/ai.service';
@@ -41,6 +42,7 @@ const DIFFICULTIES = [
     icon: 'fa-bolt',
   },
 ];
+
 @Component({
   selector: 'app-propose',
   standalone: true,
@@ -69,9 +71,11 @@ export class ProposeComponent implements OnInit, OnDestroy {
   aiError = signal('');
   aiUsed = signal(false);
   suggestLoading = signal(false);
+  categorizeLoading = signal(false);
   suggestions = signal<string[]>([]);
   showSuggestions = signal(false);
   titleInput$ = new Subject<string>();
+  private categorizeTimeout: any = null;
 
   form = this.fb.group({
     proposedTitle: ['', [Validators.required, Validators.maxLength(80)]],
@@ -100,6 +104,9 @@ export class ProposeComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.categorizeTimeout) {
+      clearTimeout(this.categorizeTimeout);
+    }
   }
 
   getDifficultyIcon(value: string): string {
@@ -112,9 +119,43 @@ export class ProposeComponent implements OnInit, OnDestroy {
   onTitleInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.titleInput$.next(val);
+
     if (val.length < 4) {
       this.suggestions.set([]);
       this.showSuggestions.set(false);
+    }
+
+    if (this.categorizeTimeout) {
+      clearTimeout(this.categorizeTimeout);
+    }
+
+    this.categorizeTimeout = setTimeout(() => {
+      if (val.length >= 5 && !this.form.value.category) {
+        this.autoCategorizeTitle(val);
+      }
+    }, 2000);
+  }
+
+  async autoCategorizeTitle(title: string): Promise<void> {
+    if (!title || title.length < 5) return;
+    if (this.form.value.category) return;
+
+    this.categorizeLoading.set(true);
+
+    try {
+      const result = await this.aiService.categorizeTheme(title, '');
+
+      if (!this.form.value.category) {
+        this.form.patchValue({
+          category: result.category,
+          difficulty: result.difficulty,
+        });
+        this.toastService.info(`✨ Catégorie suggérée : ${result.category}`);
+      }
+    } catch {
+      // Silencieux - optionnel
+    } finally {
+      this.categorizeLoading.set(false);
     }
   }
 
@@ -136,13 +177,42 @@ export class ProposeComponent implements OnInit, OnDestroy {
   }
 
   pickSuggestion(title: string): void {
-    this.form.patchValue({ proposedTitle: title });
+    this.form.get('proposedTitle')?.setValue(title);
+    this.form.get('proposedTitle')?.markAsDirty();
+    this.form.get('proposedTitle')?.updateValueAndValidity();
+
     this.showSuggestions.set(false);
     this.suggestions.set([]);
+
+    this.autoCategorizeTitle(title);
   }
 
   hideSuggestions(): void {
     setTimeout(() => this.showSuggestions.set(false), 200);
+  }
+
+  async manualCategorize(): Promise<void> {
+    const title = this.form.value.proposedTitle?.trim() ?? '';
+
+    if (!title) {
+      this.aiError.set("Saisissez d'abord un titre pour la catégorisation.");
+      setTimeout(() => this.aiError.set(''), 3000);
+      return;
+    }
+
+    this.categorizeLoading.set(true);
+    try {
+      const result = await this.aiService.categorizeTheme(title, '');
+      this.form.patchValue({
+        category: result.category,
+        difficulty: result.difficulty,
+      });
+      this.toastService.success(`✨ Catégorie définie : ${result.category}`);
+    } catch {
+      this.aiError.set('Erreur de catégorisation. Réessayez.');
+    } finally {
+      this.categorizeLoading.set(false);
+    }
   }
 
   async autoComplete(): Promise<void> {
@@ -175,7 +245,7 @@ export class ProposeComponent implements OnInit, OnDestroy {
       });
 
       this.aiUsed.set(true);
-      this.toastService.success(' Contenu généré par IA avec succès !');
+      this.toastService.success('✨ Contenu généré par IA avec succès !');
     } catch {
       this.aiError.set('Erreur IA. Vérifiez votre connexion et réessayez.');
     } finally {
@@ -197,9 +267,28 @@ export class ProposeComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const user = this.authService.currentUser!;
+
+    // ✅ FIX #2 — Vérifier si l'étudiant a déjà une soumission en attente
+    // Évite le spam de propositions sans avoir attendu la réponse admin
+    try {
+      const submissions = await firstValueFrom(
+        this.themeService.getMySubmissions(user.uid)
+      );
+      const hasPending = submissions.some((s) => s.status === 'en attente');
+
+      if (hasPending) {
+        this.toastService.error(
+          '⏳ Tu as déjà une proposition en attente de validation. Attends la réponse avant d\'en soumettre une nouvelle.'
+        );
+        return;
+      }
+    } catch {
+      // Si la vérification échoue, on laisse passer (dégradé gracieux)
+    }
+
     this.loading.set(true);
     this.error.set('');
-    const user = this.authService.currentUser!;
     this.loadingService.show('Envoi de votre proposition...');
 
     try {

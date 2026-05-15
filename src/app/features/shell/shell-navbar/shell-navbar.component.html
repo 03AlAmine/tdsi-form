@@ -22,13 +22,14 @@
       <a
         routerLink="/thematiques"
         routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: true}"
         class="navbar__link"
       >
         <span class="link-icon"><i class="fas fa-layer-group"></i></span>
         <span class="link-text">Thématiques</span>
         <span class="link-indicator"></span>
       </a>
-      <a routerLink="/workshops" routerLinkActive="active" class="navbar__link">
+      <a routerLink="/workshops" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="navbar__link">
         <span class="link-icon"><i class="fas fa-chalkboard-user"></i></span>
         <span class="link-text">Workshops</span>
         <span class="link-indicator"></span>
@@ -199,6 +200,7 @@
         <a
           routerLink="/thematiques"
           routerLinkActive="active"
+          [routerLinkActiveOptions]="{exact: true}"
           (click)="mobileMenuOpen.set(false)"
         >
           <i class="fas fa-layer-group"></i>
@@ -207,6 +209,7 @@
         <a
           routerLink="/workshops"
           routerLinkActive="active"
+          [routerLinkActiveOptions]="{exact: true}"
           (click)="mobileMenuOpen.set(false)"
         >
           <i class="fas fa-chalkboard-user"></i>

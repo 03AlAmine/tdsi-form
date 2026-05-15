@@ -438,6 +438,30 @@
               <div class="btn-shine"></div>
             }
           </button>
+
+          <!-- ✅ #7 — Bannière vérification email après inscription -->
+          @if (emailVerificationSent()) {
+            <div class="verification-banner">
+              <div class="verification-banner__icon">
+                <i class="fas fa-envelope-open-text"></i>
+              </div>
+              <div class="verification-banner__content">
+                <strong>Vérifie ta boîte mail !</strong>
+                <p>
+                  Un email de confirmation a été envoyé à
+                  <em>{{ registerForm.value.email }}</em>.
+                  Clique sur le lien pour activer ton compte.
+                </p>
+                <button
+                  class="btn btn--ghost btn--sm"
+                  (click)="resendVerificationEmail()"
+                >
+                  <i class="fas fa-redo"></i>
+                  Renvoyer l'email
+                </button>
+              </div>
+            </div>
+          }
         </form>
       </div>
     </div>

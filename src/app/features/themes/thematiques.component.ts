@@ -1,3 +1,5 @@
+// thematiques.component.ts - Version complète et corrigée
+
 import {
   Component,
   inject,
@@ -8,13 +10,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, firstValueFrom } from 'rxjs';
 import { ThemeService } from '../../core/services/theme.service';
 import { WorkshopService } from '../../core/services/workshop.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AiService, ThemeRecommendation } from '../../core/services/ai.service';
 import { Theme, ThemeCategory, Workshop } from '../../core/model/models';
-import { SearchBarComponent } from '../shared/search-bar/search-bar.component';
 
 interface ThemeWithWorkshop extends Theme {
   linkedWorkshop?: Workshop;
@@ -38,7 +39,7 @@ const CATEGORIES: ThemeCategory[] = [
 @Component({
   selector: 'app-thematiques',
   standalone: true,
-  imports: [CommonModule, RouterLink, SearchBarComponent],
+  imports: [CommonModule, RouterLink],
   templateUrl: './thematiques.component.html',
   styleUrls: ['./thematiques.component.scss'],
 })
@@ -59,11 +60,14 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   drawerOpen = signal(false);
   categories = CATEGORIES;
 
+  initComplete = signal(false);
+
   // ── Recommandations IA (membres uniquement) ──
   recommendations = signal<RecommendedTheme[]>([]);
   recoLoading = signal(false);
   recoError = signal('');
   showRecommendations = signal(true);
+  recommendationsDrawerOpen = signal(false);
 
   // ── Enrichissement IA drawer ──
   enrichedThemeData = signal<{
@@ -116,12 +120,14 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
     this.sub = this.themeService.getThemes().subscribe((themes) => {
       this.themes.set(themes.map((t) => ({ ...t })));
       this.loading.set(false);
+      this.initComplete.set(true);
     });
   }
 
   // ── Chargement membre (auth) ──
   private initMember(): void {
     const user = this.authService.currentUser!;
+    this.initComplete.set(false);
 
     this.sub = combineLatest([
       this.themeService.getThemes(),
@@ -139,6 +145,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
 
       this.themes.set(themesWithWorkshop);
       this.loading.set(false);
+      this.initComplete.set(true);
 
       if (
         themesWithWorkshop.length > 0 &&
@@ -247,6 +254,54 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
       .unsubscribe();
   }
 
+  // ✅ Ouvrir le drawer des recommandations
+  openRecommendationsDrawer(): void {
+    this.recommendationsDrawerOpen.set(true);
+    document.body.style.overflow = 'hidden';
+
+    // Charger les recommandations si pas déjà fait
+    if (this.recommendations().length === 0 && !this.recoLoading()) {
+      this.loadRecommendationsFromDrawer();
+    }
+  }
+
+  // ✅ Fermer le drawer des recommandations
+  closeRecommendationsDrawer(): void {
+    this.recommendationsDrawerOpen.set(false);
+    setTimeout(() => {
+      document.body.style.overflow = '';
+    }, 300);
+  }
+
+  // ✅ Charger les recommandations depuis le drawer (corrigé sans .toPromise())
+  async loadRecommendationsFromDrawer(): Promise<void> {
+    const user = this.authService.currentUser;
+    if (!user) return;
+
+    this.recoLoading.set(true);
+    this.recoError.set('');
+
+    try {
+      const themes = this.themes();
+      const workshops = await firstValueFrom(this.workshopService.getWorkshops());
+      const mySubmissions = await firstValueFrom(this.themeService.getMySubmissions(user.uid));
+
+      await this.loadRecommendations(themes, workshops, mySubmissions, user);
+    } catch {
+      this.recoError.set('Impossible de charger les recommandations');
+    } finally {
+      this.recoLoading.set(false);
+    }
+  }
+
+  // ✅ Ouvrir le détail d'une thématique depuis la recommandation
+  openThemeDetailFromReco(theme: ThemeWithWorkshop): void {
+    this.closeRecommendationsDrawer();
+    setTimeout(() => {
+      this.openThemeDetail(theme);
+    }, 300);
+  }
+
   // ── Drawer ──
   openThemeDetail(theme: ThemeWithWorkshop): void {
     this.selectedTheme.set(theme);
@@ -290,11 +345,12 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
 
   // ── Helpers ──
   getDifficultyClass(difficulty: string): string {
-    return (
-      ({ débutant: 'green', intermédiaire: 'amber', avancé: 'red' } as any)[
-        difficulty
-      ] || 'neutral'
-    );
+    const map: Record<string, string> = {
+      débutant: 'green',
+      intermédiaire: 'amber',
+      avancé: 'red',
+    };
+    return map[difficulty] || 'neutral';
   }
 
   getDifficultyColor(difficulty: string): string {
@@ -333,37 +389,32 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   }
 
   getWorkshopStatusClass(status: string): string {
-    return (
-      (
-        {
-          planifié: 'info',
-          'en cours': 'success',
-          terminé: 'neutral',
-          annulé: 'danger',
-        } as any
-      )[status] || 'neutral'
-    );
+    const map: Record<string, string> = {
+      planifié: 'info',
+      'en cours': 'success',
+      terminé: 'neutral',
+      annulé: 'danger',
+    };
+    return map[status] || 'neutral';
   }
 
   getWorkshopStatusIcon(status: string): string {
-    return (
-      (
-        {
-          planifié: 'fa-clipboard-list',
-          'en cours': 'fa-circle-play',
-          terminé: 'fa-circle-check',
-          annulé: 'fa-circle-xmark',
-        } as Record<string, string>
-      )[status] || 'fa-circle'
-    );
+    const map: Record<string, string> = {
+      planifié: 'fa-clipboard-list',
+      'en cours': 'fa-circle-play',
+      terminé: 'fa-circle-check',
+      annulé: 'fa-circle-xmark',
+    };
+    return map[status] || 'fa-circle';
   }
 
   getLocationIcon(location: string): string {
-    return (
-      ({ 'en ligne': '💻', présentiel: '🏛️', hybride: '🔄' } as any)[
-        location
-      ] || '📍'
-    );
+    const map: Record<string, string> = {
+      'en ligne': '💻',
+      présentiel: '🏛️',
+      hybride: '🔄',
+    };
+    return map[location] || '📍';
   }
 
   getLocationText(location: string): string {
@@ -401,8 +452,8 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
 
   formatDuration(minutes: number): string {
     if (minutes >= 60) {
-      const h = Math.floor(minutes / 60),
-        m = minutes % 60;
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
       return m > 0 ? `${h}h ${m}min` : `${h}h`;
     }
     return `${minutes}min`;
@@ -411,6 +462,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   totalThemesCount(): number {
     return this.filteredThemes().length;
   }
+
   workshopsAssociatedCount(): number {
     return this.themes().filter((t) => t.linkedWorkshop).length;
   }

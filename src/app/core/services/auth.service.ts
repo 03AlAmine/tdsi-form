@@ -18,29 +18,44 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  private authReady = new BehaviorSubject<boolean>(false);
-  readonly authReady$ = this.authReady.asObservable();
+  private authReadySubject = new BehaviorSubject<boolean>(false);
+  authReady$ = this.authReadySubject.asObservable();
 
   private manualAuth = false;
+  private isInitialCheck = true;
+
+  // ✅ FIX #1 — Seules ces pages déclenchent une redirection automatique
+  // /workshops, /thematiques, etc. sont laissées tranquilles même si connecté
+  // afin de ne pas casser les liens partagés entre membres
+  private readonly AUTH_REDIRECT_PATHS = ['/', '/connexion', '/inscription', '/mot-de-passe-oublie'];
 
   constructor(private router: Router) {
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const user = await this.getUserProfile(firebaseUser.uid);
         this.currentUserSubject.next(user);
+        this.authReadySubject.next(true);
 
-        if (!this.manualAuth && !this.authReady.value) {
-          if (user?.role === 'admin') {
-            this.router.navigate(['/admin/dashboard']);
-          } else {
-            this.router.navigate(['/espace-membre/thematiques']);
+        if (this.isInitialCheck) {
+          const currentPath = window.location.pathname;
+
+          // ✅ Ne rediriger que si on est sur une page d'authentification pure
+          // Un membre connecté qui ouvre /workshops directement y reste
+          if (this.AUTH_REDIRECT_PATHS.includes(currentPath)) {
+            if (user?.role === 'admin') {
+              this.router.navigate(['/admin/dashboard']);
+            } else {
+              this.router.navigate(['/espace-membre/thematiques']);
+            }
           }
+
+          this.isInitialCheck = false;
         }
       } else {
         this.currentUserSubject.next(null);
+        this.authReadySubject.next(true);
+        this.isInitialCheck = false;
       }
-
-      this.authReady.next(true);
     });
   }
 
@@ -99,6 +114,7 @@ export class AuthService {
   async logout(): Promise<void> {
     await signOut(auth);
     this.currentUserSubject.next(null);
+    this.isInitialCheck = true;
     this.router.navigate(['/']);
   }
 
@@ -118,7 +134,6 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  /** Recharge le profil depuis Firestore et met à jour le BehaviorSubject. */
   async refreshCurrentUser(): Promise<void> {
     const uid = this.currentUserSubject.value?.uid;
     if (!uid) return;

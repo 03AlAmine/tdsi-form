@@ -270,12 +270,15 @@
                 <!-- Guest CTA - Encourage inscription -->
                 <div class="guest-cta">
                   <div class="guest-cta__content">
-                    <i class="fas fa-lock"></i>
-                    <span>Connectez-vous pour vous inscrire</span>
+                    <i class="fas fa-user-plus"></i>
+                    <span>Créez un compte gratuit pour vous inscrire</span>
                   </div>
-                  <a routerLink="/connexion" class="btn btn--primary btn--sm">
-                    <i class="fas fa-key"></i>
-                    Connexion
+                  <a routerLink="/inscription" class="btn btn--primary btn--sm">
+                    <i class="fas fa-user-plus"></i>
+                    Créer mon compte
+                  </a>
+                  <a routerLink="/connexion" class="btn btn--outline btn--sm">
+                    Déjà membre ?
                   </a>
                 </div>
               }
@@ -625,7 +628,6 @@
                 Confirmer ma présence
               </a>
             }
-            <!-- ✅ CORRECTION 3 — Bouton "Rejoindre la session" dans le drawer (via Jitsi) -->
             @if (
               selectedWorkshop()?.meetLink &&
               selectedWorkshop()?.status === "en cours"

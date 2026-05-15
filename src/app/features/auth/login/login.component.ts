@@ -6,6 +6,7 @@ import { CommonModule, Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { LogoComponent } from '../../shared/components/logo/logo.component';
 import { TechBackgroundComponent } from '../../shared/components/tech-background/tech-background.component';
+import { getAuth, sendEmailVerification } from 'firebase/auth';
 
 const PROMOS = ['L1', 'L2', 'L3', 'M1', 'M2', 'Doctorat', 'Professionnel'];
 
@@ -50,6 +51,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   loading = signal(false);
   error = signal('');
   showPassword = signal(false);
+  emailVerificationSent = signal(false); // ✅ #7 suivi envoi vérification email
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -179,6 +181,18 @@ export class LoginComponent implements OnInit, OnDestroy {
         displayName: displayName!,
         promo: promo!,
       });
+
+      // ✅ #7 — Envoyer l'email de vérification après création du compte
+      // Le compte est créé et fonctionnel, mais on encourage la vérification
+      const firebaseUser = getAuth().currentUser;
+      if (firebaseUser && !firebaseUser.emailVerified) {
+        try {
+          await sendEmailVerification(firebaseUser);
+          this.emailVerificationSent.set(true);
+        } catch {
+          // Non bloquant — l'utilisateur peut renvoyer plus tard
+        }
+      }
     } catch (e: any) {
       let msg = 'Erreur lors de la création du compte.';
       if (e.code === 'auth/email-already-in-use') {
@@ -191,6 +205,18 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.registerError.set(msg);
     } finally {
       this.regLoading.set(false);
+    }
+  }
+
+  // ✅ #7 — Renvoyer l'email de vérification manuellement
+  async resendVerificationEmail(): Promise<void> {
+    const firebaseUser = getAuth().currentUser;
+    if (!firebaseUser) return;
+    try {
+      await sendEmailVerification(firebaseUser);
+      this.emailVerificationSent.set(true);
+    } catch {
+      this.registerError.set('Impossible de renvoyer l\'email. Réessayez dans quelques minutes.');
     }
   }
 

@@ -213,10 +213,15 @@
 .auth-header {
   text-align: center;
   margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0; // géré par les marges internes
 
   app-logo {
-    display: inline-flex;
-    margin-bottom: 1rem;
+    display: block;
+    // ✅ FIX — espace clair entre le logo et le titre "Connexion"
+    margin-bottom: 2rem;
     transform: scale(1);
     transition: transform 0.3s ease;
 
@@ -229,7 +234,9 @@
 .auth-title-wrapper {
   position: relative;
   display: inline-block;
-  margin-bottom: 0.5rem;
+  // ✅ FIX — padding pour contenir la ligne décorative absolue
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
 }
 
 .auth-title {
@@ -259,7 +266,8 @@
 
 .auth-title-line {
   position: absolute;
-  bottom: -8px;
+  // ✅ FIX — la ligne reste dans le wrapper grâce au padding-bottom ajouté
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
@@ -277,7 +285,7 @@
 .auth-subtitle {
   font-size: 0.875rem;
   color: var(--gray-500);
-  margin-top: 1rem;
+  margin-top: 0; // ✅ FIX — le padding-bottom du wrapper gère l'espace
 }
 
 /* Alert */
@@ -344,6 +352,8 @@
 }
 
 .input-wrapper {
+  position: relative; // ✅ FIX — ancre les icônes absolues dans le bon conteneur
+
   input, select {
     width: 100%;
     padding: 0.875rem 2.5rem 0.875rem 1rem;
@@ -933,15 +943,22 @@
     width: 100%;
     left: 0 !important;
     right: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     height: auto;
     padding: 2rem;
 
-    &.auth-form-login,
+    // ✅ FIX MOBILE — Par défaut, cacher le register, afficher le login
+    &.auth-form-login {
+      display: flex;
+    }
+
     &.auth-form-register {
       display: none;
     }
   }
 
+  // ✅ FIX MOBILE — En mode switched, inverser
   .auth-container.auth-switched {
     .auth-form-login { display: none; }
     .auth-form-register { display: flex; }
@@ -1017,5 +1034,48 @@
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
+  }
+}
+
+// ✅ #7 — Bannière vérification email
+.verification-banner {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+
+  &__icon {
+    font-size: 1.5rem;
+    color: #22c55e;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  &__content {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #22c55e;
+      margin-bottom: 0.35rem;
+      font-size: 0.95rem;
+    }
+
+    p {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+
+      em {
+        color: rgba(255, 255, 255, 0.9);
+        font-style: normal;
+        font-weight: 500;
+      }
+    }
   }
 }

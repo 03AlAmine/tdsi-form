@@ -108,7 +108,9 @@
                         <button
                           type="button"
                           class="suggestion-item"
-                          (click)="pickSuggestion(s)"
+                          (mousedown)="
+                            pickSuggestion(s); $event.preventDefault()
+                          "
                         >
                           <i class="fas fa-arrow-right"></i>
                           {{ s }}
@@ -116,6 +118,32 @@
                       }
                     </div>
                   }
+                </div>
+
+                <!-- Catégorisation automatique badge -->
+                @if (categorizeLoading()) {
+                  <div class="categorize-indicator">
+                    <div class="spinner-xs"></div>
+                    <span>Analyse du titre pour la catégorie...</span>
+                  </div>
+                }
+
+                <!-- Bouton de catégorisation manuelle (optionnel) -->
+                <div class="categorize-bar">
+                  <button
+                    type="button"
+                    class="btn-categorize"
+                    (click)="manualCategorize()"
+                    [disabled]="categorizeLoading()"
+                  >
+                    @if (categorizeLoading()) {
+                      <div class="btn-loader"></div>
+                      <span>Catégorisation...</span>
+                    } @else {
+                      <i class="fas fa-tag"></i>
+                      <span>Suggérer une catégorie</span>
+                    }
+                  </button>
                 </div>
                 @if (isInvalid("proposedTitle")) {
                   <span class="form-error">
