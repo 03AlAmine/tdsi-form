@@ -1,0 +1,7 @@
+ng build --configuration production
+cd dist/tdsi-form/browser
+scp -r ./* thementalist@clubtdsi.sn:/var/www/campus
+sudo systemctl reload nginx
+
+
+Fichier nginx cat /etc/nginx/sites-available/campus

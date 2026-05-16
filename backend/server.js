@@ -13,7 +13,8 @@ app.set('trust proxy', 1);
 // ── CORS CONFIG (DEV + PROD PROPRE) ───────────────────────
 const allowedOrigins = [
   'https://club-tdsi-sign.web.app',
-  'https://club-tdsi-sign.firebaseapp.com'
+  'https://club-tdsi-sign.firebaseapp.com',
+  'https://campus.clubtdsi.sn'
 ];
 
 app.use(cors({

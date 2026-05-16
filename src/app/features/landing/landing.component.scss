@@ -183,8 +183,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     position: relative;
+        justify-content: space-evenly;
+    height: 100%;
 
     @media (max-width: 1024px) {
       margin-top: var(--space-xl);
@@ -1077,9 +1078,6 @@ backdrop-filter: blur(10px) !important;
     padding: var(--space-2xl) 0;
   }
 
-  .hero__website-link {
-    margin-bottom: var(--space-md);
-  }
 
   .stats-grid {
     gap: var(--space-md);
@@ -1125,7 +1123,7 @@ backdrop-filter: blur(10px) !important;
   }
 
   .hero__website-link {
-    padding: 0.5rem 1rem;
+    padding: 1.5rem 2rem;
   }
 }
 // Ajouter une transition douce pour les lignes de code

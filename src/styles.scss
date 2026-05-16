@@ -1674,3 +1674,47 @@ body:has(.drawer-overlay--open) {
   width: 100%;
   top: 0;
 }
+
+/* ============================================================
+   MOBILE BLUR EFFECT - SIMPLIFIÉ
+   ============================================================ */
+
+@media (max-width: 768px) {
+  // Appliquer un blur global sur le contenu principal
+  .shell-main,
+  .main-content,
+  .auth-container,
+  .landing,
+  .themes-page,
+  .workshops-page,
+  .propose-page,
+  .submissions-page,
+  .profile-page,
+  .admin-workshops,
+  .admin-themes,
+  .member-dashboard {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+}
+
+@media (max-width: 480px) {
+  .shell-main::before,
+  .main-content::before {
+    backdrop-filter: blur(2px) !important;
+  }
+
+}
