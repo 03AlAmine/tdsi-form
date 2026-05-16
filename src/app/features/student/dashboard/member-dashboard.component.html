@@ -1,0 +1,213 @@
+<!-- member-dashboard.component.html -->
+<div class="member-dashboard">
+  <!-- Hero Section -->
+  <section class="dashboard-hero">
+    <div class="container">
+      <div class="dashboard-hero__content">
+        <div class="dashboard-hero__badge">
+          <span class="badge-glow"></span>
+          <i class="fas fa-user-astronaut"></i>
+          <span> ESPACE MEMBRE</span>
+        </div>
+        <h1 class="dashboard-hero__title">
+          {{ getGreeting() }},
+          <span class="gradient-text">{{ getUserFirstName() }}</span>
+        </h1>
+        <p class="dashboard-hero__subtitle">
+          Bienvenue sur votre espace personnel Club TDSI
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
+        </div>
+        <p>Chargement de votre espace...</p>
+      </div>
+    } @else {
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card" routerLink="/thematiques">
+          <div class="stat-card__icon">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          <div class="stat-card__value">{{ stats().totalThemes }}</div>
+          <div class="stat-card__label">Thématiques disponibles</div>
+          <div class="stat-card__arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="stat-card" routerLink="/workshops">
+          <div class="stat-card__icon">
+            <i class="fas fa-chalkboard-user"></i>
+          </div>
+          <div class="stat-card__value">{{ stats().upcomingWorkshops }}</div>
+          <div class="stat-card__label">Workshops à venir</div>
+          <div class="stat-card__arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="stat-card" routerLink="/espace-membre/mes-soumissions">
+          <div class="stat-card__icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="stat-card__value">{{ stats().mySubmissions }}</div>
+          <div class="stat-card__label">Mes soumissions</div>
+          <div class="stat-card__arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="stat-card" routerLink="/espace-membre/profil">
+          <div class="stat-card__icon">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="stat-card__value">{{ stats().myRegistrations }}</div>
+          <div class="stat-card__label">Mes inscriptions</div>
+          <div class="stat-card__arrow">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h3>Actions rapides</h3>
+        <div class="actions-grid">
+          <a routerLink="/espace-membre/proposer" class="action-card">
+            <div class="action-card__icon">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <div>
+              <div class="action-card__title">Proposer une thématique</div>
+              <div class="action-card__desc">Partagez une idée de workshop</div>
+            </div>
+            <i class="fas fa-arrow-right action-card__arrow"></i>
+          </a>
+
+          <a routerLink="/thematiques" class="action-card">
+            <div class="action-card__icon">
+              <i class="fas fa-search"></i>
+            </div>
+            <div>
+              <div class="action-card__title">Explorer les thématiques</div>
+              <div class="action-card__desc">Découvrez de nouveaux sujets</div>
+            </div>
+            <i class="fas fa-arrow-right action-card__arrow"></i>
+          </a>
+
+          <a routerLink="/workshops" class="action-card">
+            <div class="action-card__icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div>
+              <div class="action-card__title">Voir les workshops</div>
+              <div class="action-card__desc">Inscrivez-vous aux sessions</div>
+            </div>
+            <i class="fas fa-arrow-right action-card__arrow"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="recent-section">
+        <div class="recent-header">
+          <h3>Activité récente</h3>
+          <a routerLink="/espace-membre/mes-soumissions" class="view-all">
+            Voir tout <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <div class="recent-grid">
+          <!-- Recent Submissions -->
+          <div class="recent-card">
+            <div class="recent-card__header">
+              <i class="fas fa-file-alt"></i>
+              <span>Mes dernières soumissions</span>
+            </div>
+            <div class="recent-card__body">
+              @if (recentThemes().length === 0) {
+                <div class="empty-state-small">
+                  <i class="fas fa-inbox"></i>
+                  <p>Aucune soumission pour le moment</p>
+                  <a routerLink="/espace-membre/proposer" class="btn-link"
+                    >Proposer une thématique</a
+                  >
+                </div>
+              } @else {
+                @for (theme of recentThemes(); track theme.id) {
+                  <div class="recent-item">
+                    <div class="recent-item__title">{{ theme.title }}</div>
+                    <div class="recent-item__date">
+                      {{ theme.createdAt | date: "dd MMM yyyy" }}
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Upcoming Workshops -->
+          <div class="recent-card">
+            <div class="recent-card__header">
+              <i class="fas fa-chalkboard-user"></i>
+              <span>Workshops à venir</span>
+            </div>
+            <div class="recent-card__body">
+              @if (upcomingWorkshops().length === 0) {
+                <div class="empty-state-small">
+                  <i class="fas fa-calendar-alt"></i>
+                  <p>Aucun workshop planifié</p>
+                  <a routerLink="/thematiques" class="btn-link"
+                    >Explorer les thématiques</a
+                  >
+                </div>
+              } @else {
+                @for (workshop of upcomingWorkshops(); track workshop.id) {
+                  <div class="recent-item">
+                    <div class="recent-item__title">
+                      {{ workshop.themeTitle }}
+                    </div>
+                    <div class="recent-item__date">
+                      {{ workshop.date | date: "dd MMM yyyy" }}
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Completion -->
+      @if (!user?.promo) {
+        <div class="profile-tip">
+          <div class="profile-tip__icon">
+            <i class="fas fa-user-edit"></i>
+          </div>
+          <div class="profile-tip__content">
+            <h4>Complétez votre profil</h4>
+            <p>
+              Ajoutez votre promotion pour recevoir des recommandations
+              personnalisées
+            </p>
+          </div>
+          <a
+            routerLink="/espace-membre/profil"
+            class="btn btn--outline btn--sm"
+          >
+            Compléter <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      }
+    }
+  </div>
+</div>

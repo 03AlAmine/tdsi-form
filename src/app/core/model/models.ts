@@ -75,6 +75,7 @@ export interface Workshop {
   registrations: string[];
   maxParticipants: number;
   createdAt: Date;
+  endDate?: Date;
 }
 
 export interface PresenceFormConfig {

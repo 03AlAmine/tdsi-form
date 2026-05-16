@@ -90,8 +90,14 @@ export const routes: Routes = [
         path: 'espace-membre',
         canActivate: [authGuard],
         children: [
-          { path: '', redirectTo: 'thematiques', pathMatch: 'full' },
-          // Redirige vers les pages unifiées
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, // ← Modifier ici
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./features/student/dashboard/member-dashboard.component').then(
+                (m) => m.MemberDashboardComponent,
+              ),
+          }, // Redirige vers les pages unifiées
           {
             path: 'thematiques',
             redirectTo: '/thematiques',

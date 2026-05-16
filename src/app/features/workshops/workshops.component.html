@@ -1,25 +1,26 @@
-<!-- workshops.component.html -->
-<div class="workshops-page">
+<!-- workshops.component.html - Version complète sans le drawer -->
+
+<div class="app-page">
   <!-- Hero Section -->
-  <section class="workshops-hero">
+  <section class="page-hero">
     <div class="container">
-      <div class="workshops-hero__content">
-        <div class="workshops-hero__badge">
+      <div class="page-hero__content">
+        <div class="page-hero__badge">
           <span class="badge-glow"></span>
           <i class="fa-solid fa-bullseye"></i>
           <span> SESSIONS INTERACTIVES</span>
         </div>
-        <h1 class="workshops-hero__title">
+        <h1 class="page-hero__title">
           Workshops
           <span class="gradient-text">TDSI</span>
         </h1>
-        <p class="workshops-hero__subtitle">
+        <p class="page-hero__subtitle">
           Des sessions pratiques animées par des experts pour développer vos
           compétences tech
         </p>
 
         @if (!isLoggedIn()) {
-          <div class="workshops-hero__cta">
+          <div class="page-hero__cta">
             <a routerLink="/inscription" class="btn btn--primary btn--lg">
               <i class="fas fa-user-plus"></i>
               Rejoindre la communauté
@@ -33,7 +34,7 @@
         }
 
         @if (isLoggedIn()) {
-          <div class="workshops-hero__search">
+          <div class="page-hero__search">
             <div class="search-wrapper">
               <i class="fas fa-search"></i>
               <input
@@ -94,18 +95,18 @@
       </div>
     } @else if (filteredWorkshops().length === 0) {
       <!-- Empty State -->
-      <div class="empty-state-enhanced">
-        <div class="empty-state-enhanced__icon">
+      <div class="empty-state">
+        <div class="empty-state__icon">
           <i class="fas fa-chalkboard-user"></i>
         </div>
-        <h3 class="empty-state-enhanced__title">
+        <h3 class="empty-state__title">
           @if (searchTerm()) {
             Aucun résultat pour "{{ searchTerm() }}"
           } @else {
             Aucun workshop pour le moment
           }
         </h3>
-        <p class="empty-state-enhanced__description">
+        <p class="empty-state__description">
           @if (searchTerm()) {
             Essayez d'autres mots-clés ou parcourez tous les workshops.
           } @else if (isLoggedIn()) {
@@ -117,7 +118,7 @@
             et être informé des prochaines sessions.
           }
         </p>
-        <div class="empty-state-enhanced__actions">
+        <div class="empty-state__actions">
           @if (isLoggedIn()) {
             <a routerLink="/espace-membre/proposer" class="btn btn--primary">
               <i class="fas fa-lightbulb"></i>
@@ -146,30 +147,28 @@
         @for (workshop of filteredWorkshops(); track workshop.id) {
           <div
             class="workshop-card"
-            [class.workshop-card--live]="workshop.status === 'en cours'"
+            [class.workshop-card--live]="
+              getWorkshopDisplayStatus(workshop) === 'en cours'
+            "
             [class.workshop-card--registered]="
               isLoggedIn() && isRegistered(workshop)
             "
             (click)="openWorkshopDetail(workshop)"
           >
-            <!-- Live indicator -->
-            @if (workshop.status === "en cours") {
-              <div class="live-indicator">
-                <span class="live-dot"></span>
-                LIVE NOW
-              </div>
-            }
-
             <div class="workshop-card__header">
               <div class="workshop-card__badges">
                 <span
                   class="status-badge"
-                  [class]="'status-badge--' + getStatusClass(workshop.status)"
+                  [class]="'status-badge--' + getWorkshopStatusClass(workshop)"
                 >
-                  {{ getStatusIcon(workshop.status) }} {{ workshop.status }}
+                  <i
+                    class="fas"
+                    [ngClass]="getWorkshopStatusIcon(workshop)"
+                  ></i>
+                  {{ getWorkshopDisplayStatus(workshop) }}
                 </span>
                 <span class="location-badge">
-                  {{ getLocationIcon(workshop.location) }}
+                  <i [class]="'fas ' + getLocationIcon(workshop.location)"></i>
                   {{ workshop.location }}
                 </span>
               </div>
@@ -226,7 +225,8 @@
               (click)="$event.stopPropagation()"
             >
               @if (isLoggedIn()) {
-                @if (workshop.status === "planifié") {
+                <!-- Workshop planifié -->
+                @if (getWorkshopDisplayStatus(workshop) === "planifié") {
                   @if (!isRegistered(workshop)) {
                     <button
                       class="btn btn--primary btn--sm"
@@ -257,14 +257,26 @@
                     </button>
                   }
                 }
-                @if (workshop.meetLink && workshop.status === "en cours") {
-                  <button
-                    (click)="joinMeet(workshop)"
-                    class="btn btn--success btn--sm"
-                  >
-                    <i class="fas fa-video"></i>
-                    <span>Rejoindre</span>
-                  </button>
+
+                <!-- Workshop en cours -->
+                @if (getWorkshopDisplayStatus(workshop) === "en cours") {
+                  @if (workshop.meetLink) {
+                    <button
+                      (click)="joinMeet(workshop)"
+                      class="btn btn--success btn--sm"
+                    >
+                      <i class="fas fa-video"></i>
+                      <span>Rejoindre</span>
+                    </button>
+                  }
+                }
+
+                <!-- Workshop terminé -->
+                @if (getWorkshopDisplayStatus(workshop) === "terminé") {
+                  <span class="badge badge--neutral">
+                    <i class="fas fa-check-circle"></i>
+                    Terminé
+                  </span>
                 }
               } @else {
                 <!-- Guest CTA - Encourage inscription -->
@@ -352,7 +364,6 @@
     }
   </div>
 </div>
-
 <!-- Drawer Détail Workshop -->
 @if (selectedWorkshop()) {
   <div
@@ -380,11 +391,19 @@
               getStatusClass(selectedWorkshop()?.status || '')
             "
           >
-            {{ getStatusIcon(selectedWorkshop()?.status || "") }}
+            <i
+              class="fas"
+              [ngClass]="getStatusIcon(selectedWorkshop()?.status || '')"
+            ></i>
             {{ selectedWorkshop()?.status }}
           </span>
           <span class="location-badge">
-            {{ getLocationIcon(selectedWorkshop()?.location || "") }}
+            <i
+              [class]="
+                'fas ' + getLocationIcon(selectedWorkshop()?.location || '')
+              "
+            ></i>
+
             {{ selectedWorkshop()?.location }}
           </span>
         </div>
@@ -476,10 +495,7 @@
           <div class="meet-section">
             <h4><i class="fas fa-video"></i> Lien de connexion</h4>
             @if (isLoggedIn()) {
-              <button
-                (click)="joinMeet(selectedWorkshop()!)"
-                class="meet-link"
-              >
+              <button (click)="joinMeet(selectedWorkshop()!)" class="meet-link">
                 <i class="fas fa-video"></i>
                 Rejoindre le meet
               </button>

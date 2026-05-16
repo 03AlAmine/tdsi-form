@@ -1,4 +1,4 @@
-// my-submissions.component.ts - Version améliorée
+// my-submissions.component.ts - Version corrigée
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -94,27 +94,76 @@ export class MySubmissionsComponent implements OnInit, OnDestroy {
     return labels[difficulty] || 'Non spécifiée';
   }
 
-  parseObjectives(objectives: string): string[] {
+  /**
+   * Parse les objectifs - accepte string, string[] ou null/undefined
+   */
+  parseObjectives(objectives: string | string[] | null | undefined): string[] {
     if (!objectives) return [];
-    return objectives
-      .split(/[.;\n]+/)
-      .filter((o) => o.trim().length > 0)
-      .map((o) => o.trim());
+
+    // Si c'est déjà un tableau, le retourner directement
+    if (Array.isArray(objectives)) {
+      return objectives.filter(obj => obj && obj.trim().length > 0);
+    }
+
+    // Si c'est une string, la parser
+    if (typeof objectives === 'string') {
+      return objectives
+        .split(/[.;\n]+/)
+        .filter(o => o && o.trim().length > 0)
+        .map(o => o.trim());
+    }
+
+    return [];
   }
 
-  parsePrerequisites(prerequisites: string): string[] {
+  /**
+   * Parse les prérequis - accepte string, string[] ou null/undefined
+   */
+  parsePrerequisites(prerequisites: string | string[] | null | undefined): string[] {
     if (!prerequisites) return [];
-    return prerequisites
-      .split(/[;,.\n]+/)
-      .filter((p) => p.trim().length > 0)
-      .map((p) => p.trim());
+
+    // Si c'est déjà un tableau, le retourner directement
+    if (Array.isArray(prerequisites)) {
+      return prerequisites.filter(preq => preq && preq.trim().length > 0);
+    }
+
+    // Si c'est une string, la parser
+    if (typeof prerequisites === 'string') {
+      return prerequisites
+        .split(/[;,.\n]+/)
+        .filter(p => p && p.trim().length > 0)
+        .map(p => p.trim());
+    }
+
+    return [];
   }
 
-  parseMaterials(materials: string): string[] {
+  /**
+   * Parse le matériel nécessaire - accepte string, string[] ou null/undefined
+   */
+  parseMaterials(materials: string | string[] | null | undefined): string[] {
     if (!materials) return [];
-    return materials
-      .split(/[;,.\n]+/)
-      .filter((m) => m.trim().length > 0)
-      .map((m) => m.trim());
+
+    // Si c'est déjà un tableau, le retourner directement
+    if (Array.isArray(materials)) {
+      return materials.filter(mat => mat && mat.trim().length > 0);
+    }
+
+    // Si c'est une string, la parser
+    if (typeof materials === 'string') {
+      return materials
+        .split(/[;,.\n]+/)
+        .filter(m => m && m.trim().length > 0)
+        .map(m => m.trim());
+    }
+
+    return [];
+  }
+
+  /**
+   * Vérifie si une valeur est une chaîne
+   */
+  isString(value: any): boolean {
+    return typeof value === 'string';
   }
 }

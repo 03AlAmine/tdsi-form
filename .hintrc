@@ -49,6 +49,7 @@
         "frame-title": "off"
       }
     ],
-    "button-type": "off"
+    "button-type": "off",
+    "disown-opener": "off"
   }
 }

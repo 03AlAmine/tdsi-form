@@ -1,19 +1,21 @@
 <!-- profile.component.html -->
-<div class="profile-page">
-
+<div class="app-page">
   <!-- Hero Section -->
-  <section class="profile-hero">
+  <section class="page-hero">
     <div class="container">
-      <div class="profile-hero__content">
-        <div class="profile-hero__badge">
+      <div class="page-hero__content">
+        <div class="page-hero__badge">
           <span class="badge-glow"></span>
-          <span>👤 ESPACE PERSONNEL</span>
+          <span>
+            <i class="fas fa-circle-user"></i>
+            ESPACE PERSONNEL
+          </span>
         </div>
-        <h1 class="profile-hero__title">
+        <h1 class="page-hero__title">
           Mon
           <span class="gradient-text">profil</span>
         </h1>
-        <p class="profile-hero__subtitle">
+        <p class="page-hero__subtitle">
           Gérez vos informations personnelles et sécurisez votre compte
         </p>
       </div>
@@ -22,7 +24,6 @@
 
   <div class="container">
     <div class="profile-wrapper">
-
       <!-- Back Button -->
       <button class="back-btn" (click)="goBack()">
         <i class="fas fa-arrow-left"></i>
@@ -34,16 +35,27 @@
         <div class="profile-avatar">
           <div class="avatar-ring"></div>
           <div class="avatar-inner">
-            <span>{{ user?.displayName?.charAt(0)?.toUpperCase() || '?' }}</span>
+            <span>{{
+              user?.displayName?.charAt(0)?.toUpperCase() || "?"
+            }}</span>
           </div>
           <div class="avatar-status online"></div>
         </div>
         <div class="profile-info">
           <h2>{{ user?.displayName }}</h2>
           <p class="profile-email">{{ user?.email }}</p>
-          <span class="profile-badge" [class]="'profile-badge--' + (user?.role === 'admin' ? 'admin' : 'member')">
-            <i class="fas" [class.fa-crown]="user?.role === 'admin'" [class.fa-user-graduate]="user?.role !== 'admin'"></i>
-            {{ user?.role === 'admin' ? 'Administrateur' : 'Membre' }}
+          <span
+            class="profile-badge"
+            [class]="
+              'profile-badge--' + (user?.role === 'admin' ? 'admin' : 'member')
+            "
+          >
+            <i
+              class="fas"
+              [class.fa-crown]="user?.role === 'admin'"
+              [class.fa-user-graduate]="user?.role !== 'admin'"
+            ></i>
+            {{ user?.role === "admin" ? "Administrateur" : "Membre" }}
           </span>
         </div>
       </div>
@@ -95,7 +107,7 @@
               <span>Membre depuis</span>
             </div>
             <div class="info-value">
-              {{ user?.createdAt | date:'dd MMMM yyyy' }}
+              {{ user?.createdAt | date: "dd MMMM yyyy" }}
             </div>
           </div>
           <div class="info-row">
@@ -104,7 +116,7 @@
               <span>UID</span>
             </div>
             <div class="info-value info-value--mono">
-              {{ user?.uid | slice:0:8 }}...
+              {{ user?.uid | slice: 0 : 8 }}...
             </div>
           </div>
         </div>
@@ -121,7 +133,11 @@
         </div>
 
         <div class="form-card__body">
-          <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
+          <form
+            [formGroup]="profileForm"
+            (ngSubmit)="updateProfile()"
+            class="profile-form"
+          >
             <div class="form-group">
               <label class="form-label required">
                 <i class="fas fa-user"></i>
@@ -138,7 +154,7 @@
                 <div class="input-border"></div>
                 <i class="fas fa-user input-icon"></i>
               </div>
-              @if (isProfileInvalid('displayName')) {
+              @if (isProfileInvalid("displayName")) {
                 <span class="form-error">
                   <i class="fas fa-exclamation-circle"></i>
                   Nom requis (minimum 3 caractères)
@@ -152,8 +168,14 @@
                 Promotion
               </label>
               <div class="select-wrapper">
-                <select formControlName="promo" class="form-select" [class.error]="isProfileInvalid('promo')">
-                  <option value="" disabled>Sélectionner votre promotion</option>
+                <select
+                  formControlName="promo"
+                  class="form-select"
+                  [class.error]="isProfileInvalid('promo')"
+                >
+                  <option value="" disabled>
+                    Sélectionner votre promotion
+                  </option>
                   @for (p of promos; track p) {
                     <option [value]="p">{{ p }}</option>
                   }
@@ -161,7 +183,7 @@
                 <i class="fas fa-chevron-down select-icon"></i>
                 <div class="select-border"></div>
               </div>
-              @if (isProfileInvalid('promo')) {
+              @if (isProfileInvalid("promo")) {
                 <span class="form-error">
                   <i class="fas fa-exclamation-circle"></i>
                   Veuillez sélectionner votre promotion
@@ -170,7 +192,11 @@
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn--primary" [disabled]="savingProfile()">
+              <button
+                type="submit"
+                class="btn btn--primary"
+                [disabled]="savingProfile()"
+              >
                 @if (savingProfile()) {
                   <div class="btn-loader"></div>
                   <span>Enregistrement...</span>
@@ -196,7 +222,11 @@
         </div>
 
         <div class="form-card__body">
-          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="password-form">
+          <form
+            [formGroup]="passwordForm"
+            (ngSubmit)="changePassword()"
+            class="password-form"
+          >
             <div class="form-group">
               <label class="form-label required">
                 <i class="fas fa-lock"></i>
@@ -210,12 +240,20 @@
                   [class.error]="isPasswordInvalid('currentPassword')"
                   placeholder="Votre mot de passe actuel"
                 />
-                <button type="button" class="password-toggle" (click)="toggleCurrentPassword()">
-                  <i class="fas" [class.fa-eye]="!showCurrentPassword()" [class.fa-eye-slash]="showCurrentPassword()"></i>
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="toggleCurrentPassword()"
+                >
+                  <i
+                    class="fas"
+                    [class.fa-eye]="!showCurrentPassword()"
+                    [class.fa-eye-slash]="showCurrentPassword()"
+                  ></i>
                 </button>
                 <div class="input-border"></div>
               </div>
-              @if (isPasswordInvalid('currentPassword')) {
+              @if (isPasswordInvalid("currentPassword")) {
                 <span class="form-error">
                   <i class="fas fa-exclamation-circle"></i>
                   Mot de passe actuel requis
@@ -237,22 +275,34 @@
                     [class.error]="isPasswordInvalid('newPassword')"
                     placeholder="Minimum 6 caractères"
                   />
-                  <button type="button" class="password-toggle" (click)="toggleNewPassword()">
-                    <i class="fas" [class.fa-eye]="!showNewPassword()" [class.fa-eye-slash]="showNewPassword()"></i>
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    (click)="toggleNewPassword()"
+                  >
+                    <i
+                      class="fas"
+                      [class.fa-eye]="!showNewPassword()"
+                      [class.fa-eye-slash]="showNewPassword()"
+                    ></i>
                   </button>
                   <div class="input-border"></div>
                 </div>
-                @if (isPasswordInvalid('newPassword')) {
+                @if (isPasswordInvalid("newPassword")) {
                   <span class="form-error">
                     <i class="fas fa-exclamation-circle"></i>
                     Mot de passe requis (minimum 6 caractères)
                   </span>
                 }
-                <!-- Password strength indicator -->
-                @if (newPassword.value && !isPasswordInvalid('newPassword')) {
+                @if (newPassword.value && !isPasswordInvalid("newPassword")) {
                   <div class="password-strength">
-                    <div class="strength-bar" [class]="getStrengthClass(newPassword.value)"></div>
-                    <span class="strength-text">{{ getStrengthText(newPassword.value) }}</span>
+                    <div
+                      class="strength-bar"
+                      [class]="getStrengthClass(newPassword.value)"
+                    ></div>
+                    <span class="strength-text">{{
+                      getStrengthText(newPassword.value)
+                    }}</span>
                   </div>
                 }
               </div>
@@ -267,21 +317,40 @@
                     [type]="showConfirmPassword() ? 'text' : 'password'"
                     formControlName="confirmPassword"
                     class="form-input password-input"
-                    [class.error]="isPasswordInvalid('confirmPassword') || passwordForm.hasError('mismatch')"
+                    [class.error]="
+                      isPasswordInvalid('confirmPassword') ||
+                      passwordForm.hasError('mismatch')
+                    "
                     placeholder="Confirmer le nouveau mot de passe"
                   />
-                  <button type="button" class="password-toggle" (click)="toggleConfirmPassword()">
-                    <i class="fas" [class.fa-eye]="!showConfirmPassword()" [class.fa-eye-slash]="showConfirmPassword()"></i>
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    (click)="toggleConfirmPassword()"
+                  >
+                    <i
+                      class="fas"
+                      [class.fa-eye]="!showConfirmPassword()"
+                      [class.fa-eye-slash]="showConfirmPassword()"
+                    ></i>
                   </button>
                   <div class="input-border"></div>
                 </div>
-                @if (passwordForm.hasError('mismatch') && passwordForm.get('confirmPassword')?.touched) {
+                @if (
+                  passwordForm.hasError("mismatch") &&
+                  passwordForm.get("confirmPassword")?.touched
+                ) {
                   <span class="form-error">
                     <i class="fas fa-exclamation-circle"></i>
                     Les mots de passe ne correspondent pas
                   </span>
                 }
-                @if (!passwordForm.hasError('mismatch') && newPassword.value && confirmPassword.value && newPassword.value === confirmPassword.value) {
+                @if (
+                  !passwordForm.hasError("mismatch") &&
+                  newPassword.value &&
+                  confirmPassword.value &&
+                  newPassword.value === confirmPassword.value
+                ) {
                   <span class="form-success">
                     <i class="fas fa-check-circle"></i>
                     Les mots de passe correspondent
@@ -291,7 +360,11 @@
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn--secondary" [disabled]="changingPassword()">
+              <button
+                type="submit"
+                class="btn btn--secondary"
+                [disabled]="changingPassword()"
+              >
                 @if (changingPassword()) {
                   <div class="btn-loader"></div>
                   <span>Modification...</span>
@@ -318,7 +391,9 @@
           </div>
           <div class="tip">
             <i class="fas fa-check-circle"></i>
-            <span>Évitez d'utiliser des informations personnelles évidentes</span>
+            <span
+              >Évitez d'utiliser des informations personnelles évidentes</span
+            >
           </div>
           <div class="tip">
             <i class="fas fa-check-circle"></i>
@@ -338,7 +413,6 @@
           <span>Se déconnecter</span>
         </button>
       </div>
-
     </div>
   </div>
 </div>

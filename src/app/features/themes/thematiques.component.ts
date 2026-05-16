@@ -408,28 +408,26 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
     return map[status] || 'fa-circle';
   }
 
-  getLocationIcon(location: string): string {
-    const map: Record<string, string> = {
-      'en ligne': '💻',
-      présentiel: '🏛️',
-      hybride: '🔄',
-    };
-    return map[location] || '📍';
-  }
+getLocationIcon(location: string): string {
+  const map: Record<string, string> = {
+    'en ligne': 'fa-laptop',
+    présentiel: 'fa-building-columns',
+    hybride: 'fa-arrows-rotate',
+  };
 
-  getLocationText(location: string): string {
-    switch (location) {
-      case 'en ligne':
-        return '💻 En ligne';
-      case 'présentiel':
-        return '🏛️ Présentiel';
-      case 'hybride':
-        return '🔄 Hybride';
-      default:
-        return location;
-    }
-  }
+  return map[location] || 'fa-location-dot';
+}
 
+
+getLocationText(location: string): string {
+  const map: Record<string, string> = {
+    'en ligne': 'En ligne',
+    présentiel: 'Présentiel',
+    hybride: 'Hybride',
+  };
+
+  return map[location] || location;
+}
   getEndTime(
     date: Date | string | null | undefined,
     duration: number | null | undefined,
@@ -467,27 +465,31 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
     return this.themes().filter((t) => t.linkedWorkshop).length;
   }
 
-  parseObjectives(objectives: string): string[] {
-    if (!objectives) return [];
-    return objectives
-      .split(/[.;\n]+/)
-      .filter((o) => o.trim().length > 0)
-      .map((o) => o.trim());
-  }
+// thematiques.component.ts - Correction des méthodes parse
 
-  parsePrerequisites(prerequisites: string): string[] {
-    if (!prerequisites) return [];
-    return prerequisites
-      .split(/[;,.\n]+/)
-      .filter((p) => p.trim().length > 0)
-      .map((p) => p.trim());
-  }
+parseObjectives(objectives: string | undefined | null): string[] {
+  if (!objectives || typeof objectives !== 'string') return [];
+  return objectives
+    .split(/[.;\n]+/)
+    .filter((o) => o.trim().length > 0)
+    .map((o) => o.trim());
+}
 
-  parseMaterials(materials: string): string[] {
-    if (!materials) return [];
-    return materials
-      .split(/[;,.\n]+/)
-      .filter((m) => m.trim().length > 0)
-      .map((m) => m.trim());
-  }
+parsePrerequisites(prerequisites: string | undefined | null): string[] {
+  if (!prerequisites || typeof prerequisites !== 'string') return [];
+  return prerequisites
+    .split(/[;,.\n]+/)
+    .filter((p) => p.trim().length > 0)
+    .map((p) => p.trim());
+}
+
+parseMaterials(materials: string | undefined | null): string[] {
+  if (!materials || typeof materials !== 'string') return [];
+  return materials
+    .split(/[;,.\n]+/)
+    .filter((m) => m.trim().length > 0)
+    .map((m) => m.trim());
+}
+
+
 }

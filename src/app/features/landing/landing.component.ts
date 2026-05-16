@@ -1,15 +1,25 @@
-import { Component, HostListener, inject, signal, AfterViewInit, OnDestroy, Renderer2, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  inject,
+  signal,
+  AfterViewInit,
+  OnDestroy,
+  Renderer2,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
-import { TechBackgroundComponent } from "../shared/components/tech-background/tech-background.component";
+import { TechBackgroundComponent } from '../shared/components/tech-background/tech-background.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
   imports: [RouterLink, CommonModule, TechBackgroundComponent],
   templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.scss']
+  styleUrls: ['./landing.component.scss'],
 })
 export class LandingComponent implements AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
@@ -20,6 +30,9 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
   private typingInterval: any = null;
   private scrollObservers: IntersectionObserver[] = [];
   private mouseMoveHandler: (() => void) | null = null;
+  private codeTypingTimeout: any = null;
+  private isCodeTyping = false;
+  private codeLinesOriginal: string[] = [];
 
   get user() {
     return this.authService.currentUser;
@@ -34,7 +47,7 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleUserMenu(): void {
-    this.userMenuOpen.update(v => !v);
+    this.userMenuOpen.update((v) => !v);
   }
 
   @HostListener('document:click', ['$event'])
@@ -55,6 +68,7 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     this.initMouseGlow();
     this.initScrollReveal();
     this.initParticlesAnimation();
+    this.initCodeTyping(); // Démarre l'effet d'écriture en boucle
   }
 
   ngOnDestroy(): void {
@@ -64,7 +78,10 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     if (this.typingInterval) {
       clearInterval(this.typingInterval);
     }
-    this.scrollObservers.forEach(obs => obs.disconnect());
+    if (this.codeTypingTimeout) {
+      clearTimeout(this.codeTypingTimeout);
+    }
+    this.scrollObservers.forEach((obs) => obs.disconnect());
     if (this.mouseMoveHandler) {
       this.mouseMoveHandler();
     }
@@ -72,10 +89,10 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
 
   private initTypingAnimation(): void {
     const texts = [
-      "Club TDSI Campus",
-      "Tech Community",
-      "Cyber Security Hub",
-      "AI Innovation Lab"
+      'Club TDSI Campus',
+      'Tech Community',
+      'Cyber Security Hub',
+      'AI Innovation Lab',
     ];
 
     let textIndex = 0;
@@ -113,32 +130,78 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     setTimeout(type, 500);
   }
 
-  private initCounters(): void {
-    this.observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const counters = document.querySelectorAll('.counter');
-          counters.forEach((counter) => {
-            const target = parseInt(counter.getAttribute('data-target') || '0', 10);
-            let current = 0;
-            const duration = 2000;
-            const step = target / (duration / 16);
+  private initCodeTyping(): void {
+    const codeLines = document.querySelectorAll('.code-line');
+    const cursor = document.querySelector('.code-cursor') as HTMLElement;
 
-            const updateCounter = () => {
-              current += step;
-              if (current < target) {
-                counter.textContent = Math.floor(current).toString();
-                requestAnimationFrame(updateCounter);
-              } else {
-                counter.textContent = target.toString();
-              }
-            };
-            updateCounter();
-          });
-          this.observer?.disconnect();
-        }
+    const animateLines = () => {
+      codeLines.forEach((line, index) => {
+        const element = line as HTMLElement;
+
+        // reset animation
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(10px)';
+
+        setTimeout(() => {
+          element.style.transition = 'all 1.2s ease';
+          element.style.opacity = '1';
+          element.style.transform = 'translateY(0)';
+        }, index * 700);
       });
-    }, { threshold: 0.3 });
+
+      // cursor animation
+      if (cursor) {
+        cursor.style.opacity = '0';
+
+        setTimeout(() => {
+          cursor.style.opacity = '1';
+        }, codeLines.length * 700);
+      }
+
+      // infinite loop
+      setTimeout(
+        () => {
+          animateLines();
+        },
+        codeLines.length * 700 + 7000,
+      );
+    };
+
+    animateLines();
+  }
+
+  private initCounters(): void {
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach((counter) => {
+              const target = parseInt(
+                counter.getAttribute('data-target') || '0',
+                10,
+              );
+              let current = 0;
+              const duration = 2000;
+              const step = target / (duration / 16);
+
+              const updateCounter = () => {
+                current += step;
+                if (current < target) {
+                  counter.textContent = Math.floor(current).toString();
+                  requestAnimationFrame(updateCounter);
+                } else {
+                  counter.textContent = target.toString();
+                }
+              };
+              updateCounter();
+            });
+            this.observer?.disconnect();
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
 
     const statsSection = document.querySelector('.stats-grid');
     if (statsSection) {
@@ -157,22 +220,28 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     };
 
     document.addEventListener('mousemove', handleMouseMove);
-    this.mouseMoveHandler = () => document.removeEventListener('mousemove', handleMouseMove);
+    this.mouseMoveHandler = () =>
+      document.removeEventListener('mousemove', handleMouseMove);
   }
 
   private initScrollReveal(): void {
-    const revealElements = document.querySelectorAll('.feature-card, .stat-card, .showcase__content, .showcase__image');
+    const revealElements = document.querySelectorAll(
+      '.feature-card, .stat-card, .showcase__content, .showcase__image, .resource-card',
+    );
 
-    const revealObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '50px' });
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' },
+    );
 
-    revealElements.forEach(el => {
+    revealElements.forEach((el) => {
       el.classList.add('reveal');
       revealObserver.observe(el);
     });
@@ -193,5 +262,8 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
       (particle as HTMLElement).style.animationDelay = `${randomDelay}s`;
       (particle as HTMLElement).style.animationDuration = `${randomDuration}s`;
     });
+  }
+  openExternalLink(url: string): void {
+    window.open(url, '_blank');
   }
 }

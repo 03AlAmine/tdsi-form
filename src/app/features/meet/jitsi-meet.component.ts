@@ -1,9 +1,10 @@
-// jitsi-meet.component.ts - Version améliorée
+// jitsi-meet.component.ts - Version avec mise à jour du statut
 
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { WorkshopService } from '../../core/services/workshop.service';
+import { ToastService } from '../../core/services/toast.service';
 
 declare var JitsiMeetExternalAPI: any;
 
@@ -32,9 +33,11 @@ export class JitsiMeetComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private workshopService = inject(WorkshopService);
+  private toastService = inject(ToastService);
 
   private api: any = null;
   private workshopId: string | null = null;
+  private statusUpdated = false; // ✅ Pour éviter les mises à jour multiples
 
   async ngOnInit(): Promise<void> {
     this.workshopId = this.route.snapshot.paramMap.get('id');
@@ -50,9 +53,13 @@ export class JitsiMeetComponent implements OnInit, OnDestroy {
 
     if (!workshop?.meetLink) {
       console.error('Aucun lien de réunion trouvé');
+      this.toastService.error('Lien de réunion non disponible');
       this.router.navigate(['/workshops']);
       return;
     }
+
+    // ✅ Mettre à jour le statut du workshop à "en cours"
+    await this.updateWorkshopStatus();
 
     // Extraire le nom de la salle depuis l'URL Jitsi
     const urlParts = workshop.meetLink.split('/');
@@ -63,6 +70,26 @@ export class JitsiMeetComponent implements OnInit, OnDestroy {
     script.src = 'https://meet.jit.si/external_api.js';
     script.onload = () => this.initJitsi(roomName, user);
     document.head.appendChild(script);
+  }
+
+  // ✅ Méthode pour mettre à jour le statut du workshop
+  private async updateWorkshopStatus(): Promise<void> {
+    if (!this.workshopId || this.statusUpdated) return;
+
+    try {
+      const workshop = await this.workshopService.getWorkshopById(this.workshopId);
+
+      // Ne mettre à jour que si le statut n'est pas déjà "en cours"
+      if (workshop && workshop.status !== 'en cours') {
+        await this.workshopService.updateWorkshop(this.workshopId, {
+          status: 'en cours'
+        });
+        this.statusUpdated = true;
+        console.log('✅ Workshop status mis à jour: en cours');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut:', error);
+    }
   }
 
   private initJitsi(roomName: string, user: any): void {
@@ -90,13 +117,25 @@ export class JitsiMeetComponent implements OnInit, OnDestroy {
 
     this.api = new JitsiMeetExternalAPI(domain, options);
 
+    // ✅ Événement quand la conférence est réellement chargée
+    this.api.addEventListener('videoConferenceJoined', () => {
+      console.log('🎥 Conférence Jitsi démarrée');
+    });
+
     this.api.addEventListener('readyToClose', () => {
-      this.router.navigate(['/workshops']);
+      this.handleConferenceEnd();
     });
 
     this.api.addEventListener('videoConferenceLeft', () => {
-      this.router.navigate(['/workshops']);
+      this.handleConferenceEnd();
     });
+  }
+
+  // ✅ Gérer la fin de la conférence
+  private async handleConferenceEnd(): Promise<void> {
+    // Optionnel : remettre le statut à "terminé" si vous le souhaitez
+    // Ou laisser l'admin le faire manuellement
+    this.router.navigate(['/workshops']);
   }
 
   ngOnDestroy(): void {

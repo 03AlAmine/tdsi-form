@@ -1,10 +1,12 @@
 // public-footer.component.scss
 .footer {
   position: relative;
-  z-index: 5;
-  background: linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(15, 18, 53, 0.98));
-  backdrop-filter: blur(10px);
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(10px);
+
   border-top: 1px solid rgba(0, 212, 255, 0.1);
+
   padding: 3rem 0 2rem;
   margin-top: 4rem;
   overflow: hidden;
@@ -15,7 +17,8 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg,
+    background: linear-gradient(
+      90deg,
       transparent,
       var(--tech-cyan),
       var(--tech-purple),
@@ -66,7 +69,11 @@
       margin-bottom: 0.5rem;
 
       span {
-        background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
+        background: linear-gradient(
+          135deg,
+          var(--tech-cyan),
+          var(--tech-purple)
+        );
         background-clip: text;
         -webkit-background-clip: text;
         color: transparent;
@@ -222,7 +229,8 @@
 }
 
 @keyframes borderScan {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(-100%);
     opacity: 0;
   }
@@ -233,7 +241,8 @@
 }
 
 @keyframes heartBeat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

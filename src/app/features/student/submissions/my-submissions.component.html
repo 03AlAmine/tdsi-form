@@ -1,20 +1,20 @@
 <!-- my-submissions.component.html -->
-<div class="submissions-page">
+<div class="app-page">
 
   <!-- Hero Section -->
-  <section class="submissions-hero">
+  <section class="page-hero">
     <div class="container">
-      <div class="submissions-hero__content">
-        <div class="submissions-hero__badge">
-          <span class="badge-glow"></span>
+      <div class="page-hero__content">
+        <div class="page-hero__badge">
+          <span class="pulse-dot"></span>
           <i class="fa-solid fa-clipboard-list"></i>
           <span> MES PROPOSITIONS</span>
         </div>
-        <h1 class="submissions-hero__title">
+        <h1 class="page-hero__title">
           Suivi des
           <span class="gradient-text">soumissions</span>
         </h1>
-        <p class="submissions-hero__subtitle">
+        <p class="page-hero__subtitle">
           Gérez et suivez l'avancement de vos propositions de thématiques
         </p>
       </div>
@@ -55,13 +55,13 @@
       </div>
     } @else if (submissions().length === 0) {
       <!-- Empty State -->
-      <div class="empty-state-enhanced">
-        <div class="empty-state-enhanced__icon">
+      <div class="empty-state">
+        <div class="empty-state__icon">
           <i class="fas fa-file-alt"></i>
         </div>
-        <h3>Aucune soumission</h3>
-        <p>Vous n'avez encore proposé aucune thématique</p>
-        <div class="empty-state-enhanced__actions">
+        <h3 class="empty-state__title">Aucune soumission</h3>
+        <p class="empty-state__description">Vous n'avez encore proposé aucune thématique</p>
+        <div class="empty-state__actions">
           <a routerLink="/espace-membre/proposer" class="btn btn--primary">
             <i class="fas fa-plus"></i>
             Proposer une thématique
