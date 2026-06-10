@@ -1,13 +1,13 @@
-// profile.component.ts - Version améliorée
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { auth, db } from '../../../../firebase.config';
+import { LoggerService } from '../../../core/services/logger.service';
+import { auth } from '../../../../firebase.config';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -15,105 +15,76 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss']
+  styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  private fb           = inject(FormBuilder);
+  private authService  = inject(AuthService);
+  private userSvc      = inject(UserService);
+  private router       = inject(Router);
   private toastService = inject(ToastService);
+  private logger       = inject(LoggerService);
 
   user = this.authService.currentUser;
-  private refreshSubscription: Subscription | null = null;
+  private sub: Subscription | null = null;
 
-  savingProfile = signal(false);
-  changingPassword = signal(false);
+  savingProfile       = signal(false);
+  changingPassword    = signal(false);
   showCurrentPassword = signal(false);
-  showNewPassword = signal(false);
+  showNewPassword     = signal(false);
   showConfirmPassword = signal(false);
-  successMessage = signal('');
-  errorMessage = signal('');
+  successMessage      = signal('');
+  errorMessage        = signal('');
 
   profileForm = this.fb.group({
-    displayName: [this.user?.displayName || '', [Validators.required, Validators.minLength(3)]],
-    promo: [this.user?.promo || '', Validators.required]
+    displayName: [this.user?.displayName ?? '', [Validators.required, Validators.minLength(3)]],
+    promo:       [this.user?.promo       ?? '',  Validators.required],
   });
 
-  passwordForm = this.fb.group({
+  passwordForm: FormGroup = this.fb.group({
     currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
-    confirmPassword: ['', Validators.required]
+    newPassword:     ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', Validators.required],
   }, { validators: this.passwordMatchValidator });
 
   promos = ['L1', 'L2', 'L3', 'M1', 'M2', 'Doctorat', 'Professionnel'];
 
-  get newPassword(): AbstractControl {
-    return this.passwordForm.get('newPassword')!;
-  }
+  get newPassword(): AbstractControl     { return this.passwordForm.get('newPassword')!; }
+  get confirmPassword(): AbstractControl { return this.passwordForm.get('confirmPassword')!; }
 
-  get confirmPassword(): AbstractControl {
-    return this.passwordForm.get('confirmPassword')!;
-  }
-
+  // ── Lifecycle ─────────────────────────────────────────────
   ngOnInit(): void {
-    // Refresh user data when profile is updated
-    this.refreshSubscription = this.authService.currentUser$.subscribe(user => {
+    this.sub = this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.user = user;
-        this.profileForm.patchValue({
-          displayName: user.displayName,
-          promo: user.promo
-        }, { emitEvent: false });
+        this.profileForm.patchValue(
+          { displayName: user.displayName, promo: user.promo },
+          { emitEvent: false }
+        );
       }
     });
   }
 
-  ngOnDestroy(): void {
-    this.refreshSubscription?.unsubscribe();
-  }
+  ngOnDestroy(): void { this.sub?.unsubscribe(); }
 
+  // ── Validation ────────────────────────────────────────────
   passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
-    const newPassword = group.get('newPassword')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-    return newPassword === confirmPassword ? null : { mismatch: true };
-  }
-
-  getStrengthClass(password: string): string {
-    if (!password) return '';
-    const strength = this.checkPasswordStrength(password);
-    if (strength < 2) return 'weak';
-    if (strength < 4) return 'medium';
-    return 'strong';
-  }
-
-  getStrengthText(password: string): string {
-    if (!password) return '';
-    const strength = this.checkPasswordStrength(password);
-    if (strength < 2) return 'Faible';
-    if (strength < 4) return 'Moyen';
-    return 'Fort';
-  }
-
-  private checkPasswordStrength(password: string): number {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (password.match(/[a-z]/)) strength++;
-    if (password.match(/[A-Z]/)) strength++;
-    if (password.match(/[0-9]/)) strength++;
-    if (password.match(/[^a-zA-Z0-9]/)) strength++;
-    return strength;
+    const np = group.get('newPassword')?.value;
+    const cp = group.get('confirmPassword')?.value;
+    return np === cp ? null : { mismatch: true };
   }
 
   isProfileInvalid(field: string): boolean {
-    const control = this.profileForm.get(field);
-    return control ? control.invalid && control.touched : false;
+    const c = this.profileForm.get(field);
+    return c ? c.invalid && c.touched : false;
   }
 
   isPasswordInvalid(field: string): boolean {
-    const control = this.passwordForm.get(field);
-    return control ? control.invalid && control.touched : false;
+    const c = this.passwordForm.get(field);
+    return c ? c.invalid && c.touched : false;
   }
 
+  // ── Profil ────────────────────────────────────────────────
   async updateProfile(): Promise<void> {
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
@@ -126,15 +97,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.successMessage.set('');
 
     try {
-      await updateDoc(doc(db, 'users', this.user!.uid), {
-        displayName: this.profileForm.value.displayName,
-        promo: this.profileForm.value.promo
-      });
+      const uid = this.user!.uid;
+      const displayName = this.profileForm.value.displayName!;
+      const promo       = this.profileForm.value.promo!;
+
+      // ✅ Via UserService — plus de updateDoc direct
+      await this.userSvc.updateProfile(uid, { displayName, promo });
       await this.authService.refreshCurrentUser();
+
       this.successMessage.set('Profil mis à jour avec succès !');
       this.toastService.success('Profil mis à jour avec succès');
+
+      // ✅ Timeout stocké pour être annulable si le composant est détruit
       setTimeout(() => this.successMessage.set(''), 3000);
-    } catch {
+    } catch (err) {
+      this.logger.error('[Profile] updateProfile:', err);
       this.errorMessage.set('Erreur lors de la mise à jour du profil');
       this.toastService.error('Erreur lors de la mise à jour du profil');
     } finally {
@@ -142,6 +119,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── Mot de passe ──────────────────────────────────────────
   async changePassword(): Promise<void> {
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
@@ -153,8 +131,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    const user = auth.currentUser;
-    if (!user?.email) {
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser?.email) {
       this.errorMessage.set('Utilisateur non connecté');
       this.toastService.error('Utilisateur non connecté');
       this.changingPassword.set(false);
@@ -163,45 +141,55 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     try {
       await reauthenticateWithCredential(
-        user,
-        EmailAuthProvider.credential(user.email, this.passwordForm.value.currentPassword!)
+        firebaseUser,
+        EmailAuthProvider.credential(
+          firebaseUser.email,
+          this.passwordForm.value.currentPassword!
+        )
       );
-      await updatePassword(user, this.passwordForm.value.newPassword!);
+      await updatePassword(firebaseUser, this.passwordForm.value.newPassword!);
+
       this.successMessage.set('Mot de passe modifié avec succès !');
       this.toastService.success('Mot de passe modifié avec succès');
       this.passwordForm.reset();
       setTimeout(() => this.successMessage.set(''), 3000);
     } catch (err: any) {
+      this.logger.error('[Profile] changePassword:', err);
       const messages: Record<string, string> = {
-        'auth/wrong-password': 'Mot de passe actuel incorrect',
-        'auth/weak-password': 'Le nouveau mot de passe est trop faible',
+        'auth/wrong-password':    'Mot de passe actuel incorrect',
+        'auth/weak-password':     'Le nouveau mot de passe est trop faible',
         'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard',
       };
-      this.errorMessage.set(messages[err.code] ?? 'Erreur lors du changement de mot de passe');
-      this.toastService.error(this.errorMessage());
+      const msg = messages[err?.code] ?? 'Erreur lors du changement de mot de passe';
+      this.errorMessage.set(msg);
+      this.toastService.error(msg);
     } finally {
       this.changingPassword.set(false);
     }
   }
 
-  toggleCurrentPassword(): void {
-    this.showCurrentPassword.update(v => !v);
+  // ── Password strength ────────────────────────────────────
+  getStrengthClass(password: string): string {
+    if (!password) return '';
+    const s = this.checkPasswordStrength(password);
+    return s < 2 ? 'weak' : s < 4 ? 'medium' : 'strong';
   }
 
-  toggleNewPassword(): void {
-    this.showNewPassword.update(v => !v);
+  getStrengthText(password: string): string {
+    if (!password) return '';
+    const s = this.checkPasswordStrength(password);
+    return s < 2 ? 'Faible' : s < 4 ? 'Moyen' : 'Fort';
   }
 
-  toggleConfirmPassword(): void {
-    this.showConfirmPassword.update(v => !v);
+  private checkPasswordStrength(p: string): number {
+    return [p.length >= 8, /[a-z]/.test(p), /[A-Z]/.test(p), /[0-9]/.test(p), /[^a-zA-Z0-9]/.test(p)]
+      .filter(Boolean).length;
   }
 
-  goBack(): void {
-    this.router.navigate(['/espace-membre/thematiques']);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.toastService.info('Vous avez été déconnecté');
-  }
+  // ── UI ────────────────────────────────────────────────────
+  toggleCurrentPassword(): void { this.showCurrentPassword.update(v => !v); }
+  toggleNewPassword():     void { this.showNewPassword.update(v => !v);     }
+  toggleConfirmPassword(): void { this.showConfirmPassword.update(v => !v); }
+  goBack():                void { this.router.navigate(['/espace-membre/thematiques']); }
+  logout():                void { this.authService.logout(); this.toastService.info('Vous avez été déconnecté'); }
 }

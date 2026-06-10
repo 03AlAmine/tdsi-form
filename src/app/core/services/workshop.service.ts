@@ -14,7 +14,7 @@ import {
   getDoc,
   runTransaction,
 } from 'firebase/firestore';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, finalize } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Workshop, PresenceRecord } from '../model/models';
 import { ThemeService } from './theme.service';
@@ -23,25 +23,43 @@ import { ThemeService } from './theme.service';
 export class WorkshopService {
   private themeService = inject(ThemeService);
 
+  // ─────────────────────────────────────────────────────────────
+  // Cache partagé : un seul listener Firestore actif à la fois.
+  // shareReplay(1) réémet immédiatement la dernière valeur à tout
+  // nouvel abonné, et ferme le listener quand plus personne n'écoute
+  // (refCount: true = comportement par défaut de shareReplay).
+  // ─────────────────────────────────────────────────────────────
+  private workshops$: Observable<Workshop[]> | null = null;
+
   getWorkshops(): Observable<Workshop[]> {
-    return new Observable((observer) => {
-      const ref = collection(db, 'workshops');
-      const unsubscribe = onSnapshot(ref, (snapshot) => {
-        const data = snapshot.docs.map((docSnap) => {
-          const d: any = docSnap.data();
-          return {
-            ...d,
-            id: docSnap.id,
-            date: d.date?.toDate?.() ?? new Date(),
-            createdAt: d.createdAt?.toDate?.() ?? new Date(),
-            // ✅ FIX #5 — registrations toujours un tableau, jamais undefined
-            registrations: d.registrations ?? [],
-          } as Workshop;
-        });
-        observer.next(data);
-      });
-      return () => unsubscribe();
-    });
+    if (!this.workshops$) {
+      this.workshops$ = new Observable<Workshop[]>((observer) => {
+        const ref = collection(db, 'workshops');
+        const unsubscribe = onSnapshot(ref, (snapshot) => {
+          const data = snapshot.docs.map((docSnap) => {
+            const d: any = docSnap.data();
+            return {
+              ...d,
+              id: docSnap.id,
+              date: d.date?.toDate?.() ?? new Date(),
+              createdAt: d.createdAt?.toDate?.() ?? new Date(),
+              registrations: d.registrations ?? [],
+            } as Workshop;
+          });
+          observer.next(data);
+        }, (err) => observer.error(err));
+
+        return () => unsubscribe();
+      }).pipe(
+        // bufferSize: 1 → réémet la dernière valeur connue aux nouveaux abonnés
+        // refCount: true → ferme le listener Firestore quand zéro abonnés actifs
+        shareReplay({ bufferSize: 1, refCount: true }),
+        // Remet le cache à null si tout le monde se désabonne,
+        // pour permettre une reconnexion propre si nécessaire.
+        finalize(() => { this.workshops$ = null; }),
+      );
+    }
+    return this.workshops$;
   }
 
   async createWorkshop(workshop: Omit<Workshop, 'id'>): Promise<string> {
@@ -49,7 +67,6 @@ export class WorkshopService {
       ...workshop,
       date: Timestamp.fromDate(workshop.date),
       createdAt: Timestamp.fromDate(workshop.createdAt),
-      // ✅ S'assurer que registrations est initialisé
       registrations: workshop.registrations ?? [],
     });
     return ref.id;
@@ -103,11 +120,9 @@ export class WorkshopService {
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-')
       .substring(0, 50);
-    return `https://meet.jit.si/tdsi-${cleanTitle}-${workshopId.substring(0, 8)}`;
+    return `https://meet.jit.si/campusclubtdsi-${cleanTitle}-${workshopId.substring(0, 8)}`;
   }
 
-  // ✅ FIX #3 — Transaction atomique pour éviter la race condition
-  // Sans transaction, deux inscriptions simultanées peuvent dépasser maxParticipants
   async registerToWorkshop(workshopId: string, userId: string): Promise<void> {
     const workshopRef = doc(db, 'workshops', workshopId);
 
@@ -122,12 +137,10 @@ export class WorkshopService {
       const registrations: string[] = workshop['registrations'] ?? [];
       const maxParticipants: number = workshop['maxParticipants'] ?? 30;
 
-      // Vérifier les places disponibles de façon atomique
       if (registrations.length >= maxParticipants) {
         throw new Error('Plus de places disponibles');
       }
 
-      // Vérifier que l'utilisateur n'est pas déjà inscrit
       if (registrations.includes(userId)) {
         throw new Error('Déjà inscrit');
       }
@@ -137,7 +150,6 @@ export class WorkshopService {
       });
     });
 
-    // Mise à jour du thème après la transaction (non critique — pas atomique avec le workshop)
     const workshopSnap = await getDoc(workshopRef);
     const themeId = workshopSnap.data()?.['themeId'];
     if (themeId) {
@@ -155,7 +167,6 @@ export class WorkshopService {
       id: snap.id,
       date: data['date']?.toDate?.() ?? new Date(),
       createdAt: data['createdAt']?.toDate?.() ?? new Date(),
-      // ✅ FIX #5 — registrations toujours un tableau
       registrations: data['registrations'] ?? [],
     } as Workshop;
   }
@@ -187,24 +198,39 @@ export class WorkshopService {
     return ref.id;
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // getPresences() : même pattern shareReplay mais par workshopId
+  // (clé de cache = workshopId pour isoler chaque salle)
+  // ─────────────────────────────────────────────────────────────
+  private presences$ = new Map<string, Observable<PresenceRecord[]>>();
+
   getPresences(workshopId: string): Observable<PresenceRecord[]> {
-    return new Observable((observer) => {
-      const q = query(
-        collection(db, 'presences'),
-        where('workshopId', '==', workshopId),
+    if (!this.presences$.has(workshopId)) {
+      const obs = new Observable<PresenceRecord[]>((observer) => {
+        const q = query(
+          collection(db, 'presences'),
+          where('workshopId', '==', workshopId),
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const data = snapshot.docs.map((docSnap) => {
+            const d: any = docSnap.data();
+            return {
+              ...d,
+              id: docSnap.id,
+              checkedInAt: d.checkedInAt?.toDate?.() ?? new Date(),
+            } as PresenceRecord;
+          });
+          observer.next(data);
+        }, (err) => observer.error(err));
+
+        return () => unsubscribe();
+      }).pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
+        finalize(() => { this.presences$.delete(workshopId); }),
       );
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map((docSnap) => {
-          const d: any = docSnap.data();
-          return {
-            ...d,
-            id: docSnap.id,
-            checkedInAt: d.checkedInAt?.toDate?.() ?? new Date(),
-          } as PresenceRecord;
-        });
-        observer.next(data);
-      });
-      return () => unsubscribe();
-    });
+
+      this.presences$.set(workshopId, obs);
+    }
+    return this.presences$.get(workshopId)!;
   }
 }

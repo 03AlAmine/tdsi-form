@@ -1,0 +1,105 @@
+<!-- calendar.component.html -->
+<div class="member-calendar">
+
+  <!-- Widget Header -->
+  <div class="widget-header">
+    <i class="fas fa-calendar-alt"></i>
+    <h3>Calendrier</h3>
+    <a routerLink="/workshops" class="widget-action-btn">
+      <i class="fas fa-arrow-up-right-from-square"></i>
+      <span>Voir tout</span>
+    </a>
+  </div>
+
+  <div class="calendar-compact">
+
+    <!-- Navigation mois -->
+    <div class="calendar-header">
+      <button class="nav-btn" (click)="previousMonth()">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="month-title">
+        <span class="month">{{ currentMonthName() }}</span>
+        <span class="year">{{ currentYear() }}</span>
+      </div>
+
+      <button class="nav-btn" (click)="nextMonth()">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Jours de la semaine -->
+    <div class="calendar-weekdays">
+      @for (day of weekDays; track day) {
+        <div class="weekday">{{ day }}</div>
+      }
+    </div>
+
+    <!-- Grille des jours
+         slideDirection + isSliding contrôlent l'animation de slide -->
+    <div class="calendar-days"
+         [class.slide-left-enter]="slideDirection() === 'right' && isSliding()"
+         [class.slide-right-enter]="slideDirection() === 'left'  && isSliding()">
+
+      @for (day of calendarDays(); track $index) {
+        <div
+          class="calendar-day"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.today]="day.isToday"
+          [class.has-event]="day.events.length > 0"
+          [class.selected]="selectedDay()?.date?.toDateString() === day.date.toDateString()"
+          [style.--stagger-index]="$index"
+          (click)="selectDay(day, $event)"
+        >
+          <span class="day-number">{{ day.date.getDate() }}</span>
+
+          @if (day.hasWorkshop) {
+            <span class="event-indicator workshop"></span>
+          }
+          @if (day.hasActivity && !day.hasWorkshop) {
+            <span class="event-indicator activity"></span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Légende -->
+    <div class="calendar-legend">
+      <div class="legend-item">
+        <span class="legend-dot workshop"></span>
+        <span>Workshop</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot activity"></span>
+        <span>Activité</span>
+      </div>
+    </div>
+
+    <!-- Events du jour sélectionné -->
+    @if (selectedDayEvents().length > 0 && selectedDay()) {
+      <div class="events-preview">
+        <div class="events-preview-header">
+          <i class="fas fa-calendar-day"></i>
+          <span>{{ selectedDay()?.date | date:'dd MMM' }}</span>
+          <span class="events-count">{{ selectedDayEvents().length }} événement(s)</span>
+        </div>
+        <div class="events-list">
+          @for (event of selectedDayEvents().slice(0, 3); track event.id; let i = $index) {
+            <div class="event-item" [style.--item-index]="i" (click)="navigateToEvent(event)">
+              <div class="event-time">{{ event.date | date:'HH:mm' }}</div>
+              <div class="event-title">{{ event.title | slice:0:25 }}{{ event.title.length > 25 ? '...' : '' }}</div>
+              <i class="fas fa-chevron-right event-arrow"></i>
+            </div>
+          }
+          @if (selectedDayEvents().length > 3) {
+            <div class="events-more">
+              + {{ selectedDayEvents().length - 3 }} autre(s) événement(s)
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

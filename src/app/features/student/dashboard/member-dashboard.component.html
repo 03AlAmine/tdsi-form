@@ -1,4 +1,5 @@
 <!-- member-dashboard.component.html -->
+
 <div class="member-dashboard">
   <!-- Hero Section -->
   <section class="dashboard-hero">
@@ -31,51 +32,42 @@
         <p>Chargement de votre espace...</p>
       </div>
     } @else {
+
       <!-- Stats Cards -->
       <div class="stats-grid">
         <div class="stat-card" routerLink="/thematiques">
-          <div class="stat-card__icon">
-            <i class="fas fa-layer-group"></i>
-          </div>
+          <div class="stat-card__icon"><i class="fas fa-layer-group"></i></div>
           <div class="stat-card__value">{{ stats().totalThemes }}</div>
           <div class="stat-card__label">Thématiques disponibles</div>
-          <div class="stat-card__arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
+          <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
 
         <div class="stat-card" routerLink="/workshops">
-          <div class="stat-card__icon">
-            <i class="fas fa-chalkboard-user"></i>
-          </div>
+          <div class="stat-card__icon"><i class="fas fa-chalkboard-user"></i></div>
           <div class="stat-card__value">{{ stats().upcomingWorkshops }}</div>
           <div class="stat-card__label">Workshops à venir</div>
-          <div class="stat-card__arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
+          <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
 
         <div class="stat-card" routerLink="/espace-membre/mes-soumissions">
-          <div class="stat-card__icon">
-            <i class="fas fa-file-alt"></i>
-          </div>
+          <div class="stat-card__icon"><i class="fas fa-file-alt"></i></div>
           <div class="stat-card__value">{{ stats().mySubmissions }}</div>
           <div class="stat-card__label">Mes soumissions</div>
-          <div class="stat-card__arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
+          <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
 
         <div class="stat-card" routerLink="/espace-membre/profil">
-          <div class="stat-card__icon">
-            <i class="fas fa-user-circle"></i>
-          </div>
+          <div class="stat-card__icon"><i class="fas fa-user-circle"></i></div>
           <div class="stat-card__value">{{ stats().myRegistrations }}</div>
           <div class="stat-card__label">Mes inscriptions</div>
-          <div class="stat-card__arrow">
-            <i class="fas fa-arrow-right"></i>
-          </div>
+          <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
+      </div>
+
+      <!-- Dashboard Row: Calendar + Notes (symétriques) -->
+      <div class="dashboard-row">
+        <app-member-calendar />
+        <app-member-notes />
       </div>
 
       <!-- Quick Actions -->
@@ -83,9 +75,7 @@
         <h3>Actions rapides</h3>
         <div class="actions-grid">
           <a routerLink="/espace-membre/proposer" class="action-card">
-            <div class="action-card__icon">
-              <i class="fas fa-lightbulb"></i>
-            </div>
+            <div class="action-card__icon"><i class="fas fa-lightbulb"></i></div>
             <div>
               <div class="action-card__title">Proposer une thématique</div>
               <div class="action-card__desc">Partagez une idée de workshop</div>
@@ -94,9 +84,7 @@
           </a>
 
           <a routerLink="/thematiques" class="action-card">
-            <div class="action-card__icon">
-              <i class="fas fa-search"></i>
-            </div>
+            <div class="action-card__icon"><i class="fas fa-search"></i></div>
             <div>
               <div class="action-card__title">Explorer les thématiques</div>
               <div class="action-card__desc">Découvrez de nouveaux sujets</div>
@@ -105,9 +93,7 @@
           </a>
 
           <a routerLink="/workshops" class="action-card">
-            <div class="action-card__icon">
-              <i class="fas fa-calendar-alt"></i>
-            </div>
+            <div class="action-card__icon"><i class="fas fa-calendar-alt"></i></div>
             <div>
               <div class="action-card__title">Voir les workshops</div>
               <div class="action-card__desc">Inscrivez-vous aux sessions</div>
@@ -138,17 +124,13 @@
                 <div class="empty-state-small">
                   <i class="fas fa-inbox"></i>
                   <p>Aucune soumission pour le moment</p>
-                  <a routerLink="/espace-membre/proposer" class="btn-link"
-                    >Proposer une thématique</a
-                  >
+                  <a routerLink="/espace-membre/proposer" class="btn-link">Proposer une thématique</a>
                 </div>
               } @else {
                 @for (theme of recentThemes(); track theme.id) {
                   <div class="recent-item">
                     <div class="recent-item__title">{{ theme.title }}</div>
-                    <div class="recent-item__date">
-                      {{ theme.createdAt | date: "dd MMM yyyy" }}
-                    </div>
+                    <div class="recent-item__date">{{ theme.createdAt | date: "dd MMM yyyy" }}</div>
                   </div>
                 }
               }
@@ -166,19 +148,13 @@
                 <div class="empty-state-small">
                   <i class="fas fa-calendar-alt"></i>
                   <p>Aucun workshop planifié</p>
-                  <a routerLink="/thematiques" class="btn-link"
-                    >Explorer les thématiques</a
-                  >
+                  <a routerLink="/thematiques" class="btn-link">Explorer les thématiques</a>
                 </div>
               } @else {
                 @for (workshop of upcomingWorkshops(); track workshop.id) {
-                  <div class="recent-item">
-                    <div class="recent-item__title">
-                      {{ workshop.themeTitle }}
-                    </div>
-                    <div class="recent-item__date">
-                      {{ workshop.date | date: "dd MMM yyyy" }}
-                    </div>
+                  <div class="recent-item" (click)="goToWorkshop(workshop.id!)">
+                    <div class="recent-item__title">{{ workshop.themeTitle }}</div>
+                    <div class="recent-item__date">{{ workshop.date | date: "dd MMM yyyy" }}</div>
                   </div>
                 }
               }
@@ -187,27 +163,20 @@
         </div>
       </div>
 
-      <!-- Profile Completion -->
-      @if (!user?.promo) {
+      <!-- Profile Completion tip -->
+      @if (!user()?.promo) {
         <div class="profile-tip">
-          <div class="profile-tip__icon">
-            <i class="fas fa-user-edit"></i>
-          </div>
+          <div class="profile-tip__icon"><i class="fas fa-user-edit"></i></div>
           <div class="profile-tip__content">
             <h4>Complétez votre profil</h4>
-            <p>
-              Ajoutez votre promotion pour recevoir des recommandations
-              personnalisées
-            </p>
+            <p>Ajoutez votre promotion pour recevoir des recommandations personnalisées</p>
           </div>
-          <a
-            routerLink="/espace-membre/profil"
-            class="btn btn--outline btn--sm"
-          >
+          <a routerLink="/espace-membre/profil" class="btn btn--outline btn--sm">
             Compléter <i class="fas fa-arrow-right"></i>
           </a>
         </div>
       }
+
     }
   </div>
 </div>

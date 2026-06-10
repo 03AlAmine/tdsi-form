@@ -90,9 +90,9 @@ export const routes: Routes = [
         path: 'espace-membre',
         canActivate: [authGuard],
         children: [
-          { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, // ← Modifier ici
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
           {
-            path: 'dashboard',
+            path: '',
             loadComponent: () =>
               import('./features/student/dashboard/member-dashboard.component').then(
                 (m) => m.MemberDashboardComponent,

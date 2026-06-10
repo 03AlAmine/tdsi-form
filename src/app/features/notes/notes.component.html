@@ -1,0 +1,203 @@
+<!-- notes.component.html -->
+
+<div class="member-notes">
+  <div class="notebook-container">
+
+    <div class="notebook-sizer" [class.is-open]="notesEditing()">
+
+      <!-- Widget Header — suit le sizer -->
+      <div class="widget-header">
+        <i class="fas fa-book-open"></i>
+        <h3>Mon carnet</h3>
+        <!-- Bouton header : connecté → Écrire/Enregistrer | guest → ouvrir -->
+        <button class="widget-action-btn" (click)="triggerOpen()">
+          <i class="fas"
+             [class.fa-pen]="!notesEditing() && isLoggedIn"
+             [class.fa-save]="notesEditing() && isLoggedIn"
+             [class.fa-book-open]="!isLoggedIn && !notesEditing()"
+             [class.fa-times]="!isLoggedIn && notesEditing()">
+          </i>
+          <span>
+            @if (!notesEditing()) { Ouvrir }
+            @else if (isLoggedIn) { Enregistrer }
+            @else { Fermer }
+          </span>
+        </button>
+      </div>
+
+      <!-- ── Chargement (connecté uniquement) ─────────────── -->
+      @if (isLoggedIn && loading()) {
+        <div class="notebook-loading">
+          <div class="loading-spinner-small"></div>
+          <span>Chargement de vos notes...</span>
+        </div>
+      }
+
+      <!-- ── Cahier (tous les cas sauf chargement) ─────────── -->
+      @if (!isLoggedIn || (isLoggedIn && !loading())) {
+
+        <div class="notebook-transition-zone"
+             [class.is-transitioning]="isOpening()">
+
+          <!-- ══ CAHIER FERMÉ — identique connecté/guest ══ -->
+          @if (!notesEditing() || isOpening()) {
+            <div class="notebook-stack"
+                 [class.is-closing]="isOpening() && notesEditing()">
+
+              @if (isFlipping()) {
+                <div class="page-flip-overlay">
+                  <div class="flip-page flip-page--1"></div>
+                  <div class="flip-page flip-page--2"></div>
+                  <div class="flip-page flip-page--3"></div>
+                </div>
+              }
+
+              <div class="notebook-page-closed" (click)="triggerOpen()">
+                <div class="notebook-binding"></div>
+                <div class="notebook-preview">
+                  <div class="notebook-icon">
+                    <i class="fas fa-feather-alt"></i>
+                    <i class="fas fa-chevron-right page-curl"></i>
+                  </div>
+
+                  @if (isLoggedIn && userNotes()) {
+                    <!-- Aperçu des notes existantes -->
+                    <div class="notes-text-closed">
+                      <i class="fas fa-quote-left"></i>
+                      {{ userNotes() | slice: 0 : 120 }}{{ userNotes().length > 120 ? "..." : "" }}
+                    </div>
+                  } @else {
+                    <!-- Placeholder — même visuel pour connecté sans notes et guest -->
+                    <div class="notes-placeholder">
+                      <i class="fas fa-{{ isLoggedIn ? 'edit' : 'lock' }}"></i>
+                      <p>{{ isLoggedIn ? 'Carnet de notes' : 'Espace notes personnel' }}</p>
+                      <span>Cliquez pour {{ isLoggedIn ? 'écrire...' : 'découvrir' }}</span>
+                    </div>
+                  }
+
+                  <div class="notebook-hint">
+                    <i class="fas fa-hand-point-right"></i>
+                    <span>Cliquez pour ouvrir</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- ══ CAHIER OUVERT ══ -->
+          @if (notesEditing()) {
+            <div class="notebook-open">
+              <div class="notebook-binding"></div>
+              <div class="notebook-lines"></div>
+
+              <!-- Cas connecté → éditeur complet -->
+              @if (isLoggedIn) {
+                <div class="notebook-header" style="animation: fadeSlideUp 0.4s 0.6s cubic-bezier(0.16,1,0.3,1) both">
+                  <div class="notebook-title">
+                    <i class="fas fa-pen-fancy"></i>
+                    <span>Mes notes personnelles</span>
+                  </div>
+                  <div class="page-number">
+                    page · {{ notesWordCount() > 0 ? notesWordCount() : "—" }}
+                  </div>
+                </div>
+
+                <div class="notebook-editor-area" style="animation: fadeSlideUp 0.4s 0.72s cubic-bezier(0.16,1,0.3,1) both">
+                  <textarea
+                    class="notes-editor"
+                    [(ngModel)]="notesContent"
+                    placeholder="✍️ Prenez vos notes ici...&#10;&#10;• Idées de workshops&#10;• Sujets à approfondir&#10;• Questions pour les présentateurs&#10;• Points clés à retenir"
+                    rows="6"
+                  ></textarea>
+
+                  <div class="notes-toolbar">
+                    <button class="btn-cancel" (click)="cancelNotes()">
+                      <i class="fas fa-times"></i> Annuler
+                    </button>
+                    <button class="btn-save" (click)="saveNotes()" [disabled]="saving()">
+                      @if (saving()) {
+                        <div class="btn-loader-small"></div>
+                        <span>Enregistrement...</span>
+                      } @else {
+                        <i class="fas fa-save"></i>
+                        <span>Enregistrer</span>
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <div class="notebook-footer" style="animation: fadeSlideUp 0.4s 0.84s cubic-bezier(0.16,1,0.3,1) both">
+                  <div class="note-stat">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>Dernière modif : {{ lastNoteUpdate() | date: "dd/MM/yyyy" }}</span>
+                  </div>
+                  <div class="note-stat">
+                    <i class="fas fa-chart-line"></i>
+                    <span>{{ notesWordCount() }} mots</span>
+                  </div>
+                  <div class="notebook-stamp">
+                    <i class="fas fa-check-circle"></i>
+                    <span>synchro ✓</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Cas non connecté → contenu "Espace notes personnel" dans le cahier ouvert -->
+              @if (!isLoggedIn) {
+                <div class="notebook-guest-open">
+                  <div class="notebook-guest-open__header"
+                       style="animation: fadeSlideUp 0.4s 0.6s cubic-bezier(0.16,1,0.3,1) both">
+                    <i class="fas fa-book-open"></i>
+                    <span class="notebook-guest-open__title">Espace notes personnel</span>
+                  </div>
+
+                  <div class="notebook-guest-open__body"
+                       style="animation: fadeSlideUp 0.4s 0.72s cubic-bezier(0.16,1,0.3,1) both">
+                    <div class="notebook-guest-open__lock">
+                      <i class="fas fa-lock"></i>
+                    </div>
+                    <h4 class="notebook-guest-open__heading">Carnet de notes personnel</h4>
+                    <p class="notebook-guest-open__desc">
+                      Créez un compte pour prendre des notes sur les workshops, garder vos idées et suivre votre progression.
+                    </p>
+                    <div class="notebook-guest-open__preview">
+                      <i class="fas fa-quote-left"></i>
+                      <span>Prenez vos notes ici... Idées de workshops, sujets à approfondir...</span>
+                    </div>
+                  </div>
+
+                  <div class="notebook-guest-open__actions"
+                       style="animation: fadeSlideUp 0.4s 0.84s cubic-bezier(0.16,1,0.3,1) both">
+                    <a routerLink="/inscription" class="btn btn--primary btn--sm">
+                      <i class="fas fa-user-plus"></i>
+                      Créer un compte
+                    </a>
+                    <a routerLink="/connexion" class="btn btn--outline btn--sm">
+                      <i class="fas fa-sign-in-alt"></i>
+                      Se connecter
+                    </a>
+                  </div>
+
+                  <div class="notebook-footer"
+                       style="animation: fadeSlideUp 0.4s 0.96s cubic-bezier(0.16,1,0.3,1) both">
+                    <div class="note-stat">
+                      <i class="fas fa-shield-alt"></i>
+                      <span>Notes privées & sécurisées</span>
+                    </div>
+                    <div class="notebook-stamp">
+                      <i class="fas fa-lock"></i>
+                      <span>accès membre</span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+            </div>
+          }
+
+        </div><!-- /.notebook-transition-zone -->
+      }
+
+    </div><!-- /.notebook-sizer -->
+  </div><!-- /.notebook-container -->
+</div>

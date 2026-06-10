@@ -4,29 +4,47 @@ import {
   doc, getDoc, query, where, orderBy, Timestamp, getDocs,
   onSnapshot
 } from 'firebase/firestore';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, finalize } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Theme, ThemeSubmission } from '../model/models';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
+
+  // ─────────────────────────────────────────────────────────────
+  // Cache partagé — un seul listener Firestore actif pour themes
+  // et submissions globales. getMySubmissions() est keyed par userId.
+  // ─────────────────────────────────────────────────────────────
+  private themes$: Observable<Theme[]> | null = null;
+  private submissions$: Observable<ThemeSubmission[]> | null = null;
+  private mySubmissions$ = new Map<string, Observable<ThemeSubmission[]>>();
+
   // ===== THEMES =====
+
   getThemes(): Observable<Theme[]> {
-    return new Observable((observer) => {
-      const ref = collection(db, 'themes');
-      return onSnapshot(ref, (snapshot) => {
-        const data = snapshot.docs.map((docSnap) => {
-          const d: any = docSnap.data();
-          return {
-            ...d,
-            id: docSnap.id,
-            workshopDate: d.workshopDate?.toDate?.(),
-            createdAt: d.createdAt?.toDate?.() ?? new Date(),
-          } as Theme;
-        });
-        observer.next(data);
-      });
-    });
+    if (!this.themes$) {
+      this.themes$ = new Observable<Theme[]>((observer) => {
+        const ref = collection(db, 'themes');
+        const unsubscribe = onSnapshot(ref, (snapshot) => {
+          const data = snapshot.docs.map((docSnap) => {
+            const d: any = docSnap.data();
+            return {
+              ...d,
+              id: docSnap.id,
+              workshopDate: d.workshopDate?.toDate?.(),
+              createdAt: d.createdAt?.toDate?.() ?? new Date(),
+            } as Theme;
+          });
+          observer.next(data);
+        }, (err) => observer.error(err));
+
+        return () => unsubscribe();
+      }).pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
+        finalize(() => { this.themes$ = null; }),
+      );
+    }
+    return this.themes$;
   }
 
   async getThemeById(id: string): Promise<Theme | null> {
@@ -64,45 +82,63 @@ export class ThemeService {
   }
 
   // ===== SUBMISSIONS =====
+
   getSubmissions(): Observable<ThemeSubmission[]> {
-    return new Observable((observer) => {
-      const ref = collection(db, 'submissions');
-      return onSnapshot(ref, (snapshot) => {
-        const data = snapshot.docs.map((docSnap) => {
-          const d: any = docSnap.data();
-          return {
-            ...d,
-            id: docSnap.id,
-            submittedAt: d.submittedAt?.toDate?.() ?? new Date(),
-            updatedAt: d.updatedAt?.toDate?.(),
-          } as ThemeSubmission;
-        });
-        observer.next(data);
-      });
-    });
+    if (!this.submissions$) {
+      this.submissions$ = new Observable<ThemeSubmission[]>((observer) => {
+        const ref = collection(db, 'submissions');
+        const unsubscribe = onSnapshot(ref, (snapshot) => {
+          const data = snapshot.docs.map((docSnap) => {
+            const d: any = docSnap.data();
+            return {
+              ...d,
+              id: docSnap.id,
+              submittedAt: d.submittedAt?.toDate?.() ?? new Date(),
+              updatedAt: d.updatedAt?.toDate?.(),
+            } as ThemeSubmission;
+          });
+          observer.next(data);
+        }, (err) => observer.error(err));
+
+        return () => unsubscribe();
+      }).pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
+        finalize(() => { this.submissions$ = null; }),
+      );
+    }
+    return this.submissions$;
   }
 
   getMySubmissions(userId: string): Observable<ThemeSubmission[]> {
-    return new Observable((observer) => {
-      const ref = collection(db, 'submissions');
-      const q = query(
-        ref,
-        where('studentId', '==', userId),
-        orderBy('submittedAt', 'desc'),
+    if (!this.mySubmissions$.has(userId)) {
+      const obs = new Observable<ThemeSubmission[]>((observer) => {
+        const q = query(
+          collection(db, 'submissions'),
+          where('studentId', '==', userId),
+          orderBy('submittedAt', 'desc'),
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const data = snapshot.docs.map((docSnap) => {
+            const d: any = docSnap.data();
+            return {
+              ...d,
+              id: docSnap.id,
+              submittedAt: d.submittedAt?.toDate?.() ?? new Date(),
+              updatedAt: d.updatedAt?.toDate?.(),
+            } as ThemeSubmission;
+          });
+          observer.next(data);
+        }, (err) => observer.error(err));
+
+        return () => unsubscribe();
+      }).pipe(
+        shareReplay({ bufferSize: 1, refCount: true }),
+        finalize(() => { this.mySubmissions$.delete(userId); }),
       );
-      return onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map((docSnap) => {
-          const d: any = docSnap.data();
-          return {
-            ...d,
-            id: docSnap.id,
-            submittedAt: d.submittedAt?.toDate?.() ?? new Date(),
-            updatedAt: d.updatedAt?.toDate?.(),
-          } as ThemeSubmission;
-        });
-        observer.next(data);
-      });
-    });
+
+      this.mySubmissions$.set(userId, obs);
+    }
+    return this.mySubmissions$.get(userId)!;
   }
 
   async submitTheme(submission: Omit<ThemeSubmission, 'id'>): Promise<string> {
@@ -113,51 +149,40 @@ export class ThemeService {
     return ref.id;
   }
 
+  async approveSubmission(
+    sub: ThemeSubmission,
+    comment?: string,
+  ): Promise<void> {
+    await updateDoc(doc(db, 'submissions', sub.id!), {
+      status: 'approuvé',
+      adminComment: comment ?? '',
+      updatedAt: Timestamp.fromDate(new Date()),
+    });
 
-/**
- * ✅ APPROUVER — met à jour le statut ET crée la thématique dans /themes
- */
-async approveSubmission(
-  sub: ThemeSubmission,
-  comment?: string,
-): Promise<void> {
-  // 1. Mettre à jour le statut de la soumission
-  await updateDoc(doc(db, 'submissions', sub.id!), {
-    status: 'approuvé',
-    adminComment: comment ?? '',
-    updatedAt: Timestamp.fromDate(new Date()),
-  });
+    const difficulty = sub.difficulty || 'intermédiaire';
 
-  // 2. Créer la thématique dans la collection themes
-  // Utiliser la difficulté choisie par l'étudiant, ou 'intermédiaire' par défaut
-  const difficulty = sub.difficulty || 'intermédiaire';
+    await addDoc(collection(db, 'themes'), {
+      title: sub.proposedTitle,
+      description: sub.description,
+      category: sub.category,
+      tags: [],
+      difficulty,
+      maxParticipants: 30,
+      currentParticipants: 0,
+      status: 'ouvert',
+      workshopDate: null,
+      createdAt: Timestamp.fromDate(new Date()),
+      createdBy: sub.studentId,
+      fromSubmissionId: sub.id,
+      fromStudentName: sub.studentName,
+      fromStudentPromo: sub.promo,
+      objectives: sub.objectives,
+      prerequisites: sub.prerequisites,
+      materialsNeeded: sub.materialsNeeded,
+      estimatedDuration: sub.estimatedDuration,
+    });
+  }
 
-  await addDoc(collection(db, 'themes'), {
-    title: sub.proposedTitle,
-    description: sub.description,
-    category: sub.category,
-    tags: [],
-    difficulty: difficulty, // ← Utiliser la difficulté choisie
-    maxParticipants: 30,
-    currentParticipants: 0,
-    status: 'ouvert',
-    workshopDate: null,
-    createdAt: Timestamp.fromDate(new Date()),
-    createdBy: sub.studentId,
-    // Référence à la soumission d'origine
-    fromSubmissionId: sub.id,
-    fromStudentName: sub.studentName,
-    fromStudentPromo: sub.promo,
-    objectives: sub.objectives,
-    prerequisites: sub.prerequisites,
-    materialsNeeded: sub.materialsNeeded,
-    estimatedDuration: sub.estimatedDuration,
-  });
-}
-
-  /**
-   * Refuser — met juste le statut à refusé
-   */
   async refuseSubmission(id: string, comment?: string): Promise<void> {
     await updateDoc(doc(db, 'submissions', id), {
       status: 'refusé',
@@ -178,11 +203,8 @@ async approveSubmission(
     });
   }
 
-  // ===== GESTION DES PARTICIPANTS DANS UNE THÉMATIQUE =====
+  // ===== GESTION DES PARTICIPANTS =====
 
-  /**
-   * Incrémente le nombre de participants pour une thématique
-   */
   async incrementParticipants(themeId: string): Promise<void> {
     const themeRef = doc(db, 'themes', themeId);
     const themeSnap = await getDoc(themeRef);
@@ -199,9 +221,6 @@ async approveSubmission(
     }
   }
 
-  /**
-   * Décrémente le nombre de participants pour une thématique
-   */
   async decrementParticipants(themeId: string): Promise<void> {
     const themeRef = doc(db, 'themes', themeId);
     const themeSnap = await getDoc(themeRef);
@@ -217,9 +236,6 @@ async approveSubmission(
     }
   }
 
-  /**
-   * Met à jour le statut de la thématique en fonction du nombre de participants
-   */
   async updateThemeStatus(themeId: string): Promise<void> {
     const themeRef = doc(db, 'themes', themeId);
     const themeSnap = await getDoc(themeRef);
@@ -228,14 +244,7 @@ async approveSubmission(
       const data = themeSnap.data();
       const current = data['currentParticipants'] || 0;
       const max = data['maxParticipants'] || 0;
-      let newStatus = 'ouvert';
-
-      if (current >= max) {
-        newStatus = 'complet';
-      } else if (current === 0) {
-        newStatus = 'ouvert';
-      }
-
+      const newStatus = current >= max ? 'complet' : 'ouvert';
       await updateDoc(themeRef, { status: newStatus });
     }
   }

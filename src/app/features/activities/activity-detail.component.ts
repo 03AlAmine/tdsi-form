@@ -77,7 +77,7 @@ export class ActivityDetailComponent implements OnInit, OnDestroy {
   }
 
   getJitsiUrl(activity: Activity): SafeResourceUrl {
-    const url = activity.meetLink ?? `https://meet.jit.si/tdsi-${activity.id}`;
+    const url = activity.meetLink ?? `https://meet.jit.si/campusclubtdsi-${activity.id}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 

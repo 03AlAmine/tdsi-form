@@ -1,7 +1,19 @@
+# Build Angular
 ng build --configuration production
+
+# Aller dans le dossier généré
 cd dist/tdsi-form/browser
+
+# Déployer sur le serveur
 scp -r ./* thementalist@clubtdsi.sn:/var/www/campus
+
+# Connexion au serveur
+ssh thementalist@clubtdsi.sn
+
+# Corriger les permissions
+sudo chown -R www-data:www-data /var/www/campus
+sudo find /var/www/campus -type d -exec chmod 755 {} \;
+sudo find /var/www/campus -type f -exec chmod 644 {} \;
+
+# Recharger Nginx
 sudo systemctl reload nginx
-
-
-Fichier nginx cat /etc/nginx/sites-available/campus
