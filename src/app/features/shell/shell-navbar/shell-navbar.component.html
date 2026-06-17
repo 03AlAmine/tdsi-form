@@ -62,8 +62,18 @@
         <span class="link-text">Workshops</span>
         <span class="link-indicator"></span>
       </a>
+    <!--   <a
+        routerLink="/articles"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="navbar__link"
+      >
+        <span class="link-icon"><i class="fas fa-newspaper"></i></span>
+        <span class="link-text">Articles</span>
+        <span class="link-indicator"></span>
+      </a>
 
-      <!--   <a routerLink="/activites" routerLinkActive="active" class="navbar__link">
+        <a routerLink="/activites" routerLinkActive="active" class="navbar__link">
         <span class="link-icon"><i class="fas fa-calendar-alt"></i></span>
         <span class="link-text">Événements</span>
         <span class="link-indicator"></span>
@@ -256,7 +266,17 @@
           <span>Workshops</span>
         </a>
 
-        <!--   <a
+       <!--   <a
+          routerLink="/articles"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: false }"
+          (click)="mobileMenuOpen.set(false)"
+        >
+          <i class="fas fa-newspaper"></i>
+          <span>Articles</span>
+        </a>
+
+         <a
           routerLink="/activites"
           routerLinkActive="active"
           (click)="mobileMenuOpen.set(false)"

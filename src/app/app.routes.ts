@@ -64,7 +64,29 @@ export const routes: Routes = [
             (m) => m.JitsiMeetComponent,
           ),
       },
-      /*  {
+      /*/ ── Articles (public, sans connexion) ──
+      {
+        path: 'articles',
+        loadComponent: () =>
+          import('./features/articles/articles.component').then(
+            (m) => m.ArticlesComponent,
+          ),
+      },
+      {
+        path: 'articles/soumettre',
+        loadComponent: () =>
+          import('./features/articles/submit-article.component').then(
+            (m) => m.SubmitArticleComponent,
+          ),
+      },
+      {
+        path: 'articles/:id',
+        loadComponent: () =>
+          import('./features/articles/article-detail.component').then(
+            (m) => m.ArticleDetailComponent,
+          ),
+      },
+       {
         path: 'activites',
         loadComponent: () =>
           import('./features/activities/activities.component').then(
@@ -196,6 +218,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/activities/activity-presence/activity-presence.component').then(
             (m) => m.ActivityPresenceComponent,
+          ),
+      },
+      {
+        path: 'articles',
+        loadComponent: () =>
+          import('./features/admin/articles/admin-articles.component').then(
+            (m) => m.AdminArticlesComponent,
           ),
       },*/
       {

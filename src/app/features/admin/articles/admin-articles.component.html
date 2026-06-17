@@ -1,0 +1,149 @@
+<!-- features/admin/articles/admin-articles.component.html -->
+<div class="admin-articles">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">
+        <i class="fas fa-newspaper"></i> Articles
+      </h1>
+      <p class="page-header__subtitle">Modérer les articles soumis par la communauté</p>
+    </div>
+    <div class="pending-badge">
+      <i class="fas fa-clock"></i>
+      <span>En attente</span>
+      <strong>{{ pendingCount() }}</strong>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-scroll">
+      @for (f of filters; track f.value) {
+        <button
+          class="filter-chip"
+          [class.active]="activeFilter() === f.value"
+          (click)="setFilter(f.value)"
+        >
+          <i class="fas {{ f.icon }}"></i>
+          {{ f.label }}
+          <span class="filter-count" [attr.data-status]="f.value">{{ countFor(f.value) }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  @if (filtered().length === 0) {
+    <div class="empty-state">
+      <div class="empty-state__icon"><i class="fas fa-inbox"></i></div>
+      <h3>Aucun article dans cette catégorie</h3>
+    </div>
+  }
+
+  <!-- List -->
+  <div class="articles-list">
+    @for (article of filtered(); track article.id) {
+      <div class="article-item" [attr.data-status]="article.status">
+
+        <!-- Header row -->
+        <div class="article-item__header" (click)="toggleExpand(article.id!)">
+          <div class="article-item__info">
+            <span class="status-pill" [attr.data-status]="article.status">
+              {{ article.status }}
+            </span>
+            <span class="article-category">
+              <i class="fas fa-tag"></i> {{ article.category }}
+            </span>
+          </div>
+
+          <h3 class="article-item__title">{{ article.title }}</h3>
+
+          <div class="article-item__meta">
+            <span><i class="fas fa-user"></i> {{ article.authorName }}</span>
+            <span><i class="fas fa-envelope"></i> {{ article.authorEmail }}</span>
+            <span><i class="fas fa-calendar"></i> {{ formatDate(article.submittedAt) }}</span>
+            @if (article.readTimeMinutes) {
+              <span><i class="fas fa-clock"></i> {{ article.readTimeMinutes }} min</span>
+            }
+          </div>
+
+          <p class="article-item__summary">{{ article.summary }}</p>
+
+          <div class="article-item__toggle">
+            <i class="fas" [class.fa-chevron-down]="expandedId() !== article.id" [class.fa-chevron-up]="expandedId() === article.id"></i>
+            {{ expandedId() === article.id ? 'Réduire' : 'Voir le contenu complet' }}
+          </div>
+        </div>
+
+        <!-- Expanded content -->
+        @if (expandedId() === article.id) {
+          <div class="article-item__content">
+            <pre class="article-preview">{{ article.content }}</pre>
+
+            @if (article.tags.length) {
+              <div class="article-tags">
+                @for (tag of article.tags; track tag) {
+                  <span class="tag">#{{ tag }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Admin actions -->
+        @if (article.status === 'en attente') {
+          <div class="article-item__actions">
+            <div class="comment-group">
+              <label>Commentaire admin (optionnel)</label>
+              <textarea
+                class="comment-input"
+                rows="2"
+                placeholder="Laisser un retour à l'auteur..."
+                [value]="commentText()[article.id!]"
+                (input)="updateComment(article.id!, $any($event.target).value)"
+              ></textarea>
+            </div>
+            <div class="action-buttons">
+              <button
+                class="btn btn--success"
+                [disabled]="processingId() === article.id"
+                (click)="approve(article)"
+              >
+                @if (processingId() === article.id) {
+                  <i class="fas fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fas fa-check"></i>
+                }
+                Approuver & Publier
+              </button>
+              <button
+                class="btn btn--danger"
+                [disabled]="processingId() === article.id"
+                (click)="refuse(article)"
+              >
+                <i class="fas fa-times"></i> Refuser
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (article.status !== 'en attente') {
+          <div class="article-item__actions article-item__actions--done">
+            @if (article.adminComment) {
+              <p class="admin-comment">
+                <i class="fas fa-comment-alt"></i>
+                <strong>Commentaire :</strong> {{ article.adminComment }}
+              </p>
+            }
+            <button class="btn btn--danger btn--sm" (click)="remove(article)">
+              <i class="fas fa-trash"></i> Supprimer
+            </button>
+          </div>
+        }
+
+      </div>
+    }
+  </div>
+
+</div>

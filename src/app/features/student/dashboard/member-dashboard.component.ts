@@ -1,13 +1,15 @@
 // member-dashboard.component.ts
 
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { WorkshopService } from '../../../core/services/workshop.service';
+import { ArticleService } from '../../../core/services/article.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { Article } from '../../../core/model/article.model';
 import { Subscription } from 'rxjs';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../firebase.config';
@@ -18,23 +20,19 @@ import { User } from '../../../core/model/models';
 @Component({
   selector: 'app-member-dashboard',
   standalone: true,
-  imports: [CommonModule, MemberCalendarComponent, FormsModule, MemberNotesComponent],
+  imports: [CommonModule, RouterLink, MemberCalendarComponent, FormsModule, MemberNotesComponent],
   templateUrl: './member-dashboard.component.html',
   styleUrls: ['./member-dashboard.component.scss'],
 })
 export class MemberDashboardComponent implements OnInit, OnDestroy {
-  private authService = inject(AuthService);
-  private themeService = inject(ThemeService);
+  private authService    = inject(AuthService);
+  private themeService   = inject(ThemeService);
   private workshopService = inject(WorkshopService);
-  private router = inject(Router);
-  private toastService = inject(ToastService);
+  private articleService = inject(ArticleService);
+  private router         = inject(Router);
+  private toastService   = inject(ToastService);
 
-  // ============================================================
-  // ÉTATS & SIGNALS
-  // ============================================================
-
-  // Signal réactif : se met à jour si l'auth change après l'init
-  // (ex: refreshCurrentUser() appelé ailleurs, token expiré, etc.)
+  // ── Signals ──────────────────────────────────────────────────────────────
   user = signal<User | null>(this.authService.currentUser);
 
   stats = signal({
@@ -44,44 +42,55 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
     myRegistrations: 0,
   });
 
-  recentThemes = signal<any[]>([]);
+  recentThemes      = signal<any[]>([]);
   upcomingWorkshops = signal<any[]>([]);
-  loading = signal(true);
+  latestArticles    = signal<Article[]>([]);
+  loading           = signal(true);
 
   // Notes
-  notesContent = signal('');
-  userNotes = signal('');
-  notesEditing = signal(false);
-  lastNoteUpdate = signal(new Date());
+  notesContent    = signal('');
+  userNotes       = signal('');
+  notesEditing    = signal(false);
+  lastNoteUpdate  = signal(new Date());
 
   private subscriptions: Subscription[] = [];
 
-  // ============================================================
-  // LIFECYCLE
-  // ============================================================
+  // ── Category icons ────────────────────────────────────────────────────────
+  readonly categoryIcons: Record<string, string> = {
+    'Cybersécurité':          'fa-shield-alt',
+    'Intelligence Artificielle': 'fa-robot',
+    'Développement Web':      'fa-code',
+    'Cloud & DevOps':         'fa-cloud',
+    'Cryptographie':          'fa-lock',
+    'Réseaux':                'fa-network-wired',
+    'Autre':                  'fa-tag',
+  };
 
+  getCategoryIcon(cat: string): string {
+    return this.categoryIcons[cat] ?? 'fa-tag';
+  }
+
+  formatArticleDate(date: Date): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    }).format(date);
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    // Synchronise le signal user avec le stream Observable de AuthService.
-    // Si currentUser$ émet une nouvelle valeur (refresh profil, reconnexion),
-    // user() se met à jour automatiquement dans tout le template.
     this.subscriptions.push(
-      this.authService.currentUser$.subscribe((u) => {
-        this.user.set(u);
-      })
+      this.authService.currentUser$.subscribe((u) => this.user.set(u))
     );
-
     this.loadData();
     this.loadUserNotes();
+    this.loadLatestArticles();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
-  // ============================================================
-  // MÉTHODES PUBLIQUES
-  // ============================================================
-
+  // ── Méthodes publiques ────────────────────────────────────────────────────
   getUserFirstName(): string {
     if (!this.user()?.displayName) return 'Membre';
     return this.user()!.displayName.split(' ')[0];
@@ -98,10 +107,7 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/workshops']);
   }
 
-  // ============================================================
-  // STATISTIQUES & PROGRESSION
-  // ============================================================
-
+  // ── Stats ─────────────────────────────────────────────────────────────────
   participationRate(): number {
     const totalRegistrations = this.stats().myRegistrations;
     const totalWorkshops = this.stats().upcomingWorkshops + this.stats().myRegistrations;
@@ -121,18 +127,22 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
     return new Date();
   }
 
-  // ============================================================
-  // GESTION DES NOTES
-  // ============================================================
+  // ── Articles ──────────────────────────────────────────────────────────────
+  private loadLatestArticles(): void {
+    this.subscriptions.push(
+      this.articleService.getPublishedArticles().subscribe((articles) => {
+        this.latestArticles.set(articles.slice(0, 3));
+      })
+    );
+  }
 
+  // ── Notes ─────────────────────────────────────────────────────────────────
   async loadUserNotes(): Promise<void> {
     const uid = this.user()?.uid;
     if (!uid) return;
-
     try {
-      const docRef = doc(db, 'user_notes', uid);
+      const docRef  = doc(db, 'user_notes', uid);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
         const data = docSnap.data();
         this.userNotes.set(data['content'] || '');
@@ -146,15 +156,9 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
   async saveNotes(): Promise<void> {
     const uid = this.user()?.uid;
     if (!uid) return;
-
     try {
       const docRef = doc(db, 'user_notes', uid);
-      await setDoc(docRef, {
-        content: this.notesContent(),
-        updatedAt: new Date(),
-        userId: uid,
-      });
-
+      await setDoc(docRef, { content: this.notesContent(), updatedAt: new Date(), userId: uid });
       this.userNotes.set(this.notesContent());
       this.lastNoteUpdate.set(new Date());
       this.notesEditing.set(false);
@@ -166,9 +170,7 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleNotesEditor(): void {
-    if (!this.notesEditing()) {
-      this.notesContent.set(this.userNotes());
-    }
+    if (!this.notesEditing()) this.notesContent.set(this.userNotes());
     this.notesEditing.update((v) => !v);
   }
 
@@ -183,10 +185,7 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
     return text.trim().split(/\s+/).length;
   }
 
-  // ============================================================
-  // CHARGEMENT DES DONNÉES
-  // ============================================================
-
+  // ── Chargement des données ────────────────────────────────────────────────
   private loadData(): void {
     this.loading.set(true);
 
@@ -200,34 +199,22 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.workshopService.getWorkshops().subscribe((workshops) => {
         const upcoming = workshops.filter((w) => w.status === 'planifié');
-        this.stats.update((s) => ({
-          ...s,
-          upcomingWorkshops: upcoming.length,
-        }));
+        this.stats.update((s) => ({ ...s, upcomingWorkshops: upcoming.length }));
         this.upcomingWorkshops.set(upcoming.slice(0, 3));
       })
     );
 
     const uid = this.user()?.uid;
-
     if (uid) {
       this.subscriptions.push(
         this.themeService.getMySubmissions(uid).subscribe((subs) => {
           this.stats.update((s) => ({ ...s, mySubmissions: subs.length }));
         })
       );
-
-      // Réutilise le même Observable getWorkshops() déjà en cache (shareReplay) —
-      // pas de second listener Firestore ouvert.
       this.subscriptions.push(
         this.workshopService.getWorkshops().subscribe((workshops) => {
-          const registrations = workshops.filter((w) =>
-            w.registrations?.includes(uid)
-          );
-          this.stats.update((s) => ({
-            ...s,
-            myRegistrations: registrations.length,
-          }));
+          const registrations = workshops.filter((w) => w.registrations?.includes(uid));
+          this.stats.update((s) => ({ ...s, myRegistrations: registrations.length }));
           this.loading.set(false);
         })
       );

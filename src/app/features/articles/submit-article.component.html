@@ -1,0 +1,419 @@
+<!-- features/articles/submit-article.component.html -->
+<div class="app-page submit-page">
+  <div class="container">
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- SUCCESS STATE                                  -->
+    <!-- ══════════════════════════════════════════════ -->
+    @if (submitted()) {
+      <div class="success-wrapper">
+        <div class="success-card">
+          <!-- Animated checkmark -->
+          <div class="success-icon">
+            <div class="success-icon__ring"></div>
+            <div class="success-icon__ring success-icon__ring--2"></div>
+            <i class="fas fa-check"></i>
+          </div>
+
+          <div class="success-badge">
+            <span class="badge-glow"></span>
+            <i class="fas fa-paper-plane"></i>
+            <span>SOUMISSION ENVOYÉE</span>
+          </div>
+
+          <h2 class="success-title">Article soumis avec succès !</h2>
+          <p class="success-desc">
+            Merci pour votre contribution à la communauté TDSI. Notre équipe va
+            examiner votre article et le publiera s'il est approuvé.
+          </p>
+
+          <div class="success-info">
+            <div class="success-info__item">
+              <i class="fas fa-clock"></i>
+              <span>Délai de réponse : 24-48h</span>
+            </div>
+            <div class="success-info__item">
+              <i class="fas fa-envelope"></i>
+              <span>Confirmation envoyée par email</span>
+            </div>
+          </div>
+
+          <div class="success-actions">
+            <a routerLink="/articles" class="btn btn--primary btn--lg">
+              <i class="fas fa-newspaper"></i> Voir les articles
+            </a>
+            <a routerLink="/" class="btn btn--outline">
+              <i class="fas fa-home"></i> Accueil
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- FORM                                           -->
+    <!-- ══════════════════════════════════════════════ -->
+    @if (!submitted()) {
+
+      <!-- Page Hero -->
+      <div class="submit-hero">
+        <div class="submit-hero__badge">
+          <span class="badge-glow"></span>
+          <i class="fas fa-pen-nib"></i>
+          <span>SOUMETTRE UN ARTICLE</span>
+        </div>
+        <h1 class="submit-hero__title">
+          Partagez votre <span class="gradient-text">expertise</span>
+        </h1>
+        <p class="submit-hero__sub">
+          Ouvert à tous · Sans connexion requise · Validation avant publication
+        </p>
+      </div>
+
+      <div class="submit-layout">
+
+        <!-- ── SIDEBAR ──────────────────────────────── -->
+        <aside class="submit-sidebar">
+
+          <!-- Who can submit -->
+          <div class="sidebar-card sidebar-card--featured">
+            <div class="sidebar-card__icon">
+              <i class="fas fa-globe"></i>
+            </div>
+            <h3>Ouvert à tous</h3>
+            <p>
+              Pas besoin d'être connecté. Partagez vos connaissances et
+              notre équipe examine votre article avant publication.
+            </p>
+          </div>
+
+          <!-- Rules -->
+          <div class="sidebar-card">
+            <h4 class="sidebar-card__subtitle">
+              <i class="fas fa-list-check"></i> Bonnes pratiques
+            </h4>
+            <ul class="sidebar-list">
+              <li>
+                <i class="fas fa-check-circle"></i>
+                Titre clair et accrocheur
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                Résumé en 2-3 phrases
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                Contenu structuré (intro, corps, conclusion)
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                Sources citées si nécessaire
+              </li>
+              <li>
+                <i class="fas fa-check-circle"></i>
+                Minimum 100 mots
+              </li>
+            </ul>
+          </div>
+
+          <!-- Popular topics -->
+          <div class="sidebar-card">
+            <h4 class="sidebar-card__subtitle">
+              <i class="fas fa-fire"></i> Sujets populaires
+            </h4>
+            <div class="topic-chips">
+              <span class="topic-chip">Zero Trust</span>
+              <span class="topic-chip">LLM</span>
+              <span class="topic-chip">Pentest</span>
+              <span class="topic-chip">Docker</span>
+              <span class="topic-chip">OSINT</span>
+              <span class="topic-chip">Prompt Injection</span>
+              <span class="topic-chip">RAG</span>
+              <span class="topic-chip">Kubernetes</span>
+            </div>
+          </div>
+
+          <!-- Progress indicator -->
+          <div class="sidebar-card sidebar-card--progress">
+            <h4 class="sidebar-card__subtitle">
+              <i class="fas fa-tasks"></i> Progression
+            </h4>
+            <div class="progress-items">
+              <div class="progress-item" [class.done]="form.authorName && form.authorEmail">
+                <div class="progress-item__dot"></div>
+                <span>Identité</span>
+                @if (form.authorName && form.authorEmail) {
+                  <i class="fas fa-check progress-item__check"></i>
+                }
+              </div>
+              <div class="progress-item" [class.done]="form.title && form.category">
+                <div class="progress-item__dot"></div>
+                <span>Titre & catégorie</span>
+                @if (form.title && form.category) {
+                  <i class="fas fa-check progress-item__check"></i>
+                }
+              </div>
+              <div class="progress-item" [class.done]="form.summary">
+                <div class="progress-item__dot"></div>
+                <span>Résumé</span>
+                @if (form.summary) {
+                  <i class="fas fa-check progress-item__check"></i>
+                }
+              </div>
+              <div class="progress-item" [class.done]="wordCount >= 100">
+                <div class="progress-item__dot"></div>
+                <span>Contenu ({{ wordCount }}/100 mots)</span>
+                @if (wordCount >= 100) {
+                  <i class="fas fa-check progress-item__check"></i>
+                }
+              </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="progress-bar">
+              <div
+                class="progress-bar__fill"
+                [style.width.%]="completionPercent"
+              ></div>
+            </div>
+            <span class="progress-bar__label">{{ completionPercent }}% complété</span>
+          </div>
+
+        </aside>
+
+        <!-- ── MAIN FORM ─────────────────────────────── -->
+        <div class="submit-form">
+
+          <!-- ── SECTION 1 : Identité ── -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <div class="step-badge">1</div>
+              <div>
+                <h2 class="form-card__title">Votre identité</h2>
+                <p class="form-card__sub">Qui écrit cet article ?</p>
+              </div>
+            </div>
+
+            @if (isLoggedIn) {
+              <div class="logged-in-banner">
+                <i class="fas fa-user-check"></i>
+                <span>Vous êtes connecté — informations pré-remplies</span>
+              </div>
+            }
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="authorName">
+                  Nom / Pseudo <span class="required">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  <input
+                    id="authorName"
+                    type="text"
+                    placeholder="Ex : Mamadou Diallo"
+                    [(ngModel)]="form.authorName"
+                    [readonly]="isLoggedIn"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="authorEmail">
+                  Email <span class="required">*</span>
+                  <span class="label-hint">Non affiché publiquement</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fas fa-envelope input-icon"></i>
+                  <input
+                    id="authorEmail"
+                    type="email"
+                    placeholder="votre@email.com"
+                    [(ngModel)]="form.authorEmail"
+                    [readonly]="isLoggedIn"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── SECTION 2 : Article ── -->
+          <div class="form-card">
+            <div class="form-card__header">
+              <div class="step-badge">2</div>
+              <div>
+                <h2 class="form-card__title">L'article</h2>
+                <p class="form-card__sub">Renseignez les informations de votre article</p>
+              </div>
+            </div>
+
+            <!-- Title -->
+            <div class="form-group">
+              <label for="title">
+                Titre <span class="required">*</span>
+              </label>
+              <div class="input-wrapper">
+                <i class="fas fa-heading input-icon"></i>
+                <input
+                  id="title"
+                  type="text"
+                  placeholder="Ex : Les bases du phishing en 2025"
+                  [(ngModel)]="form.title"
+                  maxlength="120"
+                />
+              </div>
+              <div class="input-meta">
+                <span></span>
+                <span class="char-count" [class.char-count--warn]="form.title.length > 100">
+                  {{ form.title.length }}/120
+                </span>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+              <label for="category">
+                Catégorie <span class="required">*</span>
+              </label>
+              <div class="select-wrapper">
+                <i class="fas fa-tag input-icon"></i>
+                <select id="category" [(ngModel)]="form.category">
+                  <option value="" disabled>Choisir une catégorie</option>
+                  @for (cat of categories; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="form-group">
+              <label for="summary">
+                Résumé <span class="required">*</span>
+                <span class="label-hint">Affiché dans la liste des articles</span>
+              </label>
+              <textarea
+                id="summary"
+                class="form-textarea"
+                rows="3"
+                placeholder="Décrivez votre article en 2-3 phrases percutantes..."
+                [(ngModel)]="form.summary"
+                maxlength="300"
+              ></textarea>
+              <div class="input-meta">
+                <span></span>
+                <span class="char-count" [class.char-count--warn]="form.summary.length > 260">
+                  {{ form.summary.length }}/300
+                </span>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="form-group">
+              <label for="content">
+                Contenu <span class="required">*</span>
+                <span class="label-hint markdown-badge">
+                  <i class="fab fa-markdown"></i> Markdown supporté
+                </span>
+              </label>
+
+              <!-- Markdown toolbar (cosmetic) -->
+              <div class="md-toolbar">
+                <button type="button" class="md-btn" title="Titre" (click)="insertMd('# ')"><b>H1</b></button>
+                <button type="button" class="md-btn" title="Sous-titre" (click)="insertMd('## ')"><b>H2</b></button>
+                <button type="button" class="md-btn" title="Gras" (click)="insertMd('**', '**')"><b>B</b></button>
+                <button type="button" class="md-btn" title="Italique" (click)="insertMd('*', '*')"><i>I</i></button>
+                <button type="button" class="md-btn" title="Code" (click)="insertMd('`', '`')"><code>&lt;/&gt;</code></button>
+                <div class="md-toolbar__sep"></div>
+                <span class="md-toolbar__hint">
+                  <i class="fas fa-info-circle"></i>
+                  # Titre · ## Sous-titre · **gras** · *italique* · `code`
+                </span>
+              </div>
+
+              <textarea
+                id="content"
+                #contentArea
+                class="form-textarea content-editor"
+                rows="20"
+                placeholder="# Introduction&#10;Commencez votre article ici...&#10;&#10;## Section 1&#10;...&#10;&#10;## Conclusion&#10;..."
+                [(ngModel)]="form.content"
+              ></textarea>
+
+              <div class="input-meta">
+                <span
+                  class="word-count"
+                  [class.word-count--ok]="wordCount >= 100"
+                  [class.word-count--warn]="wordCount > 0 && wordCount < 100"
+                >
+                  <i class="fas"
+                    [class.fa-check-circle]="wordCount >= 100"
+                    [class.fa-exclamation-circle]="wordCount > 0 && wordCount < 100"
+                    [class.fa-file-alt]="wordCount === 0"
+                  ></i>
+                  {{ wordCount }} mot{{ wordCount !== 1 ? 's' : '' }}
+                  @if (wordCount < 100) { <span class="word-count__min">(minimum 100)</span> }
+                </span>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="form-group">
+              <label for="tags">
+                Tags
+                <span class="label-hint">Séparés par des virgules</span>
+              </label>
+              <div class="input-wrapper">
+                <i class="fas fa-hashtag input-icon"></i>
+                <input
+                  id="tags"
+                  type="text"
+                  placeholder="Ex : phishing, ingénierie sociale, OSINT"
+                  [(ngModel)]="form.tagsRaw"
+                />
+              </div>
+              @if (parsedTags.length > 0) {
+                <div class="tags-preview">
+                  @for (tag of parsedTags; track tag) {
+                    <span class="tag-preview-chip">#{{ tag }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- ── SUBMIT ──────────────────────────────── -->
+          <div class="form-submit">
+            <button
+              class="btn btn--primary btn--lg btn--submit"
+              [disabled]="!isValid || submitting()"
+              (click)="submit()"
+            >
+              @if (submitting()) {
+                <div class="btn-spinner"></div>
+                Envoi en cours...
+              } @else {
+                <i class="fas fa-paper-plane"></i>
+                Soumettre l'article
+              }
+            </button>
+
+            @if (!isValid) {
+              <p class="submit-hint submit-hint--warn">
+                <i class="fas fa-circle-info"></i>
+                Complétez tous les champs requis pour pouvoir soumettre.
+              </p>
+            } @else {
+              <p class="submit-hint">
+                <i class="fas fa-shield-check"></i>
+                Votre article sera visible après validation par un administrateur.
+              </p>
+            }
+          </div>
+
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

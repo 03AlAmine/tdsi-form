@@ -5,14 +5,18 @@ import {
   signal,
   AfterViewInit,
   OnDestroy,
+  OnInit,
   Renderer2,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
+import { ArticleService } from '../../core/services/article.service';
+import { Article } from '../../core/model/article.model';
 import { TechBackgroundComponent } from '../shared/components/tech-background/tech-background.component';
 import { MemberCalendarComponent } from '../calendar/calendar.component';
 import { MemberNotesComponent } from '../notes/notes.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-landing',
@@ -27,11 +31,37 @@ import { MemberNotesComponent } from '../notes/notes.component';
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
 })
-export class LandingComponent implements AfterViewInit, OnDestroy {
+export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
+  private articleService = inject(ArticleService);
   private renderer = inject(Renderer2);
 
   userMenuOpen = signal(false);
+
+  // ── Articles preview ─────────────────────────────────────────────────────
+  latestArticles = signal<Article[]>([]);
+  private articleSub: Subscription | null = null;
+
+  // Category icons map
+  readonly categoryIcons: Record<string, string> = {
+    'Cybersécurité': 'fa-shield-alt',
+    'Intelligence Artificielle': 'fa-robot',
+    'Développement Web': 'fa-code',
+    'Cloud & DevOps': 'fa-cloud',
+    'Cryptographie': 'fa-lock',
+    'Réseaux': 'fa-network-wired',
+    'Autre': 'fa-tag',
+  };
+
+  getCategoryIcon(cat: string): string {
+    return this.categoryIcons[cat] ?? 'fa-tag';
+  }
+
+  formatArticleDate(date: Date): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    }).format(date);
+  }
 
   // ── Guest notebook state (même séquence que MemberNotesComponent) ──
   guestNotebookOpen = false;
@@ -72,24 +102,28 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     this.authService.logout();
   }
 
+  ngOnInit(): void {
+    // Charger les 3 derniers articles publiés
+    this.articleSub = this.articleService.getPublishedArticles().subscribe(articles => {
+      this.latestArticles.set(articles.slice(0, 3));
+    });
+  }
+
   // ── Ouverture du carnet guest avec feuilletage ────────────────────────
   openGuestNotebook(): void {
-    if (this.guestNotebookOpen) return; // déjà ouvert
+    if (this.guestNotebookOpen) return;
 
     this.guestIsFlipping = true;
     this.guestIsOpening = true;
 
-    // t=380ms → cahier ouvert entre dans le DOM
     this.t1 = setTimeout(() => {
       this.guestNotebookOpen = true;
     }, 380);
 
-    // t=680ms → retirer l'overlay de feuilletage
     this.t2 = setTimeout(() => {
       this.guestIsFlipping = false;
     }, 680);
 
-    // t=950ms → retirer le cahier fermé du DOM
     this.t3 = setTimeout(() => {
       this.guestIsOpening = false;
     }, 950);
@@ -113,6 +147,7 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     [this.t1, this.t2, this.t3].forEach((t) => t && clearTimeout(t));
     this.scrollObservers.forEach((obs) => obs.disconnect());
     if (this.mouseMoveHandler) this.mouseMoveHandler();
+    this.articleSub?.unsubscribe();
   }
 
   // ── Animations existantes ─────────────────────────────────────────────
@@ -235,7 +270,7 @@ export class LandingComponent implements AfterViewInit, OnDestroy {
     );
     document
       .querySelectorAll(
-        '.feature-card, .stat-card, .showcase__content, .showcase__image, .resource-card',
+        '.feature-card, .stat-card, .showcase__content, .showcase__image, .resource-card, .article-preview-card',
       )
       .forEach((el) => {
         el.classList.add('reveal');

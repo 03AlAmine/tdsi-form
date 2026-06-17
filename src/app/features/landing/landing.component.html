@@ -296,6 +296,116 @@
   </section>
 
   <!-- ============================================================ -->
+  <!-- SECTION : ARTICLES COMMUNAUTÉ                                -->
+  <!-- ============================================================
+  <section class="articles-preview-section">
+    <div class="container">
+
+      <div class="section-header">
+        <span class="section-badge">
+          <i class="fas fa-newspaper"></i>
+          Articles · Communauté
+        </span>
+        <h2 class="section-title">
+          La connaissance <span class="gradient-text">partagée</span>
+        </h2>
+        <p class="section-subtitle">
+          Des articles rédigés par la communauté sur la cybersécurité, l'IA
+          et les technologies de demain. Ouverts à tous.
+        </p>
+      </div>
+
+      @if (latestArticles().length > 0) {
+        <div class="articles-preview-grid">
+
+          <a
+            [routerLink]="['/articles', latestArticles()[0].id]"
+            class="article-preview-card article-preview-card--featured"
+          >
+            <div class="apc__glow"></div>
+            <div class="apc__top">
+              <span class="apc__category">
+                <i class="fas {{ getCategoryIcon(latestArticles()[0].category) }}"></i>
+                {{ latestArticles()[0].category }}
+              </span>
+              <span class="apc__read-time">
+                <i class="fas fa-clock"></i>
+                {{ latestArticles()[0].readTimeMinutes ?? 1 }} min
+              </span>
+            </div>
+            <h3 class="apc__title">{{ latestArticles()[0].title }}</h3>
+            <p class="apc__summary">{{ latestArticles()[0].summary }}</p>
+            <div class="apc__footer">
+              <div class="apc__author">
+                <div class="apc__avatar">{{ latestArticles()[0].authorName.charAt(0).toUpperCase() }}</div>
+                <span>{{ latestArticles()[0].authorName }}</span>
+              </div>
+              <span class="apc__date">{{ formatArticleDate(latestArticles()[0].publishedAt ?? latestArticles()[0].submittedAt) }}</span>
+            </div>
+            <div class="apc__arrow"><i class="fas fa-arrow-right"></i></div>
+          </a>
+
+          <div class="articles-preview-side">
+            @for (article of latestArticles().slice(1, 3); track article.id) {
+              <a
+                [routerLink]="['/articles', article.id]"
+                class="article-preview-card article-preview-card--sm"
+              >
+                <div class="apc__glow"></div>
+                <div class="apc__top">
+                  <span class="apc__category">
+                    <i class="fas {{ getCategoryIcon(article.category) }}"></i>
+                    {{ article.category }}
+                  </span>
+                  <span class="apc__read-time">
+                    <i class="fas fa-clock"></i>
+                    {{ article.readTimeMinutes ?? 1 }} min
+                  </span>
+                </div>
+                <h3 class="apc__title">{{ article.title }}</h3>
+                <p class="apc__summary">{{ article.summary }}</p>
+                <div class="apc__footer">
+                  <div class="apc__author">
+                    <div class="apc__avatar">{{ article.authorName.charAt(0).toUpperCase() }}</div>
+                    <span>{{ article.authorName }}</span>
+                  </div>
+                  <span class="apc__date">{{ formatArticleDate(article.publishedAt ?? article.submittedAt) }}</span>
+                </div>
+              </a>
+            }
+          </div>
+
+        </div>
+      }
+
+      @if (latestArticles().length === 0) {
+        <div class="articles-empty-cta">
+          <div class="articles-empty-cta__icon">
+            <div class="aec__ring"></div>
+            <i class="fas fa-pen-nib"></i>
+          </div>
+          <h3>Soyez le premier à contribuer</h3>
+          <p>Partagez vos connaissances sur la cybersécurité, l'IA ou tout autre sujet tech.</p>
+        </div>
+      }
+
+      <div class="articles-preview-actions">
+        <a routerLink="/articles" class="btn btn--outline btn--lg">
+          <i class="fas fa-newspaper"></i>
+          Voir tous les articles
+          <i class="fas fa-arrow-right btn-arrow"></i>
+        </a>
+        <a routerLink="/articles/soumettre" class="btn btn--ghost">
+          <i class="fas fa-pen-nib"></i>
+          Écrire un article
+        </a>
+      </div>
+
+    </div>
+  </section>
+  ============================================================ -->
+
+  <!-- ============================================================ -->
   <!-- SECTION : CALENDRIER & ESPACE NOTES                          -->
   <!-- ============================================================ -->
   <section class="workspace-section">

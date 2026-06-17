@@ -1,469 +1,679 @@
-<!-- login.component.html -->
-<div class="auth-wrapper">
+<!-- login.component.html — Club TDSI // Secure Access Terminal -->
+<div class="auth-root">
+  <!-- Background fourni par l'app -->
   <app-tech-background />
 
-  <!-- Animated Background Grid -->
-  <div class="auth-grid"></div>
+  <!-- Glows complémentaires -->
+  <div class="auth-glow auth-glow--tl" aria-hidden="true"></div>
+  <div class="auth-glow auth-glow--br" aria-hidden="true"></div>
 
-  <!-- Floating Tech Orbs -->
-  <div class="auth-orbs">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-    <div class="orb orb-4"></div>
-  </div>
-
-  <!-- Scanning Line Effect -->
-  <div class="scan-line"></div>
-
-  <div class="auth-container" [class.auth-switched]="showRegister">
-    <!-- Login Form -->
-    <div class="auth-form-box auth-form-login">
-      <div class="auth-form-content">
-        <a routerLink="/" class="auth-back-link">
-          <i class="fas fa-arrow-left"></i>
-          <span>Retour à l'accueil</span>
-        </a>
-
-        <div class="auth-header">
-          <app-logo size="md" [glow]="true" [showBadge]="true"></app-logo>
-          <div class="auth-title-wrapper">
-            <h1 class="auth-title">
-              <span class="auth-title-text">Connexion</span>
-              <span class="auth-title-cursor"></span>
-            </h1>
-            <div class="auth-title-line"></div>
-          </div>
-          <p class="auth-subtitle">Accédez à votre espace Club TDSI Campus</p>
+  <!-- ═══════════════ SPLIT ═══════════════ -->
+  <div class="auth-split">
+    <!-- ────────── PANEL GAUCHE : TERMINAL ────────── -->
+    <aside class="panel panel--terminal">
+      <!-- Barre top mobile -->
+      <div class="mobile-bar">
+        <div class="terminal-badge">
+          <span class="badge-pulse"></span>
+          <span>Club TDSI Campus// Secure Shell</span>
         </div>
+        <a routerLink="/" class="back-link back-link--mobile">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M10 12L6 8L10 4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
+        </a>
+      </div>
 
-        @if (error()) {
-          <div class="auth-alert animate-fade-in">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>{{ error() }}</span>
-            <button class="alert-close" (click)="error.set('')">
-              <i class="fas fa-times"></i>
-            </button>
+      <!-- Logo -->
+      <div class="panel-logo">
+        <app-logo size="md" [glow]="true" [showBadge]="true" />
+      </div>
+
+      <!-- Fenêtre terminal -->
+      <div class="terminal-window">
+        <div class="terminal-titlebar">
+          <div class="term-dots">
+            <span class="term-dot term-dot--red"></span>
+            <span class="term-dot term-dot--yellow"></span>
+            <span class="term-dot term-dot--green"></span>
           </div>
-        }
-
-        <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-envelope"></i>
-              <span>Email institutionnel</span>
-            </label>
-            <div class="input-wrapper">
-              <input
-                type="email"
-                formControlName="email"
-                placeholder="prenom.nom@clubtdsi.sn"
-                [class.error]="isInvalid('email')"
-                autocomplete="email"
-              />
-              <div class="input-border"></div>
-              <i class="fas fa-envelope input-icon"></i>
-              <div class="input-shine"></div>
-            </div>
-            @if (isInvalid("email")) {
-              <span class="form-error">
-                <i class="fas fa-circle-exclamation"></i>
-                Veuillez entrer un email valide
-              </span>
-            }
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-lock"></i>
-              <span>Mot de passe</span>
-            </label>
-            <div class="input-wrapper">
-              <input
-                [type]="showPassword() ? 'text' : 'password'"
-                formControlName="password"
-                placeholder="••••••••"
-                [class.error]="isInvalid('password')"
-                autocomplete="current-password"
-              />
-              <div class="input-border"></div>
-              <i
-                class="fas input-icon"
-                [class.fa-eye]="!showPassword()"
-                [class.fa-eye-slash]="showPassword()"
-                (click)="togglePassword()"
-              ></i>
-              <div class="input-shine"></div>
-            </div>
-            @if (isInvalid("password")) {
-              <span class="form-error">
-                <i class="fas fa-circle-exclamation"></i>
-                Mot de passe requis (minimum 6 caractères)
-              </span>
-            }
-          </div>
-
-          <div class="form-options">
-            <label class="checkbox-wrapper">
-              <input type="checkbox" class="checkbox-input" />
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-label">Se souvenir de moi</span>
-            </label>
-            <a routerLink="/forgot-password" class="forgot-link"
-              >Mot de passe oublié ?</a
+          <span class="term-title">ctc_shell — bash — 80×24</span>
+          <span class="term-ctrl">⌥</span>
+        </div>
+        <div class="terminal-body">
+          @for (line of terminalLines; track $index) {
+            <div
+              class="term-line"
+              [class.term-line--cmd]="line.type === 'cmd'"
+              [class.term-line--ok]="line.type === 'ok'"
+              [class.term-line--warn]="line.type === 'warn'"
+              [class.term-line--info]="line.type === 'info'"
+              [class.term-line--visible]="line.visible"
             >
-          </div>
-
-          <button
-            type="submit"
-            class="auth-btn auth-btn--primary"
-            [disabled]="loading()"
-          >
-            @if (loading()) {
-              <div class="btn-loader"></div>
-              <span>Connexion en cours...</span>
-            } @else {
-              <span>Se connecter</span>
-              <i class="fas fa-arrow-right"></i>
-              <div class="btn-shine"></div>
-            }
-          </button>
-        </form>
-
-        <div class="auth-divider">
-          <span>Ou continuer avec</span>
-        </div>
-
-        <div class="social-login">
-          <button class="social-btn social-btn--google">
-            <i class="fab fa-google"></i>
-            <span>Google</span>
-          </button>
-          <button class="social-btn social-btn--github">
-            <i class="fab fa-github"></i>
-            <span>GitHub</span>
-          </button>
+              @if (line.type === "cmd") {
+                <span class="term-prompt">root&#64;clubtdsicampus:~#&nbsp;</span>
+              }
+              <span>{{ line.text }}</span>
+              @if (line.cursor) {
+                <span class="term-cursor">▋</span>
+              }
+            </div>
+          }
         </div>
       </div>
-    </div>
 
-    <!-- Toggle Panel -->
-    <div class="auth-toggle-box">
-      <div class="auth-toggle-inner">
-        <!-- Welcome Back Panel -->
-        <div class="auth-toggle-panel auth-toggle-left">
-          <div class="toggle-bg"></div>
-          <div class="toggle-content">
-            <div class="toggle-badge">
-              <span class="badge-dot"></span>
-              <span>Bienvenue</span>
-            </div>
-            <h2 class="toggle-title">
-              Content de vous<br />revoir sur
-              <span class="gradient-text">TDSI</span>
-            </h2>
-            <p class="toggle-desc">
-              Votre communauté tech — Apprenez, Partagez, Innovez
-            </p>
-
-            <div class="toggle-stats">
-              <div class="stat">
-                <div class="stat-value">12+</div>
-                <div class="stat-label">Thématiques</div>
-              </div>
-              <div class="stat">
-                <div class="stat-value">48+</div>
-                <div class="stat-label">Membres</div>
-              </div>
-              <div class="stat">
-                <div class="stat-value">8+</div>
-                <div class="stat-label">Workshops</div>
-              </div>
-            </div>
-
-            <div class="toggle-action">
-              <p>Pas encore de compte ?</p>
-              <button class="toggle-btn" (click)="switchToRegister()">
-                <span>S'inscrire</span>
-                <i class="fas fa-arrow-right"></i>
-                <div class="btn-glow"></div>
-              </button>
-            </div>
-          </div>
+      <!-- Stats -->
+      <div class="stat-row">
+        <div class="stat-pill">
+          <span class="stat-icon">⬡</span>
+          <span class="stat-val">48+</span>
+          <span class="stat-lbl">membres</span>
         </div>
-
-        <!-- Welcome Panel -->
-        <div class="auth-toggle-panel auth-toggle-right">
-          <div class="toggle-bg"></div>
-          <div class="toggle-content">
-            <div class="toggle-badge">
-              <span class="badge-dot"></span>
-              <span>Nouveau</span>
-            </div>
-            <h2 class="toggle-title">
-              Rejoignez<br />la révolution
-              <span class="gradient-text">tech</span>
-            </h2>
-            <p class="toggle-desc">
-              Devenez membre de la première communauté tech de l'UCAD
-            </p>
-
-            <div class="toggle-features">
-              <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>Workshops exclusifs</span>
-              </div>
-              <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>Projets collaboratifs</span>
-              </div>
-              <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>Certifications reconnues</span>
-              </div>
-              <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>Réseau professionnel</span>
-              </div>
-            </div>
-
-            <div class="toggle-action">
-              <p>Déjà membre ?</p>
-              <button class="toggle-btn" (click)="switchToLogin()">
-                <span>Se connecter</span>
-                <i class="fas fa-arrow-right"></i>
-                <div class="btn-glow"></div>
-              </button>
-            </div>
-          </div>
+        <div class="stat-pill">
+          <span class="stat-icon">◈</span>
+          <span class="stat-val">12+</span>
+          <span class="stat-lbl">thématiques</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-icon">◎</span>
+          <span class="stat-val">8+</span>
+          <span class="stat-lbl">workshops</span>
         </div>
       </div>
-    </div>
 
-    <!-- Register Form -->
-    <div class="auth-form-box auth-form-register">
-      <div class="auth-form-content">
-        <a routerLink="/" class="auth-back-link">
-          <i class="fas fa-arrow-left"></i>
-          <span>Retour à l'accueil</span>
-        </a>
+      <!-- Tags -->
+      <div class="tag-cloud">
+        <span class="tag">AI/ML</span>
+        <span class="tag tag--on">CyberSec</span>
+        <span class="tag">Pentest</span>
+        <span class="tag">DevOps</span>
+        <span class="tag tag--on">CTF</span>
+        <span class="tag">Réseau</span>
+        <span class="tag">Forensics</span>
+        <span class="tag tag--on">OSINT</span>
+      </div>
 
-        <div class="auth-header">
-          <app-logo size="md" [glow]="true" [showBadge]="true"></app-logo>
-          <div class="auth-title-wrapper">
-            <h1 class="auth-title">
-              <span class="auth-title-text">Inscription</span>
-              <span class="auth-title-cursor"></span>
+      <!-- Lien retour desktop -->
+      <a routerLink="/" class="back-link back-link--desktop">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path
+            d="M8.5 10.5L4.5 6.5L8.5 2.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+        <span>Retour à l'accueil</span>
+      </a>
+    </aside>
+
+    <!-- ────────── PANEL DROIT : FORMULAIRES ────────── -->
+    <main class="panel panel--form">
+      <div class="form-viewport">
+        <!-- ══ CONNEXION ══ -->
+        <section class="form-pane" [class.form-pane--active]="!showRegister">
+          <div class="form-header">
+            <div class="eyebrow">
+              <span class="eyebrow-bar"></span>
+              <span class="eyebrow-txt">AUTHENTIFICATION</span>
+            </div>
+            <h1 class="form-title">
+              Accès<br /><span class="accent">membre</span>
             </h1>
-            <div class="auth-title-line"></div>
+            <p class="form-hint">
+              Identifiez-vous pour accéder à votre espace.
+            </p>
           </div>
-          <p class="auth-subtitle">Créez votre compte Club TDSI</p>
-        </div>
 
-        @if (registerError()) {
-          <div class="auth-alert animate-fade-in">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>{{ registerError() }}</span>
-            <button class="alert-close" (click)="registerError.set('')">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        }
-
-        <form
-          [formGroup]="registerForm"
-          (ngSubmit)="registerSubmit()"
-          class="auth-form"
-        >
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">
-                <i class="fas fa-user"></i>
-                <span>Nom complet</span>
-              </label>
-              <div class="input-wrapper">
-                <input
-                  type="text"
-                  formControlName="displayName"
-                  placeholder="Fatou Diallo"
-                  [class.error]="isRegInvalid('displayName')"
-                  autocomplete="name"
+          @if (error()) {
+            <div class="f-alert f-alert--err" role="alert">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <circle
+                  cx="7.5"
+                  cy="7.5"
+                  r="6.5"
+                  stroke="currentColor"
+                  stroke-width="1.4"
                 />
-                <div class="input-border"></div>
-                <i class="fas fa-user input-icon"></i>
-                <div class="input-shine"></div>
-              </div>
-              @if (isRegInvalid("displayName")) {
-                <span class="form-error"
-                  >Nom complet requis (minimum 3 caractères)</span
-                >
-              }
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">
-                <i class="fas fa-graduation-cap"></i>
-                <span>Promotion</span>
-              </label>
-              <div class="input-wrapper">
-                <select
-                  formControlName="promo"
-                  [class.error]="isRegInvalid('promo')"
-                >
-                  <option value="" disabled selected>
-                    Sélectionnez votre promo
-                  </option>
-                  @for (p of promos; track p) {
-                    <option [value]="p">{{ p }}</option>
-                  }
-                </select>
-                <div class="input-border"></div>
-                <i class="fas fa-chevron-down input-icon"></i>
-                <div class="input-shine"></div>
-              </div>
-              @if (isRegInvalid("promo")) {
-                <span class="form-error"
-                  >Veuillez sélectionner une promotion</span
-                >
-              }
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fas fa-envelope"></i>
-              <span>Email institutionnel</span>
-            </label>
-            <div class="input-wrapper">
-              <input
-                type="email"
-                formControlName="email"
-                placeholder="prenom.nom@clubtdsi.sn"
-                [class.error]="isRegInvalid('email')"
-                autocomplete="email"
-              />
-              <div class="input-border"></div>
-              <i class="fas fa-envelope input-icon"></i>
-              <div class="input-shine"></div>
-            </div>
-            @if (isRegInvalid("email")) {
-              <span class="form-error"
-                >Veuillez entrer un email valide (&#64;clubtdsi.sn)</span
-              >
-            }
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">
-                <i class="fas fa-lock"></i>
-                <span>Mot de passe</span>
-              </label>
-              <div class="input-wrapper">
-                <input
-                  [type]="showRegPassword() ? 'text' : 'password'"
-                  formControlName="password"
-                  placeholder="Minimum 6 caractères"
-                  [class.error]="isRegInvalid('password')"
-                  autocomplete="new-password"
+                <path
+                  d="M7.5 4.5V7.5M7.5 10H7.51"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
                 />
-                <div class="input-border"></div>
-                <i
-                  class="fas input-icon"
-                  [class.fa-eye]="!showRegPassword()"
-                  [class.fa-eye-slash]="showRegPassword()"
-                  (click)="toggleRegPassword()"
-                ></i>
-                <div class="input-shine"></div>
-              </div>
-              @if (isRegInvalid("password")) {
-                <span class="form-error">Minimum 6 caractères</span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">
-                <i class="fas fa-check-circle"></i>
-                <span>Confirmer</span>
-              </label>
-              <div class="input-wrapper">
-                <input
-                  [type]="showRegPassword() ? 'text' : 'password'"
-                  formControlName="confirm"
-                  placeholder="Répéter le mot de passe"
-                  [class.error]="passwordMismatch"
-                  autocomplete="new-password"
-                />
-                <div class="input-border"></div>
-                <i
-                  class="fas fa-check input-icon"
-                  [class.text-success]="
-                    !passwordMismatch && registerForm.get('confirm')?.value
-                  "
-                ></i>
-                <div class="input-shine"></div>
-              </div>
-            </div>
-          </div>
-
-          @if (passwordMismatch) {
-            <div class="form-error form-error--block">
-              <i class="fas fa-times-circle"></i>
-              Les mots de passe ne correspondent pas
+              </svg>
+              <span>{{ error() }}</span>
+              <button class="f-alert__close" (click)="error.set('')">×</button>
             </div>
           }
 
-          <div class="terms-checkbox">
-            <label class="checkbox-wrapper">
-              <input type="checkbox" class="checkbox-input" required />
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-label">
-                J'accepte les
-                <a href="#" class="terms-link">conditions d'utilisation</a>
-              </span>
-            </label>
+          <form
+            [formGroup]="form"
+            (ngSubmit)="submit()"
+            class="auth-form"
+            novalidate
+          >
+            <div class="field" [class.field--err]="isInvalid('email')">
+              <label class="field-label" for="l-email">
+                <span class="lbl-num">01</span>Email
+              </label>
+              <div class="field-wrap">
+                <input
+                  id="l-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="prenom.nom@clubtdsi.sn"
+                  autocomplete="email"
+                  class="field-input"
+                />
+                <svg
+                  class="field-ico"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                >
+                  <rect
+                    x="1.5"
+                    y="3"
+                    width="12"
+                    height="9"
+                    rx="1.5"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M1.5 5L7.5 9L13.5 5"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                </svg>
+              </div>
+              @if (isInvalid("email")) {
+                <span class="field-err">Email valide requis</span>
+              }
+            </div>
+
+            <div class="field" [class.field--err]="isInvalid('password')">
+              <label class="field-label" for="l-pwd">
+                <span class="lbl-num">02</span>Mot de passe
+              </label>
+              <div class="field-wrap">
+                <input
+                  id="l-pwd"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  placeholder="••••••••••••"
+                  autocomplete="current-password"
+                  class="field-input"
+                />
+                <button
+                  type="button"
+                  class="field-toggle"
+                  (click)="togglePassword()"
+                >
+                  @if (!showPassword()) {
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <path
+                        d="M7.5 3C4 3 1.5 7.5 1.5 7.5S4 12 7.5 12C11 12 13.5 7.5 13.5 7.5S11 3 7.5 3Z"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                      />
+                      <circle
+                        cx="7.5"
+                        cy="7.5"
+                        r="2"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                      />
+                    </svg>
+                  } @else {
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <path
+                        d="M2 2L13 13M5.5 5.6C5.2 5.9 5 6.6 5 7.5C5 9 6.1 10 7.5 10C8.2 10 8.8 9.7 9.2 9.3M4 4C2.5 5.2 1.5 7.5 1.5 7.5S4 12 7.5 12C9 12 10.3 11.4 11.3 10.5M7 3.1C7.2 3 7.3 3 7.5 3C11 3 13.5 7.5 13.5 7.5C13.5 7.5 12.8 8.7 11.8 9.8"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (isInvalid("password")) {
+                <span class="field-err">Min. 6 caractères requis</span>
+              }
+            </div>
+
+            <div class="form-opts">
+              <label class="chk-field">
+                <input type="checkbox" class="chk-native" />
+                <span class="chk-box"></span>
+                <span class="chk-txt">Se souvenir</span>
+              </label>
+              <a routerLink="/mot-de-passe-oublie" class="forgot-lnk"
+                >Mot de passe oublié ?</a
+              >
+            </div>
+
+            <button type="submit" class="cta-btn" [disabled]="loading()">
+              @if (loading()) {
+                <span class="cta-spinner"></span><span>Connexion...</span>
+              } @else {
+                <span>Se connecter</span>
+                <svg
+                  class="cta-arrow"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                >
+                  <path
+                    d="M3 7.5H12M8.5 4L12 7.5L8.5 11"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+            </button>
+          </form>
+
+          <div class="or-divider"><span>&</span></div>
+
+          <div class="social-row">
+            <div class="social-btn social-btn--static">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 2L2 7V11C2 16.5 5.8 21.7 12 23C18.2 21.7 22 16.5 22 11V7L12 2Z"
+                />
+              </svg>
+              <span>Cybersécurité</span>
+            </div>
+
+            <div class="social-btn social-btn--static">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M8 3V5H16V3H18V5H21V21H3V5H6V3H8ZM5 9V19H19V9H5Z" />
+              </svg>
+              <span>Développement & IA</span>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            class="auth-btn auth-btn--primary"
-            [disabled]="regLoading()"
-          >
-            @if (regLoading()) {
-              <div class="btn-loader"></div>
-              <span>Création du compte...</span>
-            } @else {
-              <span>Créer mon compte</span>
-              <i class="fas fa-arrow-right"></i>
-              <div class="btn-shine"></div>
-            }
-          </button>
+          <p class="switch-hint">
+            Pas encore de compte ?
+            <button
+              type="button"
+              class="switch-btn"
+              (click)="switchToRegister()"
+            >
+              S'inscrire
+            </button>
+          </p>
+        </section>
 
-          <!-- ✅ #7 — Bannière vérification email après inscription -->
+        <!-- ══ INSCRIPTION ══ -->
+        <section class="form-pane" [class.form-pane--active]="showRegister">
+          <div class="form-header">
+            <div class="eyebrow">
+              <span class="eyebrow-bar"></span>
+              <span class="eyebrow-txt">NOUVEAU MEMBRE</span>
+            </div>
+            <h1 class="form-title">
+              Rejoindre<br /><span class="accent">Club TDSI Campus</span>
+            </h1>
+            <p class="form-hint">Créez votre accès à la communauté.</p>
+          </div>
+
+          @if (registerError()) {
+            <div class="f-alert f-alert--err" role="alert">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <circle
+                  cx="7.5"
+                  cy="7.5"
+                  r="6.5"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                />
+                <path
+                  d="M7.5 4.5V7.5M7.5 10H7.51"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <span>{{ registerError() }}</span>
+              <button class="f-alert__close" (click)="registerError.set('')">
+                ×
+              </button>
+            </div>
+          }
+
           @if (emailVerificationSent()) {
-            <div class="verification-banner">
-              <div class="verification-banner__icon">
-                <i class="fas fa-envelope-open-text"></i>
-              </div>
-              <div class="verification-banner__content">
+            <div class="f-alert f-alert--ok" role="status">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <circle
+                  cx="7.5"
+                  cy="7.5"
+                  r="6.5"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                />
+                <path
+                  d="M4.5 7.5L6.5 9.5L10.5 5.5"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <div class="f-alert__body">
                 <strong>Vérifie ta boîte mail !</strong>
-                <p>
-                  Un email de confirmation a été envoyé à
-                  <em>{{ registerForm.value.email }}</em>.
-                  Clique sur le lien pour activer ton compte.
-                </p>
+                <span
+                  >Email envoyé à <em>{{ registerForm.value.email }}</em
+                  >.</span
+                >
                 <button
-                  class="btn btn--ghost btn--sm"
+                  type="button"
+                  class="f-alert__action"
                   (click)="resendVerificationEmail()"
                 >
-                  <i class="fas fa-redo"></i>
-                  Renvoyer l'email
+                  Renvoyer
                 </button>
               </div>
             </div>
           }
-        </form>
+
+          <form
+            [formGroup]="registerForm"
+            (ngSubmit)="registerSubmit()"
+            class="auth-form"
+            novalidate
+          >
+            <div class="field-row">
+              <div
+                class="field"
+                [class.field--err]="isRegInvalid('displayName')"
+              >
+                <label class="field-label" for="r-name">
+                  <span class="lbl-num">01</span>Nom complet
+                </label>
+                <div class="field-wrap">
+                  <input
+                    id="r-name"
+                    type="text"
+                    formControlName="displayName"
+                    placeholder="Fatou Diallo"
+                    autocomplete="name"
+                    class="field-input"
+                  />
+                  <svg
+                    class="field-ico"
+                    width="15"
+                    height="15"
+                    viewBox="0 0 15 15"
+                    fill="none"
+                  >
+                    <circle
+                      cx="7.5"
+                      cy="5"
+                      r="2.5"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                    />
+                    <path
+                      d="M2 13C2 10.5 4.5 8.5 7.5 8.5C10.5 8.5 13 10.5 13 13"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </div>
+                @if (isRegInvalid("displayName")) {
+                  <span class="field-err">Min. 3 caractères</span>
+                }
+              </div>
+
+              <div class="field" [class.field--err]="isRegInvalid('promo')">
+                <label class="field-label" for="r-promo">
+                  <span class="lbl-num">02</span>Promotion
+                </label>
+                <div class="field-wrap field-wrap--sel">
+                  <select
+                    id="r-promo"
+                    formControlName="promo"
+                    class="field-input field-select"
+                  >
+                    <option value="" disabled selected>Promo</option>
+                    @for (p of promos; track p) {
+                      <option [value]="p">{{ p }}</option>
+                    }
+                  </select>
+                  <svg
+                    class="field-chevron"
+                    width="11"
+                    height="11"
+                    viewBox="0 0 11 11"
+                    fill="none"
+                  >
+                    <path
+                      d="M2 4L5.5 7.5L9 4"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </div>
+                @if (isRegInvalid("promo")) {
+                  <span class="field-err">Requis</span>
+                }
+              </div>
+            </div>
+
+            <div class="field" [class.field--err]="isRegInvalid('email')">
+              <label class="field-label" for="r-email">
+                <span class="lbl-num">03</span>Email
+              </label>
+              <div class="field-wrap">
+                <input
+                  id="r-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="prenom.nom@clubtdsi.sn"
+                  autocomplete="email"
+                  class="field-input"
+                />
+                <svg
+                  class="field-ico"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                >
+                  <rect
+                    x="1.5"
+                    y="3"
+                    width="12"
+                    height="9"
+                    rx="1.5"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M1.5 5L7.5 9L13.5 5"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                </svg>
+              </div>
+              @if (isRegInvalid("email")) {
+                <span class="field-err">Email valide requis</span>
+              }
+            </div>
+
+            <div class="field-row">
+              <div class="field" [class.field--err]="isRegInvalid('password')">
+                <label class="field-label" for="r-pwd">
+                  <span class="lbl-num">04</span>Mot de passe
+                </label>
+                <div class="field-wrap">
+                  <input
+                    id="r-pwd"
+                    [type]="showRegPassword() ? 'text' : 'password'"
+                    formControlName="password"
+                    placeholder="Min. 6 car."
+                    autocomplete="new-password"
+                    class="field-input"
+                  />
+                  <button
+                    type="button"
+                    class="field-toggle"
+                    (click)="toggleRegPassword()"
+                  >
+                    @if (!showRegPassword()) {
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                      >
+                        <path
+                          d="M7.5 3C4 3 1.5 7.5 1.5 7.5S4 12 7.5 12C11 12 13.5 7.5 13.5 7.5S11 3 7.5 3Z"
+                          stroke="currentColor"
+                          stroke-width="1.2"
+                        />
+                        <circle
+                          cx="7.5"
+                          cy="7.5"
+                          r="2"
+                          stroke="currentColor"
+                          stroke-width="1.2"
+                        />
+                      </svg>
+                    } @else {
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 2L13 13M4 4C2.5 5.2 1.5 7.5 1.5 7.5S4 12 7.5 12C9 12 10.3 11.4 11.3 10.5M7 3.1C7.2 3 7.3 3 7.5 3C11 3 13.5 7.5 13.5 7.5C13.5 7.5 12.8 8.7 11.8 9.8"
+                          stroke="currentColor"
+                          stroke-width="1.2"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                    }
+                  </button>
+                </div>
+                @if (isRegInvalid("password")) {
+                  <span class="field-err">Min. 6 caractères</span>
+                }
+              </div>
+
+              <div class="field" [class.field--err]="passwordMismatch">
+                <label class="field-label" for="r-confirm">
+                  <span class="lbl-num">05</span>Confirmer
+                </label>
+                <div class="field-wrap">
+                  <input
+                    id="r-confirm"
+                    [type]="showRegPassword() ? 'text' : 'password'"
+                    formControlName="confirm"
+                    placeholder="Répéter"
+                    autocomplete="new-password"
+                    class="field-input"
+                    [class.field-input--ok]="
+                      !passwordMismatch &&
+                      registerForm.get('confirm')?.value &&
+                      registerForm.get('confirm')?.touched
+                    "
+                  />
+                  <svg
+                    class="field-ico"
+                    width="15"
+                    height="15"
+                    viewBox="0 0 15 15"
+                    fill="none"
+                    [class.ico--ok]="
+                      !passwordMismatch &&
+                      registerForm.get('confirm')?.value &&
+                      registerForm.get('confirm')?.touched
+                    "
+                  >
+                    <path
+                      d="M3 7.5L6 10.5L12 4.5"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </div>
+                @if (passwordMismatch) {
+                  <span class="field-err">Mots de passe différents</span>
+                }
+              </div>
+            </div>
+
+            <label class="chk-field">
+              <input type="checkbox" class="chk-native" required />
+              <span class="chk-box"></span>
+              <span class="chk-txt"
+                >J'accepte les
+                <a href="#" class="inline-lnk"
+                  >conditions d'utilisation</a
+                ></span
+              >
+            </label>
+
+            <button type="submit" class="cta-btn" [disabled]="regLoading()">
+              @if (regLoading()) {
+                <span class="cta-spinner"></span><span>Création...</span>
+              } @else {
+                <span>Créer mon compte</span>
+                <svg
+                  class="cta-arrow"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                >
+                  <path
+                    d="M3 7.5H12M8.5 4L12 7.5L8.5 11"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              }
+            </button>
+          </form>
+
+          <p class="switch-hint">
+            Déjà membre ?
+            <button type="button" class="switch-btn" (click)="switchToLogin()">
+              Se connecter
+            </button>
+          </p>
+        </section>
       </div>
-    </div>
+    </main>
   </div>
 </div>

@@ -7,70 +7,601 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-      /* Preloader initial */
-      .initial-preloader {
+      /* ============================================================
+         BOOT SCREEN — Club TDSI // Secure Boot Sequence
+         Reprend le langage visuel de la page de connexion :
+         terminal, dots macOS, badge pulse, grille tech, glows cyan/blue.
+         ============================================================ */
+
+      :root {
+        --bx-cyan: #00d4ff;
+        --bx-cyan-dim: rgba(0, 212, 255, 0.15);
+        --bx-blue: #3b82f6;
+        --bx-purple: #8b5cf6;
+        --bx-green: #28c840;
+        --bx-amber: #febc2e;
+        --bx-bg1: #0a0e27;
+        --bx-bg2: #0f1235;
+        --bx-dark: #070a1c;
+        --bx-border: rgba(0, 212, 255, 0.18);
+        --bx-text: #cbd5e1;
+        --bx-muted: #5b6b8c;
+        --bx-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
+      }
+
+      .boot-screen {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, #0a0e27, #0f1235);
+        inset: 0;
+        z-index: 99999;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 99999;
-        transition: opacity 0.5s ease-out;
+        overflow: hidden;
+        background: radial-gradient(circle at 30% 20%, rgba(0, 212, 255, 0.06), transparent 55%),
+          linear-gradient(150deg, var(--bx-bg1), var(--bx-bg2));
+        transition: opacity 0.6s ease-out;
       }
 
-      .initial-preloader.hide {
+      .boot-screen.hide {
         opacity: 0;
         pointer-events: none;
       }
 
-      .preloader-logo {
-        width: 60px;
-        height: 60px;
-        animation: preloaderPulse 1s ease-in-out infinite;
+      /* ── grille tech ── */
+      .boot-grid {
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+        background-size: 42px 42px;
+        mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
       }
 
-      @keyframes preloaderPulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 1;
+      /* ── glows ambiants ── */
+      .boot-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        pointer-events: none;
+      }
+      .boot-glow--a {
+        width: 600px;
+        height: 600px;
+        top: -200px;
+        left: -150px;
+        background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 70%);
+        animation: bxFloat 14s ease-in-out infinite alternate;
+      }
+      .boot-glow--b {
+        width: 500px;
+        height: 500px;
+        bottom: -180px;
+        right: -120px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.09), transparent 70%);
+        animation: bxFloat 18s ease-in-out infinite alternate-reverse;
+      }
+      @keyframes bxFloat {
+        from { transform: translate(0, 0) scale(1); }
+        to   { transform: translate(30px, 20px) scale(1.07); }
+      }
+
+      /* ── ligne de scan ── */
+      .boot-scan {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--bx-cyan), transparent);
+        opacity: 0.45;
+        filter: blur(0.5px);
+        animation: bxScan 3.6s linear infinite;
+      }
+      @keyframes bxScan {
+        0%   { top: -2%; opacity: 0; }
+        8%   { opacity: 0.55; }
+        50%  { opacity: 0.35; }
+        92%  { opacity: 0.55; }
+        100% { top: 102%; opacity: 0; }
+      }
+
+      /* ── particules ── */
+      .boot-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      /* ── contenu central ── */
+      .boot-content {
+        position: relative;
+        z-index: 2;
+        width: min(380px, 88vw);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.1rem;
+      }
+
+      .boot-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0.7rem;
+        border: 1px solid var(--bx-border);
+        border-radius: 999px;
+        background: rgba(0, 212, 255, 0.05);
+        font-family: var(--bx-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--bx-cyan);
+      }
+      .boot-badge__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--bx-cyan);
+        box-shadow: 0 0 7px var(--bx-cyan);
+        animation: bxPulseDot 1.8s ease-in-out infinite;
+      }
+      .boot-screen.success .boot-badge__dot {
+        background: var(--bx-green);
+        box-shadow: 0 0 8px var(--bx-green);
+        animation: none;
+      }
+      .boot-screen.success .boot-badge {
+        color: var(--bx-green);
+        border-color: rgba(40, 200, 64, 0.3);
+        background: rgba(40, 200, 64, 0.06);
+      }
+      @keyframes bxPulseDot {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.35; }
+      }
+
+      /* ── logo + anneaux ── */
+      .boot-logo {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .boot-logo img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+        filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6));
+        animation: bxLogoPulse 1.8s ease-in-out infinite;
+        z-index: 2;
+      }
+      .boot-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+      }
+      .boot-ring--1 {
+        border-top-color: var(--bx-cyan);
+        border-right-color: var(--bx-blue);
+        animation: bxSpin 1.6s linear infinite;
+        opacity: 0.85;
+      }
+      .boot-ring--2 {
+        inset: 11px;
+        border-bottom-color: var(--bx-purple);
+        border-left-color: var(--bx-cyan);
+        animation: bxSpinRev 1.1s linear infinite;
+        opacity: 0.6;
+      }
+      @keyframes bxSpin { to { transform: rotate(360deg); } }
+      @keyframes bxSpinRev { to { transform: rotate(-360deg); } }
+      @keyframes bxLogoPulse {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.1); }
+      }
+
+      /* ── fenêtre terminal ── */
+      .boot-terminal {
+        width: 100%;
+        border: 1px solid var(--bx-border);
+        border-radius: 10px;
+        background: rgba(8, 12, 30, 0.65);
+        backdrop-filter: blur(16px);
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        transition: border-color 0.4s ease;
+      }
+      .boot-screen.success .boot-terminal {
+        border-color: rgba(40, 200, 64, 0.35);
+      }
+      .boot-terminal__bar {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.7rem;
+        background: var(--bx-dark);
+        border-bottom: 1px solid var(--bx-border);
+      }
+      .boot-dot { width: 8px; height: 8px; border-radius: 50%; }
+      .boot-dot--r { background: #ff5f57; }
+      .boot-dot--y { background: var(--bx-amber); }
+      .boot-dot--g { background: var(--bx-green); }
+      .boot-terminal__title {
+        flex: 1;
+        text-align: center;
+        font-family: var(--bx-mono);
+        font-size: 0.6rem;
+        color: var(--bx-muted);
+        letter-spacing: 0.03em;
+      }
+      .boot-terminal__body {
+        padding: 0.8rem 0.85rem;
+        min-height: 152px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.28rem;
+        font-family: var(--bx-mono);
+        font-size: 0.68rem;
+        line-height: 1.55;
+      }
+      .boot-line {
+        opacity: 0;
+        transform: translateY(3px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .boot-line.show { opacity: 1; transform: translateY(0); }
+      .boot-line .tag { opacity: 0.85; margin-right: 0.4em; }
+      .boot-line--cmd { color: #e2e8f0; }
+      .boot-line--cmd .tag { color: var(--bx-cyan); }
+      .boot-line--ok { color: var(--bx-muted); }
+      .boot-line--ok .tag { color: var(--bx-green); }
+      .boot-line--info { color: var(--bx-muted); }
+      .boot-line--info .tag { color: var(--bx-blue); }
+      .boot-cursor {
+        display: inline-block;
+        width: 6px;
+        height: 12px;
+        background: var(--bx-cyan);
+        margin-left: 2px;
+        vertical-align: -1px;
+        animation: bxBlink 0.9s steps(1) infinite;
+      }
+      @keyframes bxBlink { 50% { opacity: 0; } }
+
+      /* ── statut + progression ── */
+      .boot-status {
+        font-family: var(--bx-mono);
+        font-size: 0.66rem;
+        letter-spacing: 0.04em;
+        color: var(--bx-cyan);
+        text-align: center;
+        min-height: 1em;
+        transition: color 0.3s ease;
+      }
+      .boot-screen.success .boot-status { color: var(--bx-green); }
+
+      .boot-progress-track {
+        width: 100%;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(0, 212, 255, 0.12);
+        overflow: hidden;
+      }
+      .boot-progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--bx-cyan), var(--bx-blue), var(--bx-purple));
+        box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+        transition: width 0.35s ease;
+      }
+      .boot-screen.success .boot-progress-fill {
+        background: linear-gradient(90deg, var(--bx-green), var(--bx-cyan));
+      }
+
+      .boot-meta {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--bx-mono);
+        font-size: 0.6rem;
+        color: var(--bx-muted);
+        letter-spacing: 0.03em;
+      }
+      .boot-meta__pct { color: var(--bx-cyan); }
+      .boot-screen.success .boot-meta__pct { color: var(--bx-green); }
+
+      @media (prefers-reduced-motion: reduce) {
+        .boot-screen * {
+          animation: none !important;
+          transition: opacity 0.25s ease !important;
         }
-        50% {
-          transform: scale(1.1);
-          opacity: 0.7;
-        }
+      }
+
+      @media (max-width: 480px) {
+        .boot-terminal__body { min-height: 130px; font-size: 0.62rem; }
+      }
+
+      /* ── shell de l'app masqué tant que le boot n'est pas terminé ──
+         (empêche la navbar/le shell d'apparaître derrière ou au-dessus
+         de l'écran de boot pendant le chargement) */
+      body.boot-active {
+        overflow: hidden;
+      }
+      app-root {
+        display: block;
+        opacity: 0;
+        transition: opacity 0.55s ease;
+      }
+      body.app-ready app-root {
+        opacity: 1;
       }
     </style>
   </head>
-  <body>
-    <div class="initial-preloader" id="initialPreloader">
-      <div class="preloader-logo">
-        <img
-          src="/assets/images/logo.png"
-          alt="TDSI Club"
-          style="width: 100%; height: 100%"
-        />
+  <body class="boot-active">
+    <div class="boot-screen" id="bootScreen">
+      <canvas class="boot-canvas" id="bootCanvas"></canvas>
+      <div class="boot-grid"></div>
+      <div class="boot-glow boot-glow--a"></div>
+      <div class="boot-glow boot-glow--b"></div>
+      <div class="boot-scan"></div>
+
+      <div class="boot-content">
+        <div class="boot-badge">
+          <span class="boot-badge__dot"></span>
+          <span id="bootBadgeText">Club TDSI Campus // Secure Boot</span>
+        </div>
+
+        <div class="boot-logo">
+          <div class="boot-ring boot-ring--1"></div>
+          <div class="boot-ring boot-ring--2"></div>
+          <img src="/assets/images/logo.png" alt="Campus TDSI Club" />
+        </div>
+
+        <div class="boot-terminal">
+          <div class="boot-terminal__bar">
+            <span class="boot-dot boot-dot--r"></span>
+            <span class="boot-dot boot-dot--y"></span>
+            <span class="boot-dot boot-dot--g"></span>
+            <span class="boot-terminal__title">ClubTdsiCampus_boot — initializing</span>
+          </div>
+          <div class="boot-terminal__body" id="bootLines"></div>
+        </div>
+
+        <div class="boot-status" id="bootStatus">Initialisation de l'environnement sécurisé…</div>
+
+        <div class="boot-progress-track">
+          <div class="boot-progress-fill" id="bootFill"></div>
+        </div>
+        <div class="boot-meta">
+          <span id="bootMetaLeft">ctc_boot.sh</span>
+          <span class="boot-meta__pct" id="bootPct">0%</span>
+        </div>
       </div>
     </div>
+
     <app-root></app-root>
 
     <script>
-      window.addEventListener("load", () => {
-        const preloader = document.getElementById("initialPreloader");
-        if (preloader) {
-          setTimeout(() => {
-            preloader.classList.add("hide");
-            setTimeout(() => {
-              preloader.style.display = "none";
-            }, 500);
-          }, 500);
+      (function () {
+        var screenEl = document.getElementById('bootScreen');
+        var linesEl = document.getElementById('bootLines');
+        var statusEl = document.getElementById('bootStatus');
+        var fillEl = document.getElementById('bootFill');
+        var pctEl = document.getElementById('bootPct');
+        var badgeEl = document.getElementById('bootBadgeText');
+
+        // ── tech-canvas (porté de tech-canvas.component.ts) ──
+        var canvas = document.getElementById('bootCanvas');
+        var ctx = canvas.getContext('2d');
+        var particles = [];
+        var mouseX = 0, mouseY = 0;
+        var rafId = null;
+        var PARTICLE_COUNT = 60;
+
+        function initParticles() {
+          particles = [];
+          for (var i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              radius: Math.random() * 2 + 1,
+              speedX: (Math.random() - 0.5) * 0.8,
+              speedY: (Math.random() - 0.5) * 0.8,
+              alpha: Math.random() * 0.4 + 0.1,
+              baseAlpha: Math.random() * 0.4 + 0.1
+            });
+          }
         }
-      });
+
+        function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          initParticles();
+        }
+
+        function drawCanvas() {
+          ctx.fillStyle = 'rgba(10, 14, 39, 0.08)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          particles.forEach(function (p) {
+            p.x += p.speedX;
+            p.y += p.speedY;
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+
+            var dx = mouseX - p.x;
+            var dy = mouseY - p.y;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            var maxDistance = 150;
+            if (distance < maxDistance) {
+              var force = (maxDistance - distance) / maxDistance;
+              p.alpha = Math.min(p.baseAlpha + force * 0.3, 0.8);
+              var angle = Math.atan2(dy, dx);
+              p.x -= Math.cos(angle) * force * 3;
+              p.y -= Math.sin(angle) * force * 3;
+            } else {
+              p.alpha = p.baseAlpha;
+            }
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 212, 255, ' + p.alpha + ')';
+            ctx.fill();
+          });
+
+          particles.forEach(function (p1, i) {
+            particles.slice(i + 1).forEach(function (p2) {
+              var dx = p1.x - p2.x;
+              var dy = p1.y - p2.y;
+              var distance = Math.sqrt(dx * dx + dy * dy);
+              var maxDistance = 120;
+              if (distance < maxDistance) {
+                var opacity = (1 - distance / maxDistance) * 0.12;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = 'rgba(0, 212, 255, ' + opacity + ')';
+                ctx.stroke();
+              }
+            });
+          });
+
+          rafId = requestAnimationFrame(drawCanvas);
+        }
+
+        function stopCanvas() {
+          if (rafId) cancelAnimationFrame(rafId);
+          window.removeEventListener('resize', resizeCanvas);
+          document.removeEventListener('mousemove', onMouseMove);
+        }
+
+        function onMouseMove(e) {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        }
+
+        resizeCanvas();
+        drawCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        document.addEventListener('mousemove', onMouseMove);
+
+        // ── séquence de boot ──
+        var lines = [
+          { type: 'cmd', text: 'init --secure-boot --module=clubtdsicampus', status: "Initialisation de l'environnement sécurisé…" },
+          { type: 'ok', text: 'Noyau système chargé' },
+          { type: 'ok', text: "Intégrité des fichiers vérifiée", status: "Vérification de l'intégrité…" },
+          { type: 'cmd', text: 'connect --protocol=tls1.3 --cipher=aes256', status: 'Établissement du canal chiffré…' },
+          { type: 'ok', text: 'Canal sécurisé (AES-256) établi' },
+          { type: 'info', text: 'Analyse des menaces… 0 détectée', status: 'Analyse des menaces…' },
+          { type: 'cmd', text: 'mount /espace-membres', status: "Préparation de l'espace membre…" },
+          { type: 'ok', text: 'Accès autorisé' }
+        ];
+
+        var tagFor = { cmd: 'root@clubtdsicampus:~$', ok: '[ OK ]', info: '[ .. ]' };
+
+        var linesDone = false;
+        var windowLoaded = false;
+        var finished = false;
+
+        function renderLine(line, isLast) {
+          var row = document.createElement('div');
+          row.className = 'boot-line boot-line--' + line.type;
+          var tag = document.createElement('span');
+          tag.className = 'tag';
+          tag.textContent = tagFor[line.type];
+          row.appendChild(tag);
+          row.appendChild(document.createTextNode(line.text));
+          if (isLast) {
+            var cur = document.createElement('span');
+            cur.className = 'boot-cursor';
+            row.appendChild(cur);
+          }
+          linesEl.appendChild(row);
+          requestAnimationFrame(function () {
+            row.classList.add('show');
+          });
+          return row;
+        }
+
+        function setProgress(pct, label) {
+          fillEl.style.width = pct + '%';
+          pctEl.textContent = pct + '%';
+          if (label) statusEl.textContent = label;
+        }
+
+        var prevRow = null;
+        function revealNext(index) {
+          if (index >= lines.length) {
+            linesDone = true;
+            if (windowLoaded) {
+              finish();
+            } else {
+              statusEl.textContent = 'En attente de la fin du chargement…';
+            }
+            return;
+          }
+          if (prevRow) {
+            var oldCursor = prevRow.querySelector('.boot-cursor');
+            if (oldCursor) oldCursor.remove();
+          }
+          var line = lines[index];
+          prevRow = renderLine(line, true);
+          var pct = Math.min(90, Math.round(((index + 1) / lines.length) * 90));
+          setProgress(pct, line.status);
+          setTimeout(function () { revealNext(index + 1); }, 300 + Math.random() * 120);
+        }
+
+        function finish() {
+          if (finished) return;
+          finished = true;
+          screenEl.classList.add('success');
+          badgeEl.textContent = 'Club TDSI Campus // Accès autorisé';
+          setProgress(100, 'Accès autorisé — bienvenue');
+          setTimeout(function () {
+            screenEl.classList.add('hide');
+            document.body.classList.add('app-ready');
+            setTimeout(function () {
+              screenEl.style.display = 'none';
+              document.body.classList.remove('boot-active');
+              stopCanvas();
+            }, 650);
+          }, 600);
+        }
+
+        window.addEventListener('load', function () {
+          windowLoaded = true;
+          // léger délai pour laisser Angular peindre l'écran
+          setTimeout(function () {
+            if (linesDone) finish();
+          }, 200);
+        });
+
+        // Filet de sécurité : ne jamais bloquer indéfiniment
+        setTimeout(function () {
+          if (!finished) finish();
+        }, 12000);
+
+        revealNext(0);
+      })();
     </script>
   </body>
 </html>

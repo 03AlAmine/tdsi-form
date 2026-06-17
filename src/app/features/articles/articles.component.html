@@ -1,0 +1,228 @@
+<!-- features/articles/articles.component.html -->
+<div class="app-page">
+
+  <!-- Hero Section -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="page-hero__content">
+        <div class="page-hero__badge">
+          <span class="badge-glow"></span>
+          <i class="fas fa-newspaper"></i>
+          <span> ARTICLES · COMMUNAUTÉ</span>
+        </div>
+        <h1 class="page-hero__title">
+          Articles
+          <span class="gradient-text">TDSI</span>
+        </h1>
+        <p class="page-hero__subtitle">
+          Des articles rédigés par la communauté sur la cybersécurité, l'IA
+          et les technologies de demain. Ouverts à tous.
+        </p>
+        <div class="page-hero__cta">
+          <a routerLink="/articles/soumettre" class="btn btn--primary btn--lg">
+            <i class="fas fa-pen-nib"></i>
+            Écrire un article
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+
+    <!-- Stats Dashboard -->
+    @if (articles().length > 0) {
+      <div class="stats-dashboard">
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-newspaper"></i></div>
+          <div class="stat-card__value">{{ articles().length }}</div>
+          <div class="stat-card__label">Articles publiés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-users"></i></div>
+          <div class="stat-card__value">{{ uniqueAuthorsCount() }}</div>
+          <div class="stat-card__label">Contributeurs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-eye"></i></div>
+          <div class="stat-card__value">{{ totalViews() }}</div>
+          <div class="stat-card__label">Vues totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-card__value">{{ avgReadTime() }}</div>
+          <div class="stat-card__label">Min. de lecture moy.</div>
+        </div>
+      </div>
+    }
+
+    <!-- Toolbar : Search + Filters -->
+    <div class="articles-toolbar">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          placeholder="Rechercher un article, tag, auteur..."
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)"
+        />
+        @if (searchQuery()) {
+          <button class="search-clear" (click)="searchQuery.set('')">
+            <i class="fas fa-times"></i>
+          </button>
+        }
+      </div>
+
+      <div class="category-chips">
+        @for (cat of categories; track cat) {
+          <button
+            class="chip"
+            [class.chip--active]="activeCategory() === cat"
+            (click)="setCategory(cat)"
+          >
+            <i class="fas {{ getCategoryIcon(cat) }}"></i>
+            {{ cat }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
+        </div>
+        <p class="loading-text">Chargement des articles...</p>
+      </div>
+
+    } @else if (filtered().length === 0) {
+
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <i class="fas fa-newspaper"></i>
+        </div>
+        <h3 class="empty-state__title">
+          @if (searchQuery() || activeCategory() !== 'Tous') {
+            Aucun résultat pour cette recherche
+          } @else {
+            Aucun article pour le moment
+          }
+        </h3>
+        <p class="empty-state__description">
+          @if (searchQuery() || activeCategory() !== 'Tous') {
+            Essayez d'autres mots-clés ou parcourez toutes les catégories.
+          } @else {
+            Soyez le premier à partager vos connaissances avec la communauté !
+          }
+        </p>
+        <div class="empty-state__actions">
+          @if (searchQuery() || activeCategory() !== 'Tous') {
+            <button class="btn btn--outline" (click)="resetFilters()">
+              <i class="fas fa-times"></i>
+              Réinitialiser les filtres
+            </button>
+          }
+          <a routerLink="/articles/soumettre" class="btn btn--primary">
+            <i class="fas fa-pen-nib"></i>
+            Écrire un article
+          </a>
+        </div>
+      </div>
+
+    } @else {
+
+      <!-- Articles Grid -->
+      <div class="articles-grid">
+        @for (article of filtered(); track article.id) {
+          <article
+            class="article-card"
+            (click)="goToArticle(article.id!)"
+          >
+            <!-- Top row: category + read time -->
+            <div class="article-card__header">
+              <span class="article-card__category">
+                <i class="fas {{ getCategoryIcon(article.category) }}"></i>
+                {{ article.category }}
+              </span>
+              <span class="article-card__read-time">
+                <i class="fas fa-clock"></i>
+                {{ article.readTimeMinutes ?? 1 }} min
+              </span>
+            </div>
+
+            <!-- Title + Summary -->
+            <h3 class="article-card__title">{{ article.title }}</h3>
+            <p class="article-card__summary">{{ article.summary }}</p>
+
+            <!-- Tags -->
+            @if (article.tags.length) {
+              <div class="article-card__tags">
+                @for (tag of article.tags.slice(0, 3); track tag) {
+                  <span class="tag-chip">#{{ tag }}</span>
+                }
+              </div>
+            }
+
+            <!-- Footer: author + views + CTA -->
+            <div class="article-card__footer">
+              <div class="article-card__author">
+                <div class="author-avatar">
+                  {{ article.authorName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="author-info">
+                  <div class="author-name">{{ article.authorName }}</div>
+                  <div class="author-date">
+                    {{ formatDate(article.publishedAt ?? article.submittedAt) }}
+                  </div>
+                </div>
+              </div>
+              <div class="article-card__right">
+                @if (article.views) {
+                  <span class="article-views">
+                    <i class="fas fa-eye"></i> {{ article.views }}
+                  </span>
+                }
+                <button class="btn btn--sm btn--outline">
+                  Lire <i class="fas fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+
+      <!-- Inspiration Section -->
+      <div class="inspiration-section">
+        <div class="inspiration-card">
+          <div class="inspiration-card__icon">
+            <i class="fas fa-pen-nib"></i>
+          </div>
+          <div class="inspiration-card__content">
+            <h4>Partagez votre expertise</h4>
+            <p>Rédigez un article et contribuez à la communauté TDSI</p>
+          </div>
+          <a routerLink="/articles/soumettre" class="btn btn--primary btn--sm">
+            Écrire <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+        <div class="inspiration-card">
+          <div class="inspiration-card__icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="inspiration-card__content">
+            <h4>Besoin d'inspiration ?</h4>
+            <p>Parcourez les thématiques populaires du club</p>
+          </div>
+          <a routerLink="/thematiques" class="btn btn--outline btn--sm">
+            Explorer <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+    }
+  </div>
+</div>

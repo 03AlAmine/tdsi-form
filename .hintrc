@@ -16,7 +16,8 @@
       {
         "ignore": [
           "backdrop-filter",
-          "min-height: auto"
+          "min-height: auto",
+          "mask-image"
         ]
       }
     ],

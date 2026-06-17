@@ -64,11 +64,83 @@
         </div>
       </div>
 
-      <!-- Dashboard Row: Calendar + Notes (symétriques) -->
+      <!-- Dashboard Row: Calendar + Notes -->
       <div class="dashboard-row">
         <app-member-calendar />
         <app-member-notes />
       </div>
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- ARTICLES COMMUNAUTÉ                                    -->
+      <!-- ══════════════════════════════════════════════════════
+      <div class="dashboard-articles">
+
+        <div class="dashboard-articles__header">
+          <div class="dashboard-articles__title-group">
+            <span class="da-badge">
+              <i class="fas fa-newspaper"></i>
+              Articles
+            </span>
+            <h3 class="dashboard-articles__title">Derniers articles de la communauté</h3>
+          </div>
+          <div class="dashboard-articles__actions">
+            <a routerLink="/articles/soumettre" class="btn btn--outline btn--sm">
+              <i class="fas fa-pen-nib"></i> Écrire
+            </a>
+            <a routerLink="/articles" class="view-all">
+              Voir tout <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+        @if (latestArticles().length > 0) {
+          <div class="da-grid">
+            @for (article of latestArticles(); track article.id) {
+              <a [routerLink]="['/articles', article.id]" class="da-card">
+                <div class="da-card__glow"></div>
+
+                <div class="da-card__top">
+                  <span class="da-card__cat">
+                    <i class="fas {{ getCategoryIcon(article.category) }}"></i>
+                    {{ article.category }}
+                  </span>
+                  <span class="da-card__time">
+                    <i class="fas fa-clock"></i>
+                    {{ article.readTimeMinutes ?? 1 }} min
+                  </span>
+                </div>
+
+                <h4 class="da-card__title">{{ article.title }}</h4>
+                <p class="da-card__summary">{{ article.summary }}</p>
+
+                <div class="da-card__footer">
+                  <div class="da-card__author">
+                    <div class="da-card__avatar">
+                      {{ article.authorName.charAt(0).toUpperCase() }}
+                    </div>
+                    <span>{{ article.authorName }}</span>
+                  </div>
+                  <span class="da-card__date">
+                    {{ formatArticleDate(article.publishedAt ?? article.submittedAt) }}
+                  </span>
+                </div>
+              </a>
+            }
+          </div>
+        }
+
+        @if (latestArticles().length === 0) {
+          <div class="da-empty">
+            <div class="da-empty__icon"><i class="fas fa-pen-nib"></i></div>
+            <p>Aucun article publié pour le moment.</p>
+            <a routerLink="/articles/soumettre" class="btn btn--primary btn--sm">
+              Soyez le premier à contribuer
+            </a>
+          </div>
+        }
+
+      </div>
+       ══════════════════════════════════════════════════════ -->
 
       <!-- Quick Actions -->
       <div class="quick-actions">
@@ -97,6 +169,15 @@
             <div>
               <div class="action-card__title">Voir les workshops</div>
               <div class="action-card__desc">Inscrivez-vous aux sessions</div>
+            </div>
+            <i class="fas fa-arrow-right action-card__arrow"></i>
+          </a>
+
+          <a routerLink="/articles/soumettre" class="action-card">
+            <div class="action-card__icon"><i class="fas fa-newspaper"></i></div>
+            <div>
+              <div class="action-card__title">Écrire un article</div>
+              <div class="action-card__desc">Partagez votre expertise</div>
             </div>
             <i class="fas fa-arrow-right action-card__arrow"></i>
           </a>
