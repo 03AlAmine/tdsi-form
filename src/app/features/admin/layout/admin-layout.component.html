@@ -5,14 +5,18 @@
     <div class="sidebar__header">
       <a routerLink="/admin/dashboard" class="sidebar__brand">
         <div class="sidebar__logo">
-          <img src="/assets/images/logo.png" alt="Club TDSI" />
+          <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
         </div>
         @if (!sidebarCollapsed()) {
           <div class="sidebar__brand-text">TDSI <span>Admin</span></div>
         }
       </a>
       <button class="sidebar__toggle" (click)="toggleSidebar()">
-        <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed()" [class.fa-chevron-right]="sidebarCollapsed()"></i>
+        <i
+          class="fas"
+          [class.fa-chevron-left]="!sidebarCollapsed()"
+          [class.fa-chevron-right]="sidebarCollapsed()"
+        ></i>
       </button>
     </div>
 
@@ -64,7 +68,7 @@
       </button>
 
       <a routerLink="/admin/dashboard" class="mobile-header__brand">
-        <img src="/assets/images/logo.png" alt="Club TDSI" />
+        <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
         <span>TDSI <span>Admin</span></span>
       </a>
 
@@ -80,7 +84,7 @@
       <div class="mobile-menu__container" (click)="$event.stopPropagation()">
         <div class="mobile-menu__header">
           <div class="mobile-menu__brand">
-            <img src="/assets/images/logo.png" alt="Club TDSI" />
+            <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
             <span>TDSI <span>Admin</span></span>
           </div>
           <button class="mobile-menu__close" (click)="closeMobileMenu()">

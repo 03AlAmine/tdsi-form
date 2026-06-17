@@ -4,12 +4,24 @@
 // Bloque :
 //   • F12, Ctrl+Shift+I/J/C/U, Cmd+Opt+I/J (Mac)
 //   • Clic droit (menu contextuel)
-//   • Détection DevTools ouverts (dimension trick)
+//   • Détection DevTools ouverts (dimension trick, desktop uniquement)
 //   • console.* remis à vide (log, warn, info, debug, table, dir…)
 //   • Sélection de texte désactivée (anti-copie source)
 //
 // Actif UNIQUEMENT si environment.production === true.
 // En dev : zéro effet, tout reste normal.
+//
+// CORRECTIF (vs version précédente) :
+//   Le hack "checkTiming" (régex.toString() passée à console.log pour
+//   détecter un panneau DevTools ouvert) a été supprimé. Sur de
+//   nombreux navigateurs/versions, le toString() est évalué même sans
+//   DevTools ouverts → faux positif permanent → le shield s'affichait
+//   et se masquait en boucle, bloquant toute navigation en prod.
+//   La détection par dimension est conservée mais :
+//     - désactivée sur mobile/tactile (la barre d'adresse qui se
+//       replie/déplie fausse complètement le calcul innerHeight)
+//     - exige plusieurs ticks consécutifs avant d'afficher le shield,
+//       pour ignorer les variations transitoires de taille de fenêtre
 //
 // NOTE : pas de implements OnDestroy — les services providedIn:'root'
 // ne sont jamais détruits pendant la vie de l'app. Le cleanup()
@@ -24,6 +36,16 @@ export class DevtoolsProtectionService {
 
   private readonly isProd = environment.production;
 
+  // Seuil en pixels. Volontairement plus large que 160 pour absorber
+  // les barres d'outils / extensions qui réduisent innerWidth.
+  private readonly THRESHOLD = 220;
+
+  // Nombre de ticks consécutifs positifs requis avant d'afficher le
+  // shield. Évite qu'un simple redimensionnement ponctuel déclenche
+  // un faux positif.
+  private readonly REQUIRED_CONSECUTIVE_HITS = 3;
+  private consecutiveHits = 0;
+
   private devtoolsCheckInterval: ReturnType<typeof setInterval> | null = null;
   private boundKeydown!:      (e: KeyboardEvent) => void;
   private boundContextmenu!:  (e: MouseEvent)    => void;
@@ -33,25 +55,26 @@ export class DevtoolsProtectionService {
   init(): void {
     if (!this.isProd) return;
 
-    this.captureConsoleProbe(); // AVANT silenceConsole
     this.silenceConsole();
     this.blockKeyboardShortcuts();
     this.blockContextMenu();
     this.disableTextSelection();
-    this.detectDevTools();
+
+    // La détection par dimension n'a aucun sens fiable sur mobile/
+    // tactile (clavier virtuel, barre d'adresse qui se replie...).
+    // On ne l'active que sur desktop.
+    if (!this.isMobileOrTouch()) {
+      this.detectDevTools();
+    }
   }
 
-  // ── 1. Conserver console.log avant de le silencer ────────────────
-  private captureConsoleProbe(): void {
-    try {
-      (window as any)['__tdsi_probe__'] = Function.prototype.bind.call(
-        console.log,
-        console
-      );
-    } catch { /* silencieux */ }
+  private isMobileOrTouch(): boolean {
+    const coarsePointer = window.matchMedia?.('(pointer: coarse)').matches;
+    const mobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    return Boolean(coarsePointer || mobileUA);
   }
 
-  // ── 2. Silencer console.* ────────────────────────────────────────
+  // ── 1. Silencer console.* ────────────────────────────────────────
   private silenceConsole(): void {
     const noop = (): void => { /* noop prod */ };
     const methods: (keyof Console)[] = [
@@ -66,7 +89,7 @@ export class DevtoolsProtectionService {
     // console.error intentionnellement préservé → Sentry / monitoring
   }
 
-  // ── 3. Bloquer raccourcis clavier ────────────────────────────────
+  // ── 2. Bloquer raccourcis clavier ────────────────────────────────
   private blockKeyboardShortcuts(): void {
     this.boundKeydown = (e: KeyboardEvent): void => {
       const key   = e.key?.toUpperCase();
@@ -96,7 +119,7 @@ export class DevtoolsProtectionService {
     document.addEventListener('keydown', this.boundKeydown, true);
   }
 
-  // ── 4. Bloquer clic droit ────────────────────────────────────────
+  // ── 3. Bloquer clic droit ────────────────────────────────────────
   private blockContextMenu(): void {
     this.boundContextmenu = (e: MouseEvent): void => {
       e.preventDefault();
@@ -105,7 +128,7 @@ export class DevtoolsProtectionService {
     document.addEventListener('contextmenu', this.boundContextmenu, true);
   }
 
-  // ── 5. Désactiver sélection texte ────────────────────────────────
+  // ── 4. Désactiver sélection texte ────────────────────────────────
   private disableTextSelection(): void {
     this.boundSelectstart = (e: Event): void => { e.preventDefault(); };
     document.addEventListener('selectstart', this.boundSelectstart, true);
@@ -126,30 +149,26 @@ export class DevtoolsProtectionService {
     }
   }
 
-  // ── 6. Détecter DevTools ouverts ─────────────────────────────────
+  // ── 5. Détecter DevTools ouverts (desktop uniquement) ────────────
   private detectDevTools(): void {
-    const THRESHOLD = 160;
-
     const checkDimensions = (): boolean =>
-      (window.outerWidth  - window.innerWidth)  > THRESHOLD ||
-      (window.outerHeight - window.innerHeight) > THRESHOLD;
-
-    const checkTiming = (): boolean => {
-      let hit = false;
-      const re = /./;
-      re.toString = () => { hit = true; return ''; };
-      try { (window as any)['__tdsi_probe__'](re); } catch { /* probe absent */ }
-      return hit;
-    };
+      (window.outerWidth  - window.innerWidth)  > this.THRESHOLD ||
+      (window.outerHeight - window.innerHeight) > this.THRESHOLD;
 
     this.devtoolsCheckInterval = setInterval(() => {
-      if (checkDimensions() || checkTiming()) {
-        this.showShield();
+      if (checkDimensions()) {
+        this.consecutiveHits++;
+        if (this.consecutiveHits >= this.REQUIRED_CONSECUTIVE_HITS) {
+          this.showShield();
+        }
+      } else {
+        this.consecutiveHits = 0;
+        this.hideShield();
       }
     }, 1500);
   }
 
-  // ── 7. Overlay de blocage ─────────────────────────────────────────
+  // ── 6. Overlay de blocage ─────────────────────────────────────────
   private showShield(): void {
     if (document.getElementById('tdsi-shield')) return;
 
@@ -180,13 +199,10 @@ export class DevtoolsProtectionService {
         L'inspection est désactivée sur cette plateforme.
       </p>`;
     document.body.appendChild(shield);
+  }
 
-    // Retirer si DevTools refermés
-    const poll = setInterval(() => {
-      const w = window.outerWidth  - window.innerWidth;
-      const h = window.outerHeight - window.innerHeight;
-      if (w <= 160 && h <= 160) { shield.remove(); clearInterval(poll); }
-    }, 800);
+  private hideShield(): void {
+    document.getElementById('tdsi-shield')?.remove();
   }
 
   // ── Cleanup (optionnel — appelable manuellement si besoin) ────────
@@ -200,6 +216,6 @@ export class DevtoolsProtectionService {
     if (this.devtoolsCheckInterval)
       clearInterval(this.devtoolsCheckInterval);
     document.getElementById('tdsi-no-select')?.remove();
-    try { delete (window as any)['__tdsi_probe__']; } catch { /* ok */ }
+    document.getElementById('tdsi-shield')?.remove();
   }
 }
