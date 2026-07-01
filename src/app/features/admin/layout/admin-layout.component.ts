@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-admin-layout',
@@ -16,6 +17,7 @@ import { ConfirmModalComponent } from '../../shared/components/confirm-modal/con
     CommonModule,
     ToastComponent,
     ConfirmModalComponent,
+    NotificationBellComponent,
   ],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss'],

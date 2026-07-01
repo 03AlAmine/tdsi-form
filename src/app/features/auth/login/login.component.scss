@@ -119,7 +119,28 @@
 .panel-logo {
   margin-bottom: -0.25rem;
 }
+/* ── Logo en lien ── */
+.panel-logo {
+  display: inline-block;
+  text-decoration: none;
+  transition: transform var(--transition-fast);
 
+  &--link {
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.02);
+
+      .logo__image {
+        filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
 // ── Barre mobile ──
 .mobile-bar {
   display: none;

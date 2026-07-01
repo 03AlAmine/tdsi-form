@@ -6,7 +6,8 @@ import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
 import { WorkshopService } from '../../../core/services/workshop.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Theme, ThemeCategory, Workshop } from '../../../core/model/models';
+import { AppSettingsService, DEFAULT_SETTINGS } from '../../../core/services/app-settings.service';
+import { Theme, ThemeCategory, Workshop, AppSettings } from '../../../core/model/models';
 import { ThemeDetailComponent } from './theme-detail/theme-detail.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
@@ -36,6 +37,10 @@ export class AdminThemesComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private confirmService = inject(ConfirmService);
   private aiService = inject(AiService);
+  private settingsService = inject(AppSettingsService);
+
+  // ✅ Réglages globaux, utilisés comme valeur par défaut de maxParticipants
+  private appSettings = signal<AppSettings>(DEFAULT_SETTINGS);
 
   @ViewChild(ThemeDetailComponent) themeDetail!: ThemeDetailComponent;
 
@@ -78,10 +83,24 @@ export class AdminThemesComponent implements OnInit, OnDestroy {
       this.allThemes.set(themes.map(theme => ({ ...theme })));
       this.loading.set(false);
     });
+
+    this.settingsService.getSettings().subscribe((settings) => {
+      this.appSettings.set(settings);
+      if (!this.showForm()) {
+        this.resetFormDefaults();
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+  }
+
+  private resetFormDefaults(): void {
+    this.form.reset({
+      difficulty: 'intermédiaire',
+      maxParticipants: this.appSettings().defaultThemeMaxParticipants,
+    });
   }
 
   getStatusClass(status: string): string {
@@ -128,7 +147,7 @@ export class AdminThemesComponent implements OnInit, OnDestroy {
   toggleForm(): void {
     this.showForm.update(v => !v);
     if (!this.showForm()) {
-      this.form.reset({ difficulty: 'intermédiaire', maxParticipants: 20 });
+      this.resetFormDefaults();
       this.aiUsed.set(false);
       this.aiError.set('');
     }
@@ -151,14 +170,14 @@ export class AdminThemesComponent implements OnInit, OnDestroy {
         category: values.category as ThemeCategory,
         tags: values.tags ? values.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         difficulty: values.difficulty as Theme['difficulty'],
-        maxParticipants: values.maxParticipants ?? 20,
+        maxParticipants: values.maxParticipants ?? this.appSettings().defaultThemeMaxParticipants,
         currentParticipants: 0,
         status: 'ouvert',
         createdAt: new Date(),
         createdBy: this.authService.currentUser!.uid,
         linkedWorkshop: undefined,
       });
-      this.form.reset({ difficulty: 'intermédiaire', maxParticipants: 20 });
+      this.resetFormDefaults();
       this.showForm.set(false);
       this.aiUsed.set(false);
       this.toastService.success('Thématique créée avec succès !');

@@ -104,7 +104,7 @@
             </div>
           } @else {
             <div class="fields-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-              @for (field of fields.controls; let i = $index; track field.get('id')?.value) {
+              @for (field of fields.controls; let i = $index; track i) {
                 <div [formGroupName]="i" class="field-card" cdkDrag>
                   <div class="field-card__drag" cdkDragHandle>
                     <i class="fas fa-grip-vertical"></i>

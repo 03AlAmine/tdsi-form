@@ -185,7 +185,7 @@ export class SubmissionsComponent {
 
     this.processingId.set(sub.id!);
     try {
-      await this.themeService.refuseSubmission(sub.id!, comment);
+      await this.themeService.refuseSubmission(sub, comment);
       this.toast.info('Soumission refusée');
     } catch {
       this.toast.error('Erreur lors du refus');

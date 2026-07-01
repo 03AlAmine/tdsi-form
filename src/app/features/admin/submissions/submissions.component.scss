@@ -1,4 +1,6 @@
-// submissions.component.scss - Version Refondue
+// submissions.component.scss
+@use '../../../../styles/shared' as *;
+
 .submissions {
   animation: fadeIn 0.3s ease-out;
 }
@@ -24,7 +26,7 @@
 
     i {
       font-size: 1.25rem;
-      color: var(--tech-cyan);
+      color: #00d4ff;
     }
 
     @media (min-width: 768px) {
@@ -33,7 +35,7 @@
   }
 
   &__subtitle {
-    color: var(--gray-500);
+    color: #64748b;
     font-size: 0.875rem;
   }
 
@@ -44,7 +46,7 @@
       gap: 0.5rem;
       padding: 0.5rem 1rem;
       background: rgba(245, 158, 11, 0.12);
-      border-radius: var(--radius-full);
+      border-radius: 100px;
 
       i {
         font-size: 0.75rem;
@@ -86,11 +88,11 @@
   padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: var(--radius-full);
-  color: var(--gray-400);
+  border-radius: 100px;
+  color: #94a3b8;
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
 
   i {
     font-size: 0.75rem;
@@ -99,11 +101,11 @@
   &:hover {
     background: rgba(0, 212, 255, 0.08);
     border-color: rgba(0, 212, 255, 0.3);
-    color: var(--white);
+    color: #f1f5f9;
   }
 
   &.active {
-    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+    background: linear-gradient(135deg, #00d4ff, #3b82f6);
     border-color: transparent;
     color: white;
     box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
@@ -117,7 +119,7 @@
     height: 20px;
     padding: 0 0.375rem;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-full);
+    border-radius: 100px;
     font-size: 0.625rem;
     font-weight: 600;
   }
@@ -134,17 +136,17 @@
 
 .submission-card {
   position: relative;
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  background: rgba(15, 18, 53, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  border-radius: 14px;
   overflow: hidden;
-  transition: all var(--transition-base);
+  transition: all 0.22s ease;
 
   &:hover {
     transform: translateY(-2px);
     border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 8px 32px rgba(0, 212, 255, 0.12);
   }
 
   &__status-bar {
@@ -160,11 +162,11 @@
   }
 
   &.status-approved &__status-bar {
-    background: linear-gradient(180deg, var(--tech-success), #059669);
+    background: linear-gradient(180deg, #10b981, #059669);
   }
 
   &.status-refused &__status-bar {
-    background: linear-gradient(180deg, var(--tech-danger), #dc2626);
+    background: linear-gradient(180deg, #ef4444, #dc2626);
   }
 
   &__content {
@@ -201,7 +203,7 @@
       display: inline-flex;
       align-items: center;
       gap: 0.375rem;
-      color: var(--gray-500);
+      color: #64748b;
 
       i {
         font-size: 0.6875rem;
@@ -215,7 +217,7 @@
 
   &__description {
     font-size: 0.875rem;
-    color: var(--gray-400);
+    color: #94a3b8;
     line-height: 1.5;
     margin-bottom: 1rem;
   }
@@ -229,7 +231,7 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  border-radius: 100px;
   font-size: 0.6875rem;
   font-weight: 500;
 
@@ -244,12 +246,12 @@
 
   &--success {
     background: rgba(16, 185, 129, 0.12);
-    color: var(--tech-success);
+    color: #10b981;
   }
 
   &--danger {
     background: rgba(239, 68, 68, 0.12);
-    color: var(--tech-danger);
+    color: #ef4444;
   }
 }
 
@@ -261,7 +263,7 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  border-radius: 100px;
   font-size: 0.6875rem;
   font-weight: 500;
 
@@ -271,7 +273,7 @@
 
   &--primary {
     background: rgba(0, 212, 255, 0.12);
-    color: var(--tech-cyan);
+    color: #00d4ff;
   }
 }
 
@@ -291,7 +293,7 @@
   gap: 0.75rem;
   padding: 0.75rem;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
 
   &__icon {
     width: 32px;
@@ -300,11 +302,11 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 212, 255, 0.1);
-    border-radius: var(--radius-md);
+    border-radius: 8px;
 
     i {
       font-size: 0.875rem;
-      color: var(--tech-cyan);
+      color: #00d4ff;
     }
   }
 
@@ -315,7 +317,7 @@
   .detail-label {
     display: block;
     font-size: 0.625rem;
-    color: var(--gray-500);
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.25rem;
@@ -323,7 +325,7 @@
 
   .detail-value {
     font-size: 0.8125rem;
-    color: var(--gray-300);
+    color: #cbd5e1;
     line-height: 1.4;
     margin: 0;
   }
@@ -334,7 +336,7 @@
    ============================================================ */
 .admin-comment {
   padding: 0.75rem 1rem;
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   margin-bottom: 1rem;
 
   &--warning {
@@ -344,12 +346,12 @@
 
   &--success {
     background: rgba(16, 185, 129, 0.08);
-    border-left: 3px solid var(--tech-success);
+    border-left: 3px solid #10b981;
   }
 
   &--danger {
     background: rgba(239, 68, 68, 0.08);
-    border-left: 3px solid var(--tech-danger);
+    border-left: 3px solid #ef4444;
   }
 
   &__header {
@@ -360,7 +362,7 @@
 
     i {
       font-size: 0.75rem;
-      color: var(--tech-cyan);
+      color: #00d4ff;
     }
 
     span {
@@ -371,13 +373,13 @@
     .admin-comment__date {
       margin-left: auto;
       font-size: 0.625rem;
-      color: var(--gray-500);
+      color: #64748b;
     }
   }
 
   &__text {
     font-size: 0.8125rem;
-    color: var(--gray-300);
+    color: #cbd5e1;
     line-height: 1.5;
     margin: 0;
   }
@@ -397,11 +399,11 @@
   padding: 0.5rem 1rem;
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(0, 212, 255, 0.05));
   border: 1px solid rgba(139, 92, 246, 0.25);
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   color: #a78bfa;
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
 
   i {
     font-size: 0.875rem;
@@ -435,9 +437,9 @@
   margin-top: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: rgba(239, 68, 68, 0.08);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 0.75rem;
-  color: var(--tech-danger);
+  color: #ef4444;
 
   i {
     font-size: 0.6875rem;
@@ -449,7 +451,7 @@
   padding: 1rem;
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(0, 212, 255, 0.02));
   border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
 
   &__header {
     display: flex;
@@ -466,9 +468,9 @@
     gap: 0.375rem;
     padding: 0.25rem 0.625rem;
     background: rgba(139, 92, 246, 0.12);
-    border-radius: var(--radius-full);
+    border-radius: 100px;
     font-size: 0.625rem;
-    font-family: var(--font-mono);
+    font-family: monospace;
     color: #a78bfa;
 
     i {
@@ -479,7 +481,7 @@
 
 .ai-resume {
   font-size: 0.875rem;
-  color: var(--gray-300);
+  color: #cbd5e1;
   line-height: 1.6;
   margin-bottom: 1rem;
   padding-left: 0.75rem;
@@ -500,7 +502,7 @@
 
 .points-card {
   padding: 0.75rem;
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
 
   &--strength {
     background: rgba(16, 185, 129, 0.05);
@@ -526,7 +528,7 @@
   }
 
   &--strength &__header {
-    color: var(--tech-success);
+    color: #10b981;
   }
 
   &--weakness &__header {
@@ -539,7 +541,7 @@
 
     li {
       font-size: 0.75rem;
-      color: var(--gray-400);
+      color: #94a3b8;
       margin-bottom: 0.25rem;
 
       &:last-child {
@@ -566,7 +568,7 @@
     .suggestion-hint {
       font-size: 0.625rem;
       font-weight: normal;
-      color: var(--gray-500);
+      color: #64748b;
     }
   }
 }
@@ -576,7 +578,7 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  border-radius: 100px;
   font-size: 0.6875rem;
   font-weight: 600;
 
@@ -586,7 +588,7 @@
 
   &.verdict--fort {
     background: rgba(16, 185, 129, 0.12);
-    color: var(--tech-success);
+    color: #10b981;
   }
 
   &.verdict--moyen {
@@ -596,7 +598,7 @@
 
   &.verdict--faible {
     background: rgba(239, 68, 68, 0.12);
-    color: var(--tech-danger);
+    color: #ef4444;
   }
 }
 
@@ -619,12 +621,12 @@
   gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--gray-300);
+  color: #cbd5e1;
   margin-bottom: 0.5rem;
 
   i {
     font-size: 0.75rem;
-    color: var(--tech-cyan);
+    color: #00d4ff;
   }
 }
 
@@ -636,15 +638,15 @@
     padding: 0.75rem 1rem;
     background: rgba(21, 30, 45, 0.8);
     border: 1px solid rgba(0, 212, 255, 0.15);
-    border-radius: var(--radius-lg);
-    color: var(--white);
+    border-radius: 10px;
+    color: #f1f5f9;
     font-size: 0.8125rem;
     resize: vertical;
-    transition: all var(--transition-fast);
+    transition: all 0.18s;
 
     &:focus {
       outline: none;
-      border-color: var(--tech-cyan);
+      border-color: #00d4ff;
       box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
     }
   }
@@ -655,9 +657,9 @@
     left: 50%;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--tech-cyan), var(--tech-purple));
+    background: linear-gradient(90deg, #00d4ff, #8b5cf6);
     transition: all 0.3s ease;
-    border-radius: var(--radius-full);
+    border-radius: 100px;
     pointer-events: none;
   }
 
@@ -684,9 +686,9 @@
   margin-top: 0.75rem;
   padding: 0.375rem 0.75rem;
   background: rgba(16, 185, 129, 0.08);
-  border-radius: var(--radius-full);
+  border-radius: 100px;
   font-size: 0.6875rem;
-  color: var(--tech-success);
+  color: #10b981;
 
   i {
     font-size: 0.625rem;
@@ -702,11 +704,11 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
   border: none;
 
   i {
@@ -715,7 +717,7 @@
 
   &--success {
     background: rgba(16, 185, 129, 0.1);
-    color: var(--tech-success);
+    color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.2);
 
     &:hover:not(:disabled) {
@@ -726,7 +728,7 @@
 
   &--danger {
     background: rgba(239, 68, 68, 0.1);
-    color: var(--tech-danger);
+    color: #ef4444;
     border: 1px solid rgba(239, 68, 68, 0.2);
 
     &:hover:not(:disabled) {
@@ -756,14 +758,14 @@
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-2xl);
+  background: rgba(15, 18, 53, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  border-radius: 16px;
 
   &__icon {
     font-size: 3rem;
-    color: var(--gray-600);
+    color: #475569;
     margin-bottom: 1rem;
   }
 
@@ -774,7 +776,7 @@
   }
 
   p {
-    color: var(--gray-500);
+    color: #64748b;
     font-size: 0.875rem;
   }
 }
@@ -857,11 +859,11 @@
   padding: 0.5rem 1rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: var(--radius-full);
-  color: var(--gray-400);
+  border-radius: 100px;
+  color: #94a3b8;
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
 
   i {
     font-size: 0.75rem;
@@ -870,11 +872,11 @@
   &:hover {
     background: rgba(0, 212, 255, 0.08);
     border-color: rgba(0, 212, 255, 0.3);
-    color: var(--white);
+    color: #f1f5f9;
   }
 
   &.active {
-    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+    background: linear-gradient(135deg, #00d4ff, #3b82f6);
     border-color: transparent;
     color: white;
     box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
@@ -894,11 +896,11 @@
     height: 22px;
     padding: 0 0.5rem;
     background: rgba(0, 212, 255, 0.15);
-    border-radius: var(--radius-full);
+    border-radius: 100px;
     font-size: 0.6875rem;
     font-weight: 600;
-    color: var(--tech-cyan);
-    transition: all var(--transition-fast);
+    color: #00d4ff;
+    transition: all 0.18s;
 
     // Couleurs spécifiques par type
     &.count-pending {
@@ -908,17 +910,17 @@
 
     &.count-approved {
       background: rgba(16, 185, 129, 0.15);
-      color: var(--tech-success);
+      color: #10b981;
     }
 
     &.count-refused {
       background: rgba(239, 68, 68, 0.15);
-      color: var(--tech-danger);
+      color: #ef4444;
     }
 
     &.count-all {
       background: rgba(0, 212, 255, 0.15);
-      color: var(--tech-cyan);
+      color: #00d4ff;
     }
   }
 }

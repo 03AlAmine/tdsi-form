@@ -14,7 +14,7 @@
           <span class="gradient-text">thématique</span>
         </h1>
         <p class="page-hero__subtitle">
-          Partagez votre expertise et devenez acteur de la communauté TDSI
+          Partagez votre expertise et devenez acteur de la communauté Club TDSI
         </p>
       </div>
     </div>
@@ -29,7 +29,7 @@
             <i class="fas fa-check-circle"></i>
           </div>
           <h3>Soumission envoyée avec succès !</h3>
-          <p>Votre proposition est en cours d'examen par l'équipe TDSI.</p>
+          <p>Votre proposition est en cours d'examen par l'équipe Club TDSI.</p>
           <div class="success-card__details">
             <div class="detail-item">
               <i class="fas fa-clock"></i>
@@ -313,14 +313,24 @@
                     [class.ai-filled]="aiUsed()"
                     [class.error]="isInvalid('description')"
                     rows="4"
+                    maxlength="500"
                     placeholder="Décrivez le sujet, l'approche, ce qui sera traité durant le workshop..."
                   ></textarea>
                   <div class="textarea-border"></div>
                 </div>
+                <span class="char-counter" [class.char-counter--over]="(form.value.description?.length ?? 0) > 500">
+                  {{ form.value.description?.length ?? 0 }} / 500
+                </span>
                 @if (isInvalid("description")) {
-                  <span class="form-error"
-                    >Description requise (minimum 50 caractères)</span
-                  >
+                  @if (form.get('description')?.errors?.['maxlength']) {
+                    <span class="form-error"
+                      >Description trop longue (500 caractères maximum)</span
+                    >
+                  } @else {
+                    <span class="form-error"
+                      >Description requise (minimum 50 caractères)</span
+                    >
+                  }
                 }
               </div>
             </div>

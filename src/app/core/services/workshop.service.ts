@@ -18,10 +18,12 @@ import { Observable, shareReplay, finalize } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Workshop, PresenceRecord } from '../model/models';
 import { ThemeService } from './theme.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorkshopService {
   private themeService = inject(ThemeService);
+  private notificationService = inject(NotificationService);
 
   // ─────────────────────────────────────────────────────────────
   // Cache partagé : un seul listener Firestore actif à la fois.
@@ -69,6 +71,19 @@ export class WorkshopService {
       createdAt: Timestamp.fromDate(workshop.createdAt),
       registrations: workshop.registrations ?? [],
     });
+
+    // ✅ Notification annonce — tous les membres, best-effort.
+    try {
+      await this.notificationService.notifyAllStudents(
+        'workshop_created',
+        'Nouvel atelier programmé 📅',
+        `« ${workshop.themeTitle} » avec ${workshop.presenter}, le ${workshop.date.toLocaleDateString('fr-FR')}.`,
+        '/workshops',
+      );
+    } catch (e) {
+      console.error('Erreur notification workshop_created:', e);
+    }
+
     return ref.id;
   }
 
@@ -107,7 +122,38 @@ export class WorkshopService {
         config.sendConfirmation ?? false;
     }
 
+    // ✅ Notification annulation — on lit l'état avant écriture pour
+    // savoir qui est inscrit et éviter de notifier si le workshop
+    // était déjà annulé (évite les doublons en cas de double-clic).
+    let shouldNotifyCancellation = false;
+    let registrationsSnapshot: string[] = [];
+    let themeTitleSnapshot = '';
+
+    if (data.status === 'annulé') {
+      const before = await getDoc(doc(db, 'workshops', id));
+      const beforeData: any = before.data();
+      if (beforeData && beforeData.status !== 'annulé') {
+        shouldNotifyCancellation = true;
+        registrationsSnapshot = beforeData.registrations ?? [];
+        themeTitleSnapshot = beforeData.themeTitle ?? 'l\'atelier';
+      }
+    }
+
     await updateDoc(doc(db, 'workshops', id), payload);
+
+    if (shouldNotifyCancellation && registrationsSnapshot.length > 0) {
+      try {
+        await this.notificationService.notifyMany(
+          registrationsSnapshot,
+          'workshop_cancelled',
+          'Atelier annulé',
+          `L'atelier « ${themeTitleSnapshot} » a été annulé.`,
+          '/workshops',
+        );
+      } catch (e) {
+        console.error('Erreur notification workshop_cancelled:', e);
+      }
+    }
   }
 
   async deleteWorkshop(id: string): Promise<void> {
@@ -153,8 +199,15 @@ export class WorkshopService {
     const workshopSnap = await getDoc(workshopRef);
     const themeId = workshopSnap.data()?.['themeId'];
     if (themeId) {
-      await this.themeService.incrementParticipants(themeId);
-      await this.themeService.updateThemeStatus(themeId);
+      try {
+        await this.themeService.incrementParticipants(themeId);
+        await this.themeService.updateThemeStatus(themeId);
+      } catch (err) {
+        console.error(
+          'Inscription réussie, mais mise à jour de la thématique échouée:',
+          err,
+        );
+      }
     }
   }
 
@@ -182,17 +235,42 @@ export class WorkshopService {
     const workshop = workshopSnap.data();
     const themeId = workshop['themeId'];
 
+    // ✅ La désinscription elle-même est l'opération critique : elle doit
+    // réussir/échouer indépendamment de la mise à jour du compteur de
+    // participants sur la thématique liée. Si themeId est obsolète
+    // (thème supprimé) ou si la mise à jour du thème échoue pour une
+    // autre raison, l'utilisateur ne doit pas voir une erreur alors que
+    // sa désinscription a bien été enregistrée.
     await updateDoc(workshopRef, { registrations: arrayRemove(userId) });
 
     if (themeId) {
-      await this.themeService.decrementParticipants(themeId);
-      await this.themeService.updateThemeStatus(themeId);
+      try {
+        await this.themeService.decrementParticipants(themeId);
+        await this.themeService.updateThemeStatus(themeId);
+      } catch (err) {
+        console.error(
+          'Désinscription réussie, mais mise à jour de la thématique échouée:',
+          err,
+        );
+      }
     }
   }
 
   async submitPresence(record: Omit<PresenceRecord, 'id'>): Promise<string> {
+    // ✅ Nettoyage défensif : on retire toute valeur undefined/NaN des
+    // réponses du formulaire dynamique avant l'envoi à Firestore, pour
+    // éviter une exception côté addDoc si un champ optionnel n'a jamais
+    // été initialisé correctement par le formulaire.
+    const cleanResponses: Record<string, string | boolean | number> = {};
+    for (const [key, value] of Object.entries(record.responses ?? {})) {
+      if (value === undefined) continue;
+      if (typeof value === 'number' && Number.isNaN(value)) continue;
+      cleanResponses[key] = value;
+    }
+
     const ref = await addDoc(collection(db, 'presences'), {
       ...record,
+      responses: cleanResponses,
       checkedInAt: Timestamp.fromDate(record.checkedInAt),
     });
     return ref.id;

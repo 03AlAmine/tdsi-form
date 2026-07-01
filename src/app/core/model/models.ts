@@ -58,6 +58,10 @@ export interface ThemeSubmission {
   adminComment?: string;
   submittedAt: Date;
   updatedAt?: Date;
+  // ✅ true si l'étudiant a utilisé le bouton "Complétion IA" du
+  // formulaire de proposition pour pré-remplir tout ou partie du
+  // contenu. Purement informatif — affiché en badge côté admin.
+  aiAssisted?: boolean;
 }
 
 export interface Workshop {
@@ -114,4 +118,52 @@ export interface Registration {
   promo: string;
   registeredAt: Date;
   attended: boolean;
+}
+
+// ─────────────────────────────────────────────────────────────
+// AppSettings — réglages globaux du club, configurables par un
+// admin depuis /admin/configuration. Stocké dans un document
+// unique Firestore : settings/app (voir AppSettingsService).
+// Ces valeurs servent de défauts pré-remplis dans les formulaires
+// de création de thématique/atelier — elles n'imposent rien aux
+// documents déjà créés, qui gardent leurs propres valeurs.
+// ─────────────────────────────────────────────────────────────
+export interface AppSettings {
+  // Défauts pour la création d'une thématique
+  defaultThemeMaxParticipants: number;
+
+  // Défauts pour la création d'un atelier (workshop)
+  defaultWorkshopDuration: number; // en minutes
+  defaultWorkshopMaxParticipants: number;
+  defaultWorkshopLocation: 'en ligne' | 'présentiel' | 'hybride';
+  defaultWorkshopTime: string; // format HH:mm
+
+  updatedAt: Date;
+  updatedBy: string; // uid de l'admin ayant fait la dernière modification
+}
+
+// ─────────────────────────────────────────────────────────────
+// Notification — un document par destinataire (recipientUid),
+// créé automatiquement par NotificationService.notify() en
+// réaction aux événements métier (voir ce service pour la liste
+// des déclencheurs). Lue en temps réel par la cloche de
+// notification dans la navbar/sidebar.
+// ─────────────────────────────────────────────────────────────
+export type NotificationType =
+  | 'submission_approved'
+  | 'submission_refused'
+  | 'submission_received'
+  | 'workshop_created'
+  | 'workshop_cancelled'
+  | 'account_suspended';
+
+export interface AppNotification {
+  id?: string;
+  recipientUid: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link?: string; // route Angular à ouvrir au clic (ex: '/espace-membre/mes-soumissions')
+  read: boolean;
+  createdAt: Date;
 }

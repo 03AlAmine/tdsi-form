@@ -1,0 +1,77 @@
+<div class="meet-container">
+  <!-- Bouton flottant pour ouvrir le bloc-notes -->
+  <button class="floating-notes-btn" (click)="toggleNotes()" [class.active]="showNotes">
+    <i class="fas fa-pen-fancy"></i>
+    <span class="btn-label">Notes</span>
+  </button>
+
+  <!-- Panneau du bloc-notes -->
+  @if (showNotes) {
+    <div class="notes-panel" [class.minimized]="isMinimized">
+      <div class="notes-header">
+        <div class="notes-header-left">
+          <i class="fas fa-pen-fancy"></i>
+          <h3>Bloc-notes</h3>
+          <span class="workshop-badge">{{ workshopTitle }}</span>
+        </div>
+        <div class="notes-header-actions">
+          <button (click)="minimizeNotes()" class="header-btn" title="Réduire">
+            <i class="fas fa-window-minimize"></i>
+          </button>
+          <button (click)="toggleNotes()" class="header-btn" title="Fermer">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (!isMinimized) {
+        <div class="notes-body">
+          <textarea
+            [(ngModel)]="meetingNotes"
+            placeholder="✍️ Prenez vos notes pendant le workshop...
+
+• Points clés à retenir
+• Questions à poser aux intervenants
+• Idées à explorer plus tard
+• Liens et ressources partagés"
+            class="notes-textarea"
+            (keydown)="autoSaveNotes()"
+          ></textarea>
+
+          <div class="notes-toolbar">
+            <div class="note-stats">
+              <span><i class="fas fa-keyboard"></i> {{ meetingNotes.length }} caractères</span>
+              <span><i class="fas fa-paragraph"></i> {{ wordCount() }} mots</span>
+            </div>
+            <div class="toolbar-actions">
+              <button (click)="clearNotes()" class="clear-btn" title="Effacer tout">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+              <button (click)="copyNotes()" class="copy-btn" title="Copier">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button (click)="saveNotes()" class="save-notes-btn" [disabled]="isSaving">
+                @if (isSaving) {
+                  <div class="btn-spinner"></div>
+                } @else {
+                  <i class="fas fa-save"></i>
+                }
+                <span>{{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (isMinimized) {
+        <div class="notes-minimized-preview" (click)="restoreNotes()">
+          <i class="fas fa-pen-fancy"></i>
+          <span class="preview-text">{{ meetingNotes.slice(0, 60) || 'Cliquez pour écrire vos notes...' }}</span>
+          <i class="fas fa-chevron-up expand-icon"></i>
+        </div>
+      }
+    </div>
+  }
+
+  <div id="jitsi-container" style="height: 100vh; width: 100%;"></div>
+</div>

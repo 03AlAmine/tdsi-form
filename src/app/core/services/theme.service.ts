@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   collection, addDoc, updateDoc, deleteDoc,
   doc, getDoc, query, where, orderBy, Timestamp, getDocs,
@@ -7,9 +7,13 @@ import {
 import { Observable, shareReplay, finalize } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Theme, ThemeSubmission } from '../model/models';
+import { AppSettingsService } from './app-settings.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
+  private settingsService = inject(AppSettingsService);
+  private notificationService = inject(NotificationService);
 
   // ─────────────────────────────────────────────────────────────
   // Cache partagé — un seul listener Firestore actif pour themes
@@ -146,6 +150,20 @@ export class ThemeService {
       ...submission,
       submittedAt: Timestamp.fromDate(submission.submittedAt),
     });
+
+    // ✅ Notification admins — best-effort : un échec ici ne doit
+    // jamais faire échouer la soumission elle-même.
+    try {
+      await this.notificationService.notifyAllAdmins(
+        'submission_received',
+        'Nouvelle proposition de thématique',
+        `${submission.studentName} a proposé : « ${submission.proposedTitle} »`,
+        '/admin/soumissions',
+      );
+    } catch (e) {
+      console.error('Erreur notification submission_received:', e);
+    }
+
     return ref.id;
   }
 
@@ -160,6 +178,7 @@ export class ThemeService {
     });
 
     const difficulty = sub.difficulty || 'intermédiaire';
+    const settings = await this.settingsService.getSettingsOnce();
 
     await addDoc(collection(db, 'themes'), {
       title: sub.proposedTitle,
@@ -167,7 +186,7 @@ export class ThemeService {
       category: sub.category,
       tags: [],
       difficulty,
-      maxParticipants: 30,
+      maxParticipants: settings.defaultThemeMaxParticipants,
       currentParticipants: 0,
       status: 'ouvert',
       workshopDate: null,
@@ -181,14 +200,50 @@ export class ThemeService {
       materialsNeeded: sub.materialsNeeded,
       estimatedDuration: sub.estimatedDuration,
     });
+
+    // ✅ Notification étudiant — best-effort.
+    try {
+      await this.notificationService.notifyOne(
+        sub.studentId,
+        'submission_approved',
+        'Proposition approuvée 🎉',
+        `Votre proposition « ${sub.proposedTitle} » a été approuvée et est maintenant une thématique ouverte.`,
+        '/espace-membre/mes-soumissions',
+      );
+    } catch (e) {
+      console.error('Erreur notification submission_approved:', e);
+    }
   }
 
-  async refuseSubmission(id: string, comment?: string): Promise<void> {
-    await updateDoc(doc(db, 'submissions', id), {
+  async refuseSubmission(sub: ThemeSubmission, comment?: string): Promise<void> {
+    await updateDoc(doc(db, 'submissions', sub.id!), {
       status: 'refusé',
       adminComment: comment ?? '',
       updatedAt: Timestamp.fromDate(new Date()),
     });
+
+    // ✅ Notification étudiant — best-effort.
+    try {
+      await this.notificationService.notifyOne(
+        sub.studentId,
+        'submission_refused',
+        'Proposition refusée',
+        `Votre proposition « ${sub.proposedTitle} » n'a pas été retenue.${comment ? ' Motif : ' + comment : ''}`,
+        '/espace-membre/mes-soumissions',
+      );
+    } catch (e) {
+      console.error('Erreur notification submission_refused:', e);
+    }
+  }
+
+  // ✅ Annulation d'une proposition. Utilisable par l'étudiant auteur
+  // (tant qu'elle est encore 'en attente' — règle appliquée côté
+  // Firestore rules) ou par un admin (à tout moment). On supprime
+  // simplement le document : une soumission non traitée n'a pas de
+  // trace à conserver ailleurs (contrairement à approve/refuse qui
+  // laissent un historique + créent éventuellement une thématique).
+  async cancelSubmission(id: string): Promise<void> {
+    await deleteDoc(doc(db, 'submissions', id));
   }
 
   async updateSubmissionStatus(

@@ -13,7 +13,8 @@ import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { WorkshopService } from '../../../core/services/workshop.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { Workshop, Theme } from '../../../core/model/models';
+import { AppSettingsService, DEFAULT_SETTINGS } from '../../../core/services/app-settings.service';
+import { Workshop, Theme, AppSettings } from '../../../core/model/models';
 import { WorkshopDetailComponent } from './workshops-detail/workshops-detail.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { QrService } from '../../../core/services/qr.service';
@@ -34,10 +35,17 @@ import { ConfirmService } from '../../../core/services/confirm.service';
 export class AdminWorkshopsComponent implements OnInit, OnDestroy {
   private wsService = inject(WorkshopService);
   private themeService = inject(ThemeService);
+  private settingsService = inject(AppSettingsService);
   private fb = inject(FormBuilder);
   private toastService = inject(ToastService);
   private qrService = inject(QrService);
   private confirmService = inject(ConfirmService);
+
+  // ✅ Réglages globaux (configurables depuis /admin/configuration),
+  // utilisés comme valeurs par défaut du formulaire de création.
+  // DEFAULT_SETTINGS sert de repli tant que le chargement n'est pas
+  // terminé, pour que le formulaire reste toujours utilisable.
+  private appSettings = signal<AppSettings>(DEFAULT_SETTINGS);
 
   @ViewChild(WorkshopDetailComponent) workshopDetail!: WorkshopDetailComponent;
 
@@ -99,21 +107,36 @@ export class AdminWorkshopsComponent implements OnInit, OnDestroy {
     this.themeService.getThemes().subscribe((themes) => {
       this.themes.set(themes);
     });
+
+    // ✅ Réglages globaux : on les applique au formulaire dès qu'ils
+    // arrivent, pour que les valeurs par défaut affichées soient
+    // toujours à jour avec /admin/configuration.
+    this.settingsService.getSettings().subscribe((settings) => {
+      this.appSettings.set(settings);
+      if (!this.showForm()) {
+        this.resetFormDefaults();
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
   }
 
+  private resetFormDefaults(): void {
+    const s = this.appSettings();
+    this.form.reset({
+      duration: s.defaultWorkshopDuration,
+      location: s.defaultWorkshopLocation,
+      time: s.defaultWorkshopTime,
+      maxParticipants: s.defaultWorkshopMaxParticipants,
+    });
+  }
+
   toggleForm(): void {
     this.showForm.update((v) => !v);
     if (!this.showForm()) {
-      this.form.reset({
-        duration: 90,
-        location: 'en ligne',
-        time: '14:00',
-        maxParticipants: 30,
-      });
+      this.resetFormDefaults();
     }
   }
 
@@ -136,15 +159,14 @@ export class AdminWorkshopsComponent implements OnInit, OnDestroy {
     const values = this.form.value;
 
     try {
-      // Créer d'abord le workshop pour obtenir un ID
-      const workshopId = await this.wsService.createWorkshop({
+      await this.wsService.createWorkshop({
         themeId: values.themeId!,
         themeTitle: values.themeTitle!,
         presenter: values.presenter!,
         duration: values.duration!,
         date: new Date(`${values.date}T${values.time}`),
         location: values.location as Workshop['location'],
-        meetLink: '', // Temporairement vide
+        meetLink: values.meetLink || '', // Vide si non renseigné/généré
         status: 'planifié',
         presenceFormEnabled: false,
         registrations: [],
@@ -152,21 +174,7 @@ export class AdminWorkshopsComponent implements OnInit, OnDestroy {
         createdAt: new Date(),
       });
 
-      // Générer le lien Jitsi avec l'ID du workshop
-      const jitsiLink = this.wsService.generateJitsiLink(
-        workshopId,
-        values.themeTitle!,
-      );
-
-      // Mettre à jour le workshop avec le lien Jitsi
-      await this.wsService.updateWorkshop(workshopId, { meetLink: jitsiLink });
-
-      this.form.reset({
-        duration: 90,
-        location: 'en ligne',
-        time: '14:00',
-        maxParticipants: 30,
-      });
+      this.resetFormDefaults();
       this.showForm.set(false);
       this.toastService.success('Workshop créé avec succès');
     } catch {
@@ -238,10 +246,10 @@ export class AdminWorkshopsComponent implements OnInit, OnDestroy {
       presenter: workshop.presenter,
       duration: workshop.duration,
       date: dateStr,
-      time: timeStr || '14:00',
+      time: timeStr || this.appSettings().defaultWorkshopTime,
       location: workshop.location,
       meetLink: workshop.meetLink || '',
-      maxParticipants: workshop.maxParticipants || 30,
+      maxParticipants: workshop.maxParticipants || this.appSettings().defaultWorkshopMaxParticipants,
     });
 
     document.body.style.overflow = 'hidden';
@@ -378,7 +386,9 @@ export class AdminWorkshopsComponent implements OnInit, OnDestroy {
   // admin-workshops.component.ts - Ajouter la méthode
 
 generateJitsiLink(): void {
-  const themeTitle = this.form.get('themeTitle')?.value;
+  const isEditing = !!this.editingWorkshop();
+  const activeForm = isEditing ? this.editForm : this.form;
+  const themeTitle = activeForm.get('themeTitle')?.value;
   const workshopId = this.editingWorkshop()?.id;
 
   if (!themeTitle) {
@@ -390,11 +400,7 @@ generateJitsiLink(): void {
   const tempId = workshopId || Date.now().toString();
   const jitsiLink = this.wsService.generateJitsiLink(tempId, themeTitle);
 
-  if (this.showForm()) {
-    this.form.patchValue({ meetLink: jitsiLink });
-  } else if (this.editingWorkshop()) {
-    this.editForm.patchValue({ meetLink: jitsiLink });
-  }
+  activeForm.patchValue({ meetLink: jitsiLink });
 
   this.toastService.success('Lien Jitsi généré');
 }

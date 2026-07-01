@@ -1,4 +1,3 @@
-
 /* ============================================================
    WRAPPER
    ============================================================ */
@@ -397,6 +396,19 @@
   .form-textarea:focus ~ .textarea-border {
     width: 100%;
     left: 0;
+  }
+}
+
+.char-counter {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  text-align: right;
+  color: var(--gray-400, rgba(255, 255, 255, 0.4));
+
+  &--over {
+    color: var(--tech-danger);
+    font-weight: 600;
   }
 }
 

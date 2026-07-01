@@ -31,7 +31,11 @@
             <div>
               <span class="meta-label">Difficulté</span>
               <span class="meta-value">
-                {{ getDifficultyInfo(theme.difficulty).icon }}
+                <i
+                  class="fas"
+                  [class]="getDifficultyInfo(theme.difficulty).icon"
+                  [style.color]="getDifficultyInfo(theme.difficulty).color"
+                ></i>
                 {{ theme.difficulty }}
               </span>
             </div>

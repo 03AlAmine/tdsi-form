@@ -156,40 +156,52 @@
 
           <div class="form-group">
             <label class="form-label">
-              <i class="fas fa-video"></i>
-              Lien Meet/Zoom
+              <i class="fas fa-users"></i>
+              Max participants
             </label>
             <div class="input-wrapper">
               <input
-                type="url"
-                formControlName="meetLink"
+                type="number"
+                formControlName="maxParticipants"
                 class="form-input"
-                placeholder="https://meet.google.com/..."
+                min="1"
+                max="1000"
               />
               <div class="input-border"></div>
             </div>
-            <span class="form-hint"
-              >Optionnel - pour les sessions en ligne</span
-            >
+            <span class="form-hint">Optionnel - limite de places</span>
           </div>
         </div>
 
         <div class="form-group">
           <label class="form-label">
-            <i class="fas fa-users"></i>
-            Max participants
+            <i class="fas fa-video"></i>
+            Lien Meet/Zoom
           </label>
           <div class="input-wrapper">
             <input
-              type="number"
-              formControlName="maxParticipants"
+              type="url"
+              formControlName="meetLink"
               class="form-input"
-              min="1"
-              max="1000"
+              placeholder="https://meet.google.com/... (laisser vide si Jitsi)"
             />
             <div class="input-border"></div>
           </div>
-          <span class="form-hint">Optionnel - limite de places</span>
+          <span class="form-hint">
+            Laissez vide et choisissez une option ci-dessous : générez un lien
+            Jitsi automatiquement, ou collez votre propre lien Google
+            Meet/Zoom une fois la session créée.
+          </span>
+          <div class="meet-option-buttons">
+            <button
+              type="button"
+              class="btn btn--outline btn--sm"
+              (click)="generateJitsiLink()"
+            >
+              <i class="fas fa-magic"></i>
+              Générer un lien Jitsi
+            </button>
+          </div>
         </div>
 
         <div class="form-actions">
@@ -568,59 +580,54 @@
                 </div>
               </div>
 
-              <!-- admin-workshops.component.html - Ajouter dans le formulaire d'édition -->
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">
-                    <i class="fas fa-video"></i>
-                    Lien Meet/Zoom
-                  </label>
-                  <div class="input-wrapper">
-                    <input
-                      type="url"
-                      formControlName="meetLink"
-                      class="form-input"
-                      placeholder="https://meet.jit.si/campusclubtdsi-..."
-                    />
-                    <div class="input-border"></div>
-                  </div>
-                  <span class="form-hint"
-                    >Optionnel - laissez vide pour générer automatiquement</span
-                  >
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-users"></i>
+                  Max participants
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="number"
+                    formControlName="maxParticipants"
+                    class="form-input"
+                    min="1"
+                    max="1000"
+                  />
+                  <div class="input-border"></div>
                 </div>
-
-                <!-- ✅ Bouton pour générer Jitsi -->
-                <div class="form-group">
-                  <label class="form-label">&nbsp;</label>
-                  <button
-                    type="button"
-                    class="btn btn--outline btn--sm"
-                    (click)="generateJitsiLink()"
-                  >
-                    <i class="fas fa-magic"></i>
-                    Générer un lien Jitsi
-                  </button>
-                </div>
+                <span class="form-hint">Optionnel - limite de places</span>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">
-                <i class="fas fa-users"></i>
-                Max participants
+                <i class="fas fa-video"></i>
+                Lien Meet/Zoom
               </label>
               <div class="input-wrapper">
                 <input
-                  type="number"
-                  formControlName="maxParticipants"
+                  type="url"
+                  formControlName="meetLink"
                   class="form-input"
-                  min="1"
-                  max="1000"
+                  placeholder="https://meet.google.com/... (laisser vide si Jitsi)"
                 />
                 <div class="input-border"></div>
               </div>
-              <span class="form-hint">Optionnel - limite de places</span>
+              <span class="form-hint"
+                >Laissez vide et choisissez : générez un lien Jitsi
+                automatiquement, ou collez votre propre lien Google
+                Meet/Zoom.</span
+              >
+              <div class="meet-option-buttons">
+                <button
+                  type="button"
+                  class="btn btn--outline btn--sm"
+                  (click)="generateJitsiLink()"
+                >
+                  <i class="fas fa-magic"></i>
+                  Générer un lien Jitsi
+                </button>
+              </div>
             </div>
           </div>
 

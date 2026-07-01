@@ -7,7 +7,7 @@ import {
   FormBuilder, ReactiveFormsModule, Validators,
   AbstractControl, ValidationErrors,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { LogoComponent } from '../../shared/components/logo/logo.component';
@@ -40,6 +40,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   private fb       = inject(FormBuilder);
   private auth     = inject(AuthService);
   private router   = inject(Router);
+  private route    = inject(ActivatedRoute);
   private location = inject(Location);
 
   private termTimers: ReturnType<typeof setTimeout>[] = [];
@@ -107,6 +108,12 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     if (this.router.url.includes('/inscription')) this.showRegister = true;
     document.addEventListener('keydown', this.onKey);
+
+    // ✅ Redirigé ici par AuthService.forceLogoutDisabled() suite à une
+    // suspension détectée en temps réel pendant une session active.
+    if (this.route.snapshot.queryParamMap.get('suspendu') === '1') {
+      this.error.set('Votre compte a été suspendu par un administrateur. Vous avez été déconnecté.');
+    }
   }
 
   ngAfterViewInit(): void {

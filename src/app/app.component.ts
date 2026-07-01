@@ -17,11 +17,10 @@ import { DevtoolsProtectionService } from './core/services/devtools-protection.s
   `,
 })
 export class AppComponent implements OnInit {
-  // inject() évite toute ambiguïté sur le token d'injection
   private readonly mobileBlur  = inject(MobileBlurService);
   private readonly devtools    = inject(DevtoolsProtectionService);
 
   ngOnInit(): void {
-    this.devtools.init();
+  //  this.devtools.init();
   }
 }

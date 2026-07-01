@@ -16,425 +16,8 @@ declare var JitsiMeetExternalAPI: any;
   selector: 'app-jitsi-meet',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div class="meet-container">
-      <!-- Bouton flottant pour ouvrir le bloc-notes -->
-      <button class="floating-notes-btn" (click)="toggleNotes()" [class.active]="showNotes">
-        <i class="fas fa-pen-fancy"></i>
-        <span class="btn-label">Notes</span>
-      </button>
-
-      <!-- Panneau du bloc-notes -->
-      @if (showNotes) {
-        <div class="notes-panel" [class.minimized]="isMinimized">
-          <div class="notes-header">
-            <div class="notes-header-left">
-              <i class="fas fa-pen-fancy"></i>
-              <h3>Bloc-notes</h3>
-              <span class="workshop-badge">{{ workshopTitle }}</span>
-            </div>
-            <div class="notes-header-actions">
-              <button (click)="minimizeNotes()" class="header-btn" title="Réduire">
-                <i class="fas fa-window-minimize"></i>
-              </button>
-              <button (click)="toggleNotes()" class="header-btn" title="Fermer">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-          </div>
-
-          @if (!isMinimized) {
-            <div class="notes-body">
-              <textarea
-                [(ngModel)]="meetingNotes"
-                placeholder="✍️ Prenez vos notes pendant le workshop...
-
-• Points clés à retenir
-• Questions à poser aux intervenants
-• Idées à explorer plus tard
-• Liens et ressources partagés"
-                class="notes-textarea"
-                (keydown)="autoSaveNotes()"
-              ></textarea>
-
-              <div class="notes-toolbar">
-                <div class="note-stats">
-                  <span><i class="fas fa-keyboard"></i> {{ meetingNotes.length }} caractères</span>
-                  <span><i class="fas fa-paragraph"></i> {{ wordCount() }} mots</span>
-                </div>
-                <div class="toolbar-actions">
-                  <button (click)="clearNotes()" class="clear-btn" title="Effacer tout">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
-                  <button (click)="copyNotes()" class="copy-btn" title="Copier">
-                    <i class="fas fa-copy"></i>
-                  </button>
-                  <button (click)="saveNotes()" class="save-notes-btn" [disabled]="isSaving">
-                    @if (isSaving) {
-                      <div class="btn-spinner"></div>
-                    } @else {
-                      <i class="fas fa-save"></i>
-                    }
-                    <span>{{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          }
-
-          @if (isMinimized) {
-            <div class="notes-minimized-preview" (click)="restoreNotes()">
-              <i class="fas fa-pen-fancy"></i>
-              <span class="preview-text">{{ meetingNotes.slice(0, 60) || 'Cliquez pour écrire vos notes...' }}</span>
-              <i class="fas fa-chevron-up expand-icon"></i>
-            </div>
-          }
-        </div>
-      }
-
-      <div id="jitsi-container" style="height: 100vh; width: 100%;"></div>
-    </div>
-  `,
-  styles: [`
-    .meet-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1000;
-      background: #000;
-    }
-
-    /* ============================================================
-       BOUTON FLOTTANT PRINCIPAL
-       ============================================================ */
-    .floating-notes-btn {
-      position: absolute;
-      bottom: 80px;
-      right: 20px;
-      z-index: 1001;
-      background: linear-gradient(135deg, #00d4ff, #0a0e27);
-      border: 1px solid rgba(0, 212, 255, 0.4);
-      border-radius: 50px;
-      padding: 10px 20px;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-
-      i {
-        font-size: 16px;
-      }
-
-      .btn-label {
-        @media (max-width: 640px) {
-          display: none;
-        }
-      }
-
-      &:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
-        border-color: rgba(0, 212, 255, 0.8);
-      }
-
-      &.active {
-        background: linear-gradient(135deg, #ef4444, #0a0e27);
-        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
-
-        &:hover {
-          box-shadow: 0 8px 30px rgba(239, 68, 68, 0.5);
-        }
-      }
-    }
-
-    /* ============================================================
-       PANEL BLOC-NOTES
-       ============================================================ */
-    .notes-panel {
-      position: absolute;
-      top: 80px;
-      right: 20px;
-      width: 380px;
-      background: linear-gradient(135deg, #0f1235cc, #0a0e27cc);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(0, 212, 255, 0.25);
-      border-radius: 20px;
-      z-index: 1002;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 212, 255, 0.1) inset;
-      transition: all 0.3s ease;
-      animation: slideInRight 0.3s ease-out;
-
-      &.minimized {
-        width: auto;
-        min-width: 280px;
-      }
-
-      .notes-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        border-bottom: 1px solid rgba(0, 212, 255, 0.15);
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 20px 20px 0 0;
-
-        .notes-header-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
-
-          i {
-            color: #00d4ff;
-            font-size: 14px;
-          }
-
-          h3 {
-            margin: 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: white;
-          }
-
-          .workshop-badge {
-            font-size: 10px;
-            background: rgba(0, 212, 255, 0.15);
-            padding: 2px 8px;
-            border-radius: 12px;
-            color: #00d4ff;
-            font-family: monospace;
-          }
-        }
-
-        .notes-header-actions {
-          display: flex;
-          gap: 8px;
-
-          .header-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 8px;
-            transition: all 0.2s;
-            font-size: 12px;
-
-            &:hover {
-              background: rgba(0, 212, 255, 0.15);
-              color: #00d4ff;
-            }
-          }
-        }
-      }
-
-      .notes-body {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .notes-textarea {
-        width: 100%;
-        min-height: 320px;
-        padding: 16px;
-        background: rgba(0, 0, 0, 0.4);
-        border: none;
-        color: #e2e8f0;
-        font-family: 'Courier New', monospace;
-        font-size: 13px;
-        resize: vertical;
-        line-height: 1.6;
-        border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-
-        &:focus {
-          outline: none;
-          background: rgba(0, 0, 0, 0.5);
-        }
-
-        &::placeholder {
-          color: #475569;
-          font-style: italic;
-        }
-      }
-
-      .notes-toolbar {
-        padding: 12px 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-
-        .note-stats {
-          display: flex;
-          gap: 12px;
-          font-size: 10px;
-          color: #64748b;
-          font-family: monospace;
-
-          i {
-            margin-right: 4px;
-          }
-        }
-
-        .toolbar-actions {
-          display: flex;
-          gap: 8px;
-        }
-
-        .clear-btn, .copy-btn {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          padding: 6px 10px;
-          border-radius: 8px;
-          color: #94a3b8;
-          cursor: pointer;
-          transition: all 0.2s;
-
-          &:hover {
-            background: rgba(239, 68, 68, 0.15);
-            border-color: #ef4444;
-            color: #ef4444;
-          }
-        }
-
-        .copy-btn:hover {
-          background: rgba(0, 212, 255, 0.15);
-          border-color: #00d4ff;
-          color: #00d4ff;
-        }
-
-        .save-notes-btn {
-          background: linear-gradient(135deg, #00d4ff, #0ea5e9);
-          border: none;
-          padding: 6px 14px;
-          border-radius: 8px;
-          color: white;
-          cursor: pointer;
-          font-size: 12px;
-          font-weight: 500;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: all 0.2s;
-
-          &:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
-          }
-
-          &:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-          }
-
-          .btn-spinner {
-            width: 12px;
-            height: 12px;
-            border: 2px solid white;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-          }
-        }
-      }
-    }
-
-    /* Mode minimisé */
-    .notes-minimized-preview {
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-
-      i:first-child {
-        color: #00d4ff;
-        font-size: 12px;
-      }
-
-      .preview-text {
-        flex: 1;
-        font-size: 12px;
-        color: #94a3b8;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-style: italic;
-      }
-
-      .expand-icon {
-        font-size: 10px;
-        color: #64748b;
-      }
-
-      &:hover {
-        background: rgba(0, 212, 255, 0.05);
-        .preview-text { color: white; }
-      }
-    }
-
-    @keyframes slideInRight {
-      from {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .notes-panel {
-        top: 70px;
-        right: 10px;
-        left: 10px;
-        width: auto;
-      }
-
-      .floating-notes-btn {
-        bottom: 70px;
-        right: 10px;
-        padding: 8px 12px;
-
-        i {
-          font-size: 14px;
-        }
-      }
-    }
-
-    @media (max-width: 480px) {
-      .notes-panel {
-        .notes-textarea {
-          min-height: 240px;
-        }
-
-        .notes-toolbar {
-          flex-direction: column;
-          align-items: stretch;
-
-          .toolbar-actions {
-            justify-content: flex-end;
-          }
-        }
-      }
-    }
-  `]
+  templateUrl: './jitsi-meet.component.html',
+  styleUrls: ['./jitsi-meet.component.scss'],
 })
 export class JitsiMeetComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -468,15 +51,51 @@ export class JitsiMeetComponent implements OnInit, OnDestroy {
     const workshop = await this.workshopService.getWorkshopById(this.workshopId!);
     this.workshopTitle = workshop?.themeTitle || 'Workshop';
 
-    // Charger les notes existantes
-    await this.loadNotes();
+    if (!workshop) {
+      this.toastService.error('Workshop introuvable');
+      this.router.navigate(['/workshops']);
+      return;
+    }
 
-    if (!workshop?.meetLink) {
+    if (!workshop.meetLink) {
       console.error('Aucun lien de réunion trouvé');
       this.toastService.error('Lien de réunion non disponible');
       this.router.navigate(['/workshops']);
       return;
     }
+
+    // ✅ On ne peut rejoindre le meet que pendant la fenêtre horaire du
+    // workshop (entre date de début et date de fin calculée à partir de
+    // la durée). Empêche l'accès anticipé même via un lien direct.
+    const now = new Date();
+    const startDate = new Date(workshop.date);
+    const duration = workshop.duration || 90;
+    const endDate = workshop.endDate
+      ? new Date(workshop.endDate)
+      : new Date(startDate.getTime() + duration * 60000);
+
+    if (workshop.status === 'annulé') {
+      this.toastService.error('Ce workshop a été annulé');
+      this.router.navigate(['/workshops']);
+      return;
+    }
+
+    if (now < startDate) {
+      this.toastService.error(
+        `Le meet n'est pas encore ouvert. Rendez-vous le ${startDate.toLocaleDateString('fr-FR')} à ${startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}.`,
+      );
+      this.router.navigate(['/workshops']);
+      return;
+    }
+
+    if (now > endDate) {
+      this.toastService.error('Ce workshop est terminé.');
+      this.router.navigate(['/workshops']);
+      return;
+    }
+
+    // Charger les notes existantes
+    await this.loadNotes();
 
     // Mettre à jour le statut du workshop
     await this.updateWorkshopStatus();

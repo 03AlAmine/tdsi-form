@@ -46,7 +46,6 @@ import { Component, Input } from '@angular/core';
         }
 
         &__pulse-ring {
-          position: absolute;
           inset: -4px;
           border: 1px solid rgba(0, 212, 255, 0.3);
           border-radius: 50%;
@@ -55,7 +54,7 @@ import { Component, Input } from '@angular/core';
 
         &__text-wrapper {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           gap: 0.25rem;
           flex-wrap: wrap;
         }

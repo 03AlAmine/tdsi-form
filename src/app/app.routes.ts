@@ -44,6 +44,7 @@ export const routes: Routes = [
       // ── Pages communes (publiques + membres) ──
       {
         path: 'thematiques',
+        data: { preload: true },
         loadComponent: () =>
           import('./features/themes/thematiques.component').then(
             (m) => m.ThematiquesComponent,
@@ -51,6 +52,7 @@ export const routes: Routes = [
       },
       {
         path: 'workshops',
+        data: { preload: true },
         loadComponent: () =>
           import('./features/workshops/workshops.component').then(
             (m) => m.WorkshopsComponent,
@@ -204,6 +206,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/presence-config/presence-config.component').then(
             (m) => m.PresenceConfigComponent,
+          ),
+      },
+      {
+        path: 'configuration',
+        loadComponent: () =>
+          import('./features/admin/configuration/admin-configuration.component').then(
+            (m) => m.AdminConfigurationComponent,
           ),
       },
       /*  {

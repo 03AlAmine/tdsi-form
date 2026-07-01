@@ -1,11 +1,11 @@
 <!-- dashboard.component.html -->
 <div class="dashboard">
 
-  <!-- Header -->
-  <div class="dashboard__header">
+  <!-- Topbar -->
+  <div class="dashboard__topbar">
     <div>
       <h1 class="dashboard__title">Tableau de bord</h1>
-      <p class="dashboard__subtitle">Bienvenue, {{ adminName }} 👋</p>
+      <p class="dashboard__subtitle">Bienvenue, {{ adminName }}</p>
     </div>
     <div class="dashboard__date">
       <i class="fas fa-calendar-alt"></i>
@@ -33,7 +33,7 @@
           <span class="stat-card__value">{{ stats().totalThemes }}</span>
           <span class="stat-card__label">Thématiques</span>
         </div>
-        <div class="stat-card__trend trend--up">
+        <div class="stat-card__trend">
           <i class="fas fa-arrow-up"></i>
           <span>+{{ stats().themesGrowth }}%</span>
         </div>
@@ -47,7 +47,7 @@
           <span class="stat-card__value">{{ stats().totalWorkshops }}</span>
           <span class="stat-card__label">Workshops</span>
         </div>
-        <div class="stat-card__trend trend--up">
+        <div class="stat-card__trend">
           <i class="fas fa-arrow-up"></i>
           <span>+{{ stats().workshopsGrowth }}%</span>
         </div>
@@ -61,7 +61,7 @@
           <span class="stat-card__value">{{ stats().totalMembers }}</span>
           <span class="stat-card__label">Membres</span>
         </div>
-        <div class="stat-card__trend trend--up">
+        <div class="stat-card__trend">
           <i class="fas fa-arrow-up"></i>
           <span>+{{ stats().membersGrowth }}%</span>
         </div>
@@ -75,7 +75,7 @@
           <span class="stat-card__value">{{ stats().totalRegistrations }}</span>
           <span class="stat-card__label">Inscriptions</span>
         </div>
-        <div class="stat-card__trend trend--up">
+        <div class="stat-card__trend">
           <i class="fas fa-arrow-up"></i>
           <span>+{{ stats().registrationsGrowth }}%</span>
         </div>
@@ -84,7 +84,6 @@
 
     <!-- Charts Row -->
     <div class="charts-row">
-      <!-- Activity Chart -->
       <div class="chart-card">
         <div class="chart-card__header">
           <h3>Activité mensuelle</h3>
@@ -98,7 +97,6 @@
         </div>
       </div>
 
-      <!-- Category Distribution -->
       <div class="chart-card">
         <div class="chart-card__header">
           <h3>Répartition par catégorie</h3>
@@ -113,9 +111,13 @@
     <div class="submissions-status">
       <div class="status-card">
         <div class="status-card__header">
-          <i class="fas fa-clock"></i>
-          <span>Soumissions en attente</span>
-          <span class="status-card__badge">{{ stats().pendingSubmissions }}</span>
+          <div class="status-card__icon-wrap">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="status-card__info">
+            <span class="status-card__label">Soumissions en attente</span>
+            <span class="status-card__badge">{{ stats().pendingSubmissions }}</span>
+          </div>
         </div>
         <div class="status-card__progress">
           <div class="progress-bar">
@@ -123,32 +125,35 @@
           </div>
         </div>
         <div class="status-card__footer">
-          <span>{{ stats().approvedSubmissions }} approuvées</span>
-          <span>{{ stats().refusedSubmissions }} refusées</span>
+          <span><i class="fas fa-check"></i> {{ stats().approvedSubmissions }} approuvées</span>
+          <span><i class="fas fa-times"></i> {{ stats().refusedSubmissions }} refusées</span>
         </div>
       </div>
 
       <div class="status-card">
         <div class="status-card__header">
-          <i class="fas fa-check-circle"></i>
-          <span>Taux de participation</span>
-          <span class="status-card__badge">{{ participationRate() }}%</span>
+          <div class="status-card__icon-wrap status-card__icon-wrap--green">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="status-card__info">
+            <span class="status-card__label">Taux de participation</span>
+            <span class="status-card__badge status-card__badge--green">{{ participationRate() }}%</span>
+          </div>
         </div>
         <div class="status-card__progress">
           <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="participationRate()"></div>
+            <div class="progress-fill progress-fill--green" [style.width.%]="participationRate()"></div>
           </div>
         </div>
         <div class="status-card__footer">
-          <span>{{ stats().totalRegistrations }} inscriptions</span>
-          <span>{{ stats().confirmedPresences }} présences</span>
+          <span><i class="fas fa-ticket-alt"></i> {{ stats().totalRegistrations }} inscriptions</span>
+          <span><i class="fas fa-user-check"></i> {{ stats().confirmedPresences }} présences</span>
         </div>
       </div>
     </div>
 
-    <!-- Recent Activity Tables -->
+    <!-- Data Tables -->
     <div class="dashboard-grid">
-      <!-- Recent Workshops -->
       <div class="data-table">
         <div class="data-table__header">
           <h3>Workshops récents</h3>
@@ -186,7 +191,6 @@
         </div>
       </div>
 
-      <!-- Pending Submissions -->
       <div class="data-table">
         <div class="data-table__header">
           <h3>Soumissions à traiter</h3>
@@ -212,7 +216,7 @@
                     <td>{{ sub.studentName }}</td>
                     <td>{{ sub.promo }}</td>
                     <td class="actions">
-                      <a routerLink="/admin/soumissions" class="action-btn">
+                      <a routerLink="/admin/soumissions" class="action-btn" aria-label="Voir la soumission">
                         <i class="fas fa-chevron-right"></i>
                       </a>
                     </td>
@@ -230,34 +234,34 @@
       <h3>Actions rapides</h3>
       <div class="quick-actions__grid">
         <a routerLink="/admin/themes" class="quick-action">
-          <i class="fas fa-plus-circle"></i>
+          <div class="quick-action__icon quick-action__icon--cyan">
+            <i class="fas fa-plus-circle"></i>
+          </div>
           <div>
             <div class="quick-action__title">Nouvelle thématique</div>
             <div class="quick-action__desc">Ajouter un sujet de workshop</div>
           </div>
         </a>
         <a routerLink="/admin/workshops" class="quick-action">
-          <i class="fas fa-calendar-plus"></i>
+          <div class="quick-action__icon quick-action__icon--blue">
+            <i class="fas fa-calendar-plus"></i>
+          </div>
           <div>
             <div class="quick-action__title">Planifier un workshop</div>
             <div class="quick-action__desc">Organiser une session</div>
           </div>
         </a>
         <a routerLink="/admin/soumissions" class="quick-action">
-          <i class="fas fa-clipboard-list"></i>
+          <div class="quick-action__icon quick-action__icon--violet">
+            <i class="fas fa-clipboard-list"></i>
+          </div>
           <div>
             <div class="quick-action__title">Gérer les soumissions</div>
             <div class="quick-action__desc">Approuver ou refuser</div>
           </div>
         </a>
-     <!--   <a routerLink="/admin/activites" class="quick-action">
-          <i class="fas fa-calendar-alt"></i>
-          <div>
-            <div class="quick-action__title">Événements</div>
-            <div class="quick-action__desc">Créer une activité</div>
-          </div>
-        </a>-->
       </div>
     </div>
+
   }
 </div>

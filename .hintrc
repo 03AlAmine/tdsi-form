@@ -17,7 +17,8 @@
         "ignore": [
           "backdrop-filter",
           "min-height: auto",
-          "mask-image"
+          "mask-image",
+          "user-select"
         ]
       }
     ],

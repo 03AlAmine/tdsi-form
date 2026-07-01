@@ -200,7 +200,13 @@
             Soumets une idée de workshop. L'admin valide, programme et configure
             le formulaire de présence.
           </p>
-          <div class="feature-card__link">
+          <div
+            class="feature-card__link"
+            tabindex="0"
+            role="button"
+            (click)="openFeatureModal('propose')"
+            (keydown.enter)="openFeatureModal('propose')"
+          >
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
@@ -217,7 +223,13 @@
             Participe aux sessions en direct. Confirme ta présence via un
             formulaire personnalisé.
           </p>
-          <div class="feature-card__link">
+          <div
+            class="feature-card__link"
+            tabindex="0"
+            role="button"
+            (click)="openFeatureModal('workshops')"
+            (keydown.enter)="openFeatureModal('workshops')"
+          >
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
@@ -234,7 +246,13 @@
             Cryptographie, pentest, protocoles de transmission — explore les
             domaines clés du numérique moderne.
           </p>
-          <div class="feature-card__link">
+          <div
+            class="feature-card__link"
+            tabindex="0"
+            role="button"
+            (click)="openFeatureModal('security')"
+            (keydown.enter)="openFeatureModal('security')"
+          >
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
@@ -251,7 +269,13 @@
             Découvre les applications de l'IA dans la cybersécurité et la
             transmission de données.
           </p>
-          <div class="feature-card__link">
+          <div
+            class="feature-card__link"
+            tabindex="0"
+            role="button"
+            (click)="openFeatureModal('ai')"
+            (keydown.enter)="openFeatureModal('ai')"
+          >
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
@@ -268,7 +292,13 @@
             Apprends les bonnes pratiques de sécurité dans les environnements
             cloud modernes.
           </p>
-          <div class="feature-card__link">
+          <div
+            class="feature-card__link"
+            tabindex="0"
+            role="button"
+            (click)="openFeatureModal('cloud')"
+            (keydown.enter)="openFeatureModal('cloud')"
+          >
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
@@ -285,7 +315,13 @@
             Maîtrise les frameworks modernes et les bonnes pratiques de sécurité
             web.
           </p>
-          <div class="feature-card__link">
+          <div
+            class="feature-card__link"
+            tabindex="0"
+            role="button"
+            (click)="openFeatureModal('webdev')"
+            (keydown.enter)="openFeatureModal('webdev')"
+          >
             <span>En savoir plus</span>
             <i class="fas fa-arrow-right"></i>
           </div>
@@ -294,6 +330,105 @@
       </div>
     </div>
   </section>
+
+  <!-- ============================================================ -->
+  <!-- MODAL : DÉTAIL D'UNE FEATURE ("En savoir plus")               -->
+  <!-- ============================================================ -->
+  <!-- ============================================================ -->
+  <!-- MODAL : DÉTAIL D'UNE FEATURE ("En savoir plus")               -->
+  <!-- ============================================================ -->
+  @if (activeFeature(); as feature) {
+    <div class="feature-modal-overlay" (click)="closeFeatureModal()">
+      <div class="feature-modal-container" (click)="$event.stopPropagation()">
+        <!-- Gradient border animé -->
+        <div class="feature-modal-gradient-border"></div>
+
+        <!-- Particles décoratifs -->
+        <div class="feature-modal-particles">
+          <span class="fp fp-1"></span>
+          <span class="fp fp-2"></span>
+          <span class="fp fp-3"></span>
+          <span class="fp fp-4"></span>
+          <span class="fp fp-5"></span>
+        </div>
+
+        <!-- Header -->
+        <div class="feature-modal-header">
+          <div class="feature-modal-icon">
+            <div class="icon-bg"></div>
+            <div class="icon-pulse"></div>
+            <i class="fas" [class]="feature.icon"></i>
+          </div>
+          <button
+            class="feature-modal-close"
+            (click)="closeFeatureModal()"
+            aria-label="Fermer"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="feature-modal-body">
+          <div class="feature-modal-tag">
+            <span class="tag-dot"></span>
+            NOUVEAU
+          </div>
+          <h3 class="feature-modal-title">{{ feature.title }}</h3>
+          <p class="feature-modal-summary">{{ feature.summary }}</p>
+
+          <!-- Points -->
+          <div class="feature-modal-points">
+            @for (point of feature.points; track point) {
+              <div class="feature-modal-point">
+                <div class="point-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <span>{{ point }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Stats miniatures -->
+          <div class="feature-modal-stats">
+            <div class="fm-stat">
+              <span class="fm-stat-value">100+</span>
+              <span class="fm-stat-label">Participants</span>
+            </div>
+            <div class="fm-stat-divider"></div>
+            <div class="fm-stat">
+              <span class="fm-stat-value">24/7</span>
+              <span class="fm-stat-label">Accessible</span>
+            </div>
+            <div class="fm-stat-divider"></div>
+            <div class="fm-stat">
+              <span class="fm-stat-value">Gratuit</span>
+              <span class="fm-stat-label">Pour les membres</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="feature-modal-footer">
+          <button
+            class="feature-modal-btn feature-modal-btn--ghost"
+            (click)="closeFeatureModal()"
+          >
+            <i class="fas fa-arrow-left"></i>
+            Fermer
+          </button>
+          <a
+            class="feature-modal-btn feature-modal-btn--primary"
+            [routerLink]="feature.ctaLink"
+            (click)="closeFeatureModal()"
+          >
+            <span>{{ feature.ctaLabel }}</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- ============================================================ -->
   <!-- SECTION : ARTICLES COMMUNAUTÉ                                -->
@@ -573,7 +708,7 @@
               </div>
 
               <div class="code-line code-line-4 code-indent">
-                <span class="comment">// Rejoignez l'aventure TDSI !</span>
+                <span class="comment">// Rejoignez l'aventure Campus Tdsi Club !</span>
               </div>
 
               <div class="code-line code-line-5">&#125;;</div>
@@ -597,7 +732,7 @@
             Prêt à commencer ?
           </span>
           <h2 class="cta-title">
-            Rejoins l'aventure <span class="gradient-text">TDSI</span>
+            Rejoins l'aventure <span class="gradient-text">Club TDSI</span>
           </h2>
           <p class="cta-description">
             Intègre une communauté dynamique et participe à des workshops

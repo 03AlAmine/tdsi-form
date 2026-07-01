@@ -12,7 +12,7 @@
         </div>
         <h1 class="page-hero__title">
           Workshops
-          <span class="gradient-text">TDSI</span>
+          <span class="gradient-text">Club TDSI</span>
         </h1>
         <p class="page-hero__subtitle">
           Des sessions pratiques animées par des experts pour développer vos
@@ -114,7 +114,7 @@
             membres.<br />
             Proposez une idée et devenez animateur !
           } @else {
-            Rejoignez la communauté TDSI pour accéder aux workshops exclusifs<br />
+            Rejoignez la communauté Club TDSI pour accéder aux workshops exclusifs<br />
             et être informé des prochaines sessions.
           }
         </p>
@@ -317,7 +317,7 @@
             <div>
               <h3>Vous voulez participer à ces workshops ?</h3>
               <p>
-                Rejoignez la communauté TDSI pour vous inscrire et accéder à
+                Rejoignez la communauté Club TDSI pour vous inscrire et accéder à
                 tous les contenus
               </p>
             </div>
@@ -490,22 +490,32 @@
           </div>
         }
 
-        <!-- ✅ CORRECTION 2 — Meet link dans le drawer (lien masqué aux non-connectés) -->
+        <!-- ✅ CORRECTION 2 — Meet link dans le drawer (lien masqué aux non-connectés, et tant que ce n'est pas l'heure) -->
         @if (selectedWorkshop()?.meetLink) {
           <div class="meet-section">
             <h4><i class="fas fa-video"></i> Lien de connexion</h4>
-            @if (isLoggedIn()) {
-              <button (click)="joinMeet(selectedWorkshop()!)" class="meet-link">
-                <i class="fas fa-video"></i>
-                Rejoindre le meet
-              </button>
-            } @else {
+            @if (!isLoggedIn()) {
               <p class="meet-locked">
                 <i class="fas fa-lock"></i>
                 <a routerLink="/connexion" (click)="closeDrawer()"
                   >Connecte-toi</a
                 >
                 pour accéder au lien de connexion
+              </p>
+            } @else if (getWorkshopDisplayStatus(selectedWorkshop()!) === 'en cours') {
+              <button (click)="joinMeet(selectedWorkshop()!)" class="meet-link">
+                <i class="fas fa-video"></i>
+                Rejoindre le meet
+              </button>
+            } @else if (getWorkshopDisplayStatus(selectedWorkshop()!) === 'terminé') {
+              <p class="meet-locked">
+                <i class="fas fa-flag-checkered"></i>
+                Ce workshop est terminé
+              </p>
+            } @else {
+              <p class="meet-locked">
+                <i class="fas fa-clock"></i>
+                Le lien sera actif à l'heure du workshop
               </p>
             }
           </div>
@@ -646,7 +656,7 @@
             }
             @if (
               selectedWorkshop()?.meetLink &&
-              selectedWorkshop()?.status === "en cours"
+              getWorkshopDisplayStatus(selectedWorkshop()!) === 'en cours'
             ) {
               <button
                 (click)="joinMeet(selectedWorkshop()!)"

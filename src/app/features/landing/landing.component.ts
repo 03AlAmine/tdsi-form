@@ -18,6 +18,15 @@ import { MemberCalendarComponent } from '../calendar/calendar.component';
 import { MemberNotesComponent } from '../notes/notes.component';
 import { Subscription } from 'rxjs';
 
+interface FeatureDetail {
+  icon: string;
+  title: string;
+  summary: string;
+  points: string[];
+  ctaLabel: string;
+  ctaLink: string;
+}
+
 @Component({
   selector: 'app-landing',
   standalone: true,
@@ -37,6 +46,104 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private renderer = inject(Renderer2);
 
   userMenuOpen = signal(false);
+
+  // ── Modal "En savoir plus" (features) ───────────────────────────────────
+  activeFeature = signal<FeatureDetail | null>(null);
+
+  readonly featureDetails: Record<string, FeatureDetail> = {
+    propose: {
+      icon: 'fa-lightbulb',
+      title: 'Proposer une thématique',
+      summary:
+        "Tu as une idée de workshop ? Tu peux la soumettre directement depuis ton espace membre. L'équipe d'administration l'examine, la valide si elle correspond aux objectifs du club, puis programme la session et configure le formulaire de présence associé.",
+      points: [
+        'Soumission simple via un formulaire dédié dans ton espace membre',
+        "Suivi de l'état de ta proposition (en attente, validée, refusée)",
+        "Une fois validée, l'admin programme la date et configure les présences",
+        'Tu peux proposer autant de thématiques que tu le souhaites',
+      ],
+      ctaLabel: 'Proposer une thématique',
+      ctaLink: '/espace-membre/proposer',
+    },
+    workshops: {
+      icon: 'fa-microphone-alt',
+      title: 'Workshops interactifs',
+      summary:
+        'Les workshops sont des sessions en direct, animées par des membres ou intervenants du club. Tu confirmes ta présence via un formulaire personnalisé et tu peux suivre la session en ligne directement via notre intégration Jitsi Meet.',
+      points: [
+        'Sessions live, en présentiel ou à distance selon le format',
+        'Formulaire de présence rapide et personnalisé pour chaque session',
+        'Accès direct à la visioconférence intégrée pour les sessions à distance',
+        "Historique de tes participations consultable dans ton espace",
+      ],
+      ctaLabel: 'Voir les workshops',
+      ctaLink: '/workshops',
+    },
+    security: {
+      icon: 'fa-shield-alt',
+      title: 'Sécurité & Réseaux',
+      summary:
+        'Le club met un accent particulier sur la cybersécurité et les réseaux : cryptographie, tests d’intrusion (pentest), protocoles de transmission, durcissement de systèmes. Ces thématiques sont régulièrement abordées lors de nos workshops et challenges CTF.',
+      points: [
+        'Ateliers pratiques de pentest et de sécurité réseau',
+        'Notions de cryptographie appliquée',
+        'Challenges type CTF pour mettre en pratique tes compétences',
+        'Bonnes pratiques de sécurisation des infrastructures',
+      ],
+      ctaLabel: 'Explorer les thématiques',
+      ctaLink: '/thematiques',
+    },
+    ai: {
+      icon: 'fa-robot',
+      title: 'Intelligence Artificielle',
+      summary:
+        "L'IA est un axe fort du club : nous explorons ses applications concrètes, notamment dans la cybersécurité (détection d'anomalies, analyse comportementale) et dans la transmission/traitement de données.",
+      points: [
+        "Introduction au machine learning et à ses cas d'usage",
+        "IA appliquée à la détection de menaces et d'anomalies",
+        'Veille technologique partagée avec la communauté',
+        'Projets et démonstrations présentés lors des workshops',
+      ],
+      ctaLabel: 'Explorer les thématiques',
+      ctaLink: '/thematiques',
+    },
+    cloud: {
+      icon: 'fa-cloud-upload-alt',
+      title: 'Cloud & DevOps',
+      summary:
+        "Apprends à déployer et sécuriser des applications dans des environnements cloud modernes. Nous couvrons les bonnes pratiques DevOps ainsi que la sécurisation des infrastructures cloud (gestion des accès, configuration, supervision).",
+      points: [
+        'Bonnes pratiques de sécurité dans le cloud',
+        'Notions de CI/CD et automatisation des déploiements',
+        'Gestion des accès et durcissement des configurations',
+        'Retours d’expérience partagés par les membres',
+      ],
+      ctaLabel: 'Explorer les thématiques',
+      ctaLink: '/thematiques',
+    },
+    webdev: {
+      icon: 'fa-code',
+      title: 'Développement Web',
+      summary:
+        'Le club accompagne ses membres dans la maîtrise des frameworks modernes (Angular, etc.) ainsi que des bonnes pratiques de sécurité web : protection contre les failles courantes, gestion sécurisée des authentifications et des données.',
+      points: [
+        'Frameworks et outils modernes du développement web',
+        'Sécurité web : XSS, CSRF, gestion des sessions et des accès',
+        'Bonnes pratiques de structuration et de qualité de code',
+        'Projets concrets présentés et discutés en communauté',
+      ],
+      ctaLabel: 'Explorer les thématiques',
+      ctaLink: '/thematiques',
+    },
+  };
+
+  openFeatureModal(key: string): void {
+    this.activeFeature.set(this.featureDetails[key] ?? null);
+  }
+
+  closeFeatureModal(): void {
+    this.activeFeature.set(null);
+  }
 
   // ── Articles preview ─────────────────────────────────────────────────────
   latestArticles = signal<Article[]>([]);
@@ -90,6 +197,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleUserMenu(): void {
     this.userMenuOpen.update((v) => !v);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeFeatureModal();
   }
 
   @HostListener('document:click', ['$event'])

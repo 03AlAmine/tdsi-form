@@ -151,6 +151,7 @@ export class PresenceComponent implements OnInit, OnDestroy {
       this.submitted = true;
       this.toastService.success('Présence confirmée avec succès !');
     } catch (err) {
+      console.error('Erreur enregistrement présence:', err);
       this.error = "Erreur lors de l'enregistrement. Veuillez réessayer.";
       this.toastService.error(this.error);
     } finally {

@@ -45,11 +45,11 @@
       align-items: center;
       gap: 0.5rem;
       font-size: 0.8125rem;
-      color: var(--gray-500);
+      color: #64748b;
 
       i {
         font-size: 0.75rem;
-        color: var(--tech-cyan);
+        color: #00d4ff;
       }
     }
   }
@@ -61,17 +61,17 @@
   gap: 0.5rem;
   background: none;
   border: none;
-  color: var(--gray-500);
+  color: #64748b;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
 
   i {
     font-size: 0.75rem;
   }
 
   &:hover {
-    color: var(--tech-cyan);
+    color: #00d4ff;
     transform: translateX(-4px);
   }
 }
@@ -87,10 +87,10 @@
   justify-content: space-between;
   gap: 1.5rem;
   padding: 1.25rem 1.5rem;
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  background: rgba(15, 18, 53, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  border-radius: 14px;
 
   &__info {
     flex: 1;
@@ -105,29 +105,29 @@
     margin-bottom: 0.25rem;
 
     i {
-      color: var(--tech-cyan);
+      color: #00d4ff;
     }
   }
 
   &__subtitle {
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: #64748b;
   }
 }
 
 .toggle-switch {
   width: 56px;
   height: 30px;
-  background: var(--gray-700);
+  background: #334155;
   border: none;
   border-radius: 30px;
   cursor: pointer;
   position: relative;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
   flex-shrink: 0;
 
   &.active {
-    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+    background: linear-gradient(135deg, #00d4ff, #3b82f6);
 
     .toggle-switch__slider {
       transform: translateX(26px);
@@ -142,7 +142,7 @@
     height: 24px;
     background: white;
     border-radius: 50%;
-    transition: transform var(--transition-fast);
+    transition: transform 0.18s;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 }
@@ -156,10 +156,10 @@
 }
 
 .form-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  background: rgba(15, 18, 53, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  border-radius: 14px;
   overflow: hidden;
   margin-bottom: 1.5rem;
 
@@ -181,7 +181,7 @@
 
     i {
       font-size: 1.125rem;
-      color: var(--tech-cyan);
+      color: #00d4ff;
     }
 
     h3 {
@@ -192,7 +192,7 @@
 
     p {
       font-size: 0.6875rem;
-      color: var(--gray-500);
+      color: #64748b;
       margin: 0;
     }
   }
@@ -206,12 +206,12 @@
   padding: 3rem 2rem;
   background: rgba(255, 255, 255, 0.02);
   margin: 1rem;
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   border: 1px dashed rgba(0, 212, 255, 0.2);
 
   i {
     font-size: 2.5rem;
-    color: var(--gray-600);
+    color: #475569;
     margin-bottom: 0.5rem;
     display: block;
   }
@@ -224,7 +224,7 @@
 
   span {
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: #64748b;
   }
 }
 
@@ -244,8 +244,8 @@
   padding: 1rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
+  border-radius: 10px;
+  transition: all 0.18s;
 
   &:hover {
     border-color: rgba(0, 212, 255, 0.3);
@@ -254,7 +254,7 @@
 
   &__drag {
     cursor: grab;
-    color: var(--gray-600);
+    color: #475569;
     padding-top: 0.5rem;
 
     i {
@@ -286,11 +286,11 @@
   &__remove {
     background: none;
     border: none;
-    color: var(--gray-500);
+    color: #64748b;
     cursor: pointer;
     padding: 0.5rem;
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
+    border-radius: 8px;
+    transition: all 0.18s;
     height: fit-content;
 
     i {
@@ -299,7 +299,7 @@
 
     &:hover {
       background: rgba(239, 68, 68, 0.15);
-      color: var(--tech-danger);
+      color: #ef4444;
     }
   }
 }
@@ -324,35 +324,36 @@
   gap: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--gray-300);
+  color: #94a3b8;
 
   i {
     font-size: 0.6875rem;
-    color: var(--tech-cyan);
+    color: #00d4ff;
   }
 
   &.required::after {
     content: '*';
-    color: var(--tech-danger);
+    color: #ef4444;
     margin-left: 0.25rem;
   }
 }
 
 .input-wrapper, .select-wrapper, .textarea-wrapper {
+  position: relative;
 
   .form-input, .form-select, .form-textarea {
     width: 100%;
     padding: 0.625rem 1rem;
     background: rgba(21, 30, 45, 0.8);
     border: 1px solid rgba(0, 212, 255, 0.15);
-    border-radius: var(--radius-lg);
-    color: var(--white);
+    border-radius: 10px;
+    color: #f1f5f9;
     font-size: 0.8125rem;
-    transition: all var(--transition-fast);
+    transition: all 0.18s;
 
     &:focus {
       outline: none;
-      border-color: var(--tech-cyan);
+      border-color: #00d4ff;
       box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
     }
   }
@@ -361,6 +362,15 @@
     appearance: none;
     cursor: pointer;
     padding-right: 2.5rem;
+
+    // ✅ Les <option> héritent par défaut du style natif du système sur
+    // certains navigateurs (texte sombre sur fond clair), ce qui les rend
+    // illisibles/invisibles sur ce thème sombre. On force explicitement
+    // la couleur de fond et de texte des options.
+    option {
+      background: #151e2d;
+      color: #f1f5f9;
+    }
   }
 
   .select-icon {
@@ -369,7 +379,7 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: #64748b;
     pointer-events: none;
   }
 
@@ -379,9 +389,9 @@
     left: 50%;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--tech-cyan), var(--tech-purple));
+    background: linear-gradient(90deg, #00d4ff, #8b5cf6);
     transition: all 0.3s ease;
-    border-radius: var(--radius-full);
+    border-radius: 100px;
     pointer-events: none;
   }
 
@@ -411,8 +421,8 @@
     display: none;
 
     &:checked + .checkbox-custom {
-      background: var(--tech-cyan);
-      border-color: var(--tech-cyan);
+      background: #00d4ff;
+      border-color: #00d4ff;
 
       &::after {
         opacity: 1;
@@ -424,10 +434,10 @@
   .checkbox-custom {
     width: 18px;
     height: 18px;
-    border: 2px solid var(--gray-600);
+    border: 2px solid #475569;
     border-radius: 4px;
     position: relative;
-    transition: all var(--transition-fast);
+    transition: all 0.18s;
 
     &::after {
       content: '\f00c';
@@ -439,18 +449,18 @@
       transform: translate(-50%, -50%) scale(0);
       font-size: 10px;
       color: white;
-      transition: all var(--transition-fast);
+      transition: all 0.18s;
       opacity: 0;
     }
   }
 
   .checkbox-label {
     font-size: 0.8125rem;
-    color: var(--gray-300);
+    color: #94a3b8;
   }
 
   &:hover .checkbox-custom {
-    border-color: var(--tech-cyan);
+    border-color: #00d4ff;
   }
 }
 
@@ -466,7 +476,7 @@
   padding: 2rem;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), transparent);
   border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: var(--radius-xl);
+  border-radius: 14px;
 
   @media (max-width: 640px) {
     flex-direction: column;
@@ -494,7 +504,7 @@
 
     p {
       font-size: 0.8125rem;
-      color: var(--gray-500);
+      color: #64748b;
     }
   }
 }
@@ -507,14 +517,14 @@
   margin: 0 auto;
   text-align: center;
   padding: 3rem 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
+  background: rgba(15, 18, 53, 0.9);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: var(--radius-2xl);
+  border-radius: 16px;
 
   &__icon {
     font-size: 3rem;
-    color: var(--tech-danger);
+    color: #ef4444;
     margin-bottom: 1rem;
   }
 
@@ -525,7 +535,7 @@
   }
 
   p {
-    color: var(--gray-500);
+    color: #64748b;
     margin-bottom: 1.5rem;
   }
 }
@@ -538,7 +548,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   font-size: 0.8125rem;
   margin-bottom: 1rem;
 
@@ -548,13 +558,13 @@
 
   &--success {
     background: rgba(16, 185, 129, 0.1);
-    color: var(--tech-success);
+    color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.2);
   }
 
   &--error {
     background: rgba(239, 68, 68, 0.1);
-    color: var(--tech-danger);
+    color: #ef4444;
     border: 1px solid rgba(239, 68, 68, 0.2);
   }
 }
@@ -581,13 +591,13 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-2xl);
+  background: rgba(15, 18, 53, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.08);
+  border-radius: 16px;
 
   p {
-    color: var(--gray-500);
+    color: #64748b;
     margin-top: 1rem;
   }
 }
@@ -601,7 +611,7 @@
     position: absolute;
     inset: 0;
     border: 3px solid rgba(0, 212, 255, 0.1);
-    border-top-color: var(--tech-cyan);
+    border-top-color: #00d4ff;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -610,7 +620,7 @@
     position: absolute;
     inset: 10px;
     border: 3px solid rgba(0, 212, 255, 0.1);
-    border-bottom-color: var(--tech-cyan);
+    border-bottom-color: #00d4ff;
     border-radius: 50%;
     animation: spin-reverse 0.6s linear infinite;
   }
@@ -625,15 +635,15 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-lg);
+  border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
   border: none;
 
   &--primary {
-    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+    background: linear-gradient(135deg, #00d4ff, #3b82f6);
     color: white;
     box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
 
@@ -670,11 +680,11 @@
   padding: 0.5rem 1rem;
   background: rgba(0, 212, 255, 0.1);
   border: 1px solid rgba(0, 212, 255, 0.2);
-  border-radius: var(--radius-lg);
-  color: var(--tech-cyan);
+  border-radius: 10px;
+  color: #00d4ff;
   font-size: 0.8125rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.18s;
 
   i {
     font-size: 0.75rem;
@@ -694,7 +704,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
+  border-radius: 100px;
   font-size: 0.6875rem;
   font-weight: 500;
 
@@ -704,7 +714,7 @@
 
   &--primary {
     background: rgba(0, 212, 255, 0.12);
-    color: var(--tech-cyan);
+    color: #00d4ff;
   }
 }
 

@@ -1,7 +1,7 @@
 // presence-config.component.ts - Version améliorée
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, FormArray, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormArray, FormGroup, AbstractControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkshopService } from '../../../core/services/workshop.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -116,9 +116,18 @@ export class PresenceConfigComponent implements OnInit, OnDestroy {
     this.fields.removeAt(index);
   }
 
-  onDrop(event: CdkDragDrop<any[]>): void {
-    moveItemInArray(this.fields.controls, event.previousIndex, event.currentIndex);
-    moveItemInArray(this.fields.value, event.previousIndex, event.currentIndex);
+  onDrop(event: CdkDragDrop<AbstractControl[]>): void {
+    // ✅ moveItemInArray sur fields.controls modifie directement le
+    // tableau interne du FormArray, mais Angular Forms n'est pas notifié
+    // de ce changement (pas de recalcul de validité, pas d'émission sur
+    // valueChanges). On force la resynchronisation avec updateValueAndValidity()
+    // pour que le FormArray reflète immédiatement le nouvel ordre.
+    moveItemInArray(
+      this.fields.controls,
+      event.previousIndex,
+      event.currentIndex,
+    );
+    this.fields.updateValueAndValidity();
   }
 
   toggleEnabled(): void {

@@ -1,6 +1,17 @@
 // dashboard.component.scss
+
+$cyan:   #00d4ff;
+$blue:   #3b82f6;
+$violet: #8b5cf6;
+$green:  #10b981;
+$card-bg: rgba(15, 18, 53, 0.9);
+$border:  rgba(0, 212, 255, 0.08);
+
+// ============================================================
+//  TOPBAR
+// ============================================================
 .dashboard {
-  &__header {
+  &__topbar {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -10,17 +21,14 @@
   }
 
   &__title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
-    background: linear-gradient(135deg, #ffffff, #94a3b8);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    color: #f1f5f9;
+    margin-bottom: 0.2rem;
   }
 
   &__subtitle {
-    color: #64748b;
+    color: #475569;
     font-size: 0.875rem;
   }
 
@@ -28,135 +36,118 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(0, 212, 255, 0.08);
+    padding: 0.45rem 1rem;
+    background: rgba($cyan, 0.07);
+    border: 1px solid rgba($cyan, 0.18);
     border-radius: 100px;
-    font-size: 0.875rem;
-    color: #00d4ff;
+    font-size: 0.8125rem;
+    color: $cyan;
+    white-space: nowrap;
 
-    i {
-      font-size: 0.875rem;
-    }
+    i { font-size: 0.8125rem; }
   }
 }
 
-/* ============================================================
-   STATS GRID
-   ============================================================ */
+// ============================================================
+//  STATS GRID
+// ============================================================
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .stat-card {
   position: relative;
-  background: rgba(15, 18, 53, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 20px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 16px;
   padding: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: all 0.3s;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+
+  // accent top bar
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+  }
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+    border-color: rgba($cyan, 0.2);
   }
+
+  &--themes::before   { background: $cyan; }
+  &--workshops::before { background: $blue; }
+  &--members::before  { background: $violet; }
+  &--registrations::before { background: $green; }
 
   &__icon {
-    width: 56px;
-    height: 56px;
-    background: rgba(0, 212, 255, 0.1);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    i {
-      font-size: 1.5rem;
-    }
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 1.25rem; }
   }
 
-  &--themes .stat-card__icon {
-    background: rgba(0, 212, 255, 0.1);
-    color: #00d4ff;
-  }
+  &--themes .stat-card__icon      { background: rgba($cyan, 0.12);   color: $cyan; }
+  &--workshops .stat-card__icon   { background: rgba($blue, 0.12);   color: $blue; }
+  &--members .stat-card__icon     { background: rgba($violet, 0.12); color: $violet; }
+  &--registrations .stat-card__icon { background: rgba($green, 0.12); color: $green; }
 
-  &--workshops .stat-card__icon {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-  }
-
-  &--members .stat-card__icon {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-  }
-
-  &--registrations .stat-card__icon {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-  }
-
-  &__content {
-    flex: 1;
-  }
+  &__content { flex: 1; }
 
   &__value {
     display: block;
     font-size: 1.75rem;
     font-weight: 700;
-    line-height: 1.2;
+    color: #f1f5f9;
+    line-height: 1.1;
   }
 
   &__label {
     font-size: 0.75rem;
-    color: #64748b;
+    color: #475569;
+    margin-top: 0.2rem;
   }
 
   &__trend {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 1rem; right: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
+    gap: 0.2rem;
+    font-size: 0.6875rem;
     font-weight: 500;
+    color: $green;
 
-    &.trend--up {
-      color: #10b981;
-    }
-
-    i {
-      font-size: 0.6875rem;
-    }
+    i { font-size: 0.6rem; }
   }
 }
 
-/* ============================================================
-   CHARTS ROW
-   ============================================================ */
+// ============================================================
+//  CHARTS
+// ============================================================
 .charts-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
 }
 
 .chart-card {
-  background: rgba(15, 18, 53, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 20px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 16px;
   padding: 1.25rem;
 
   &__header {
@@ -165,11 +156,12 @@
     align-items: center;
     margin-bottom: 1rem;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
 
     h3 {
-      font-size: 1rem;
+      font-size: 0.9375rem;
       font-weight: 600;
+      color: #cbd5e1;
     }
   }
 }
@@ -181,108 +173,133 @@
   span {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.3rem;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: #64748b;
 
-    i {
-      font-size: 0.625rem;
-    }
+    i { font-size: 0.5rem; }
   }
 }
 
 .chart-container {
   position: relative;
-  height: 300px;
+  height: 280px;
 }
 
-/* ============================================================
-   SUBMISSIONS STATUS
-   ============================================================ */
+// ============================================================
+//  SUBMISSIONS STATUS
+// ============================================================
 .submissions-status {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .status-card {
-  background: rgba(15, 18, 53, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 20px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 16px;
   padding: 1.25rem;
 
   &__header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     margin-bottom: 1rem;
+  }
 
-    i {
-      color: #00d4ff;
+  &__icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: rgba($cyan, 0.1);
+    display: flex; align-items: center; justify-content: center;
+    color: $cyan;
+    flex-shrink: 0;
+
+    &--green {
+      background: rgba($green, 0.1);
+      color: $green;
     }
 
-    span {
-      font-size: 0.875rem;
-    }
+    i { font-size: 0.9rem; }
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__label {
+    font-size: 0.8125rem;
+    color: #94a3b8;
   }
 
   &__badge {
-    margin-left: auto;
-    padding: 0.25rem 0.75rem;
-    background: rgba(0, 212, 255, 0.1);
+    padding: 0.15rem 0.625rem;
+    background: rgba($cyan, 0.1);
     border-radius: 100px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: #00d4ff;
+    color: $cyan;
+
+    &--green {
+      background: rgba($green, 0.1);
+      color: $green;
+    }
   }
 
   &__progress {
-    margin-bottom: 1rem;
-
-    .progress-bar {
-      height: 8px;
-      background: rgba(0, 212, 255, 0.1);
-      border-radius: 100px;
-      overflow: hidden;
-
-      .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #00d4ff, #8b5cf6);
-        border-radius: 100px;
-        transition: width 0.5s ease;
-      }
-    }
+    margin-bottom: 0.875rem;
   }
 
   &__footer {
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
-    color: #64748b;
+    color: #475569;
+    gap: 0.5rem;
+
+    i { margin-right: 0.25rem; font-size: 0.65rem; }
   }
 }
 
-/* ============================================================
-   DATA TABLES
-   ============================================================ */
+.progress-bar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $cyan, $violet);
+  border-radius: 100px;
+  transition: width 0.5s ease;
+
+  &--green {
+    background: linear-gradient(90deg, $green, $cyan);
+  }
+}
+
+// ============================================================
+//  DATA TABLES
+// ============================================================
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
 }
 
 .data-table {
-  background: rgba(15, 18, 53, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 20px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 16px;
   overflow: hidden;
 
   &__header {
@@ -290,36 +307,29 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+    border-bottom: 1px solid rgba($cyan, 0.06);
 
     h3 {
-      font-size: 1rem;
+      font-size: 0.9375rem;
       font-weight: 600;
+      color: #cbd5e1;
     }
   }
 
   &__link {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
-    color: #00d4ff;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: $cyan;
     text-decoration: none;
+    transition: gap 0.2s;
 
-    i {
-      font-size: 0.75rem;
-      transition: transform 0.2s;
-    }
-
-    &:hover i {
-      transform: translateX(2px);
-    }
+    i { font-size: 0.7rem; transition: transform 0.2s; }
+    &:hover i { transform: translateX(2px); }
   }
 
-  &__body {
-    padding: 0;
-    overflow-x: auto;
-  }
+  &__body { overflow-x: auto; }
 }
 
 .admin-table {
@@ -327,74 +337,60 @@
   border-collapse: collapse;
 
   th, td {
-    padding: 0.75rem 1.25rem;
+    padding: 0.7rem 1.25rem;
     text-align: left;
-    border-bottom: 1px solid rgba(0, 212, 255, 0.05);
   }
 
   th {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
-    color: #64748b;
+    color: #334155;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid rgba($cyan, 0.06);
   }
 
   td {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 
-    &.title {
-      font-weight: 500;
-    }
-
-    &.actions {
-      text-align: right;
-    }
+    &.title { color: #cbd5e1; font-weight: 500; }
+    &.actions { text-align: right; }
   }
 
-  tbody tr:hover {
-    background: rgba(0, 212, 255, 0.03);
-  }
+  tbody tr:hover td { background: rgba($cyan, 0.03); }
+  tbody tr:last-child td { border-bottom: none; }
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.625rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 100px;
   font-size: 0.6875rem;
   font-weight: 500;
 
-  &--planifié {
-    background: rgba(0, 212, 255, 0.1);
-    color: #00d4ff;
-  }
-
-  &--en-cours {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-  }
-
-  &--terminé {
-    background: rgba(107, 114, 128, 0.1);
-    color: #9ca3af;
-  }
+  &--planifié    { background: rgba($cyan, 0.1);   color: $cyan; }
+  &--en-cours    { background: rgba($green, 0.1);  color: $green; }
+  &--terminé     { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: rgba(0, 212, 255, 0.1);
-  border-radius: 8px;
-  color: #00d4ff;
+  width: 26px; height: 26px;
+  background: rgba($cyan, 0.08);
+  border-radius: 7px;
+  color: $cyan;
   text-decoration: none;
   transition: all 0.2s;
 
+  i { font-size: 0.7rem; }
+
   &:hover {
-    background: rgba(0, 212, 255, 0.2);
+    background: rgba($cyan, 0.16);
     transform: translateX(2px);
   }
 }
@@ -404,72 +400,78 @@
   padding: 2rem;
 
   i {
-    font-size: 2rem;
-    color: #64748b;
+    font-size: 1.75rem;
+    color: #334155;
+    display: block;
     margin-bottom: 0.5rem;
   }
 
-  p {
-    color: #64748b;
-    font-size: 0.875rem;
-  }
+  p { color: #475569; font-size: 0.875rem; }
 }
 
-/* ============================================================
-   QUICK ACTIONS
-   ============================================================ */
+// ============================================================
+//  QUICK ACTIONS
+// ============================================================
 .quick-actions {
   h3 {
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
-    margin-bottom: 1rem;
+    color: #cbd5e1;
+    margin-bottom: 0.875rem;
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.875rem;
   }
 }
 
 .quick-action {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.875rem;
   padding: 1rem;
-  background: rgba(15, 18, 53, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 212, 255, 0.1);
-  border-radius: 16px;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 14px;
   text-decoration: none;
-  transition: all 0.3s;
-
-  i {
-    font-size: 1.5rem;
-    color: #00d4ff;
-  }
+  transition: all 0.2s;
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba(0, 212, 255, 0.3);
-    background: rgba(0, 212, 255, 0.05);
+    border-color: rgba($cyan, 0.22);
+    background: rgba(15, 18, 53, 0.95);
+  }
+
+  &__icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 1.1rem; }
+
+    &--cyan   { background: rgba($cyan, 0.12);   color: $cyan; }
+    &--blue   { background: rgba($blue, 0.12);   color: $blue; }
+    &--violet { background: rgba($violet, 0.12); color: $violet; }
   }
 
   &__title {
     font-size: 0.875rem;
     font-weight: 600;
-    color: white;
+    color: #e2e8f0;
   }
 
   &__desc {
     font-size: 0.6875rem;
-    color: #64748b;
+    color: #475569;
+    margin-top: 0.1rem;
   }
 }
 
-/* ============================================================
-   LOADING STATE
-   ============================================================ */
+// ============================================================
+//  LOADING STATE
+// ============================================================
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -478,77 +480,45 @@
   min-height: 400px;
   gap: 1rem;
 
-  p {
-    color: #64748b;
-  }
+  p { color: #475569; font-size: 0.875rem; }
 }
 
 .loading-spinner {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 52px; height: 52px;
 
   .spinner-ring {
-    position: absolute;
-    inset: 0;
-    border: 3px solid rgba(0, 212, 255, 0.1);
-    border-top-color: #00d4ff;
+    position: absolute; inset: 0;
+    border: 2px solid rgba($cyan, 0.1);
+    border-top-color: $cyan;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
 
   .spinner-ring-inner {
-    position: absolute;
-    inset: 12px;
-    border: 3px solid rgba(0, 212, 255, 0.1);
-    border-bottom-color: #00d4ff;
+    position: absolute; inset: 10px;
+    border: 2px solid rgba($cyan, 0.1);
+    border-bottom-color: $violet;
     border-radius: 50%;
     animation: spin-reverse 0.6s linear infinite;
   }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin         { to { transform: rotate(360deg); } }
+@keyframes spin-reverse { to { transform: rotate(-360deg); } }
 
-@keyframes spin-reverse {
-  to { transform: rotate(-360deg); }
-}
-
-/* ============================================================
-   RESPONSIVE — MOBILE (≤ 480px)
-   ============================================================ */
+// ============================================================
+//  RESPONSIVE
+// ============================================================
 @media (max-width: 480px) {
   .dashboard {
-    &__header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-    }
-
-    &__title {
-      font-size: 1.25rem;
-    }
+    &__topbar { flex-direction: column; gap: 0.75rem; }
+    &__title  { font-size: 1.25rem; }
   }
 
-  .stat-card {
-    &__value {
-      font-size: 1.4rem;
-    }
-  }
+  .stat-card__value { font-size: 1.5rem; }
 
-  .data-table {
-    &__header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-  }
+  .data-table__header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
 
-  .admin-table {
-    th, td {
-      padding: 0.625rem 0.875rem;
-      font-size: 0.8125rem;
-    }
-  }
+  .admin-table th, .admin-table td { padding: 0.6rem 0.875rem; }
 }

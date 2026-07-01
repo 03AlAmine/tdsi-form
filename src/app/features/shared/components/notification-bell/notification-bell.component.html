@@ -1,0 +1,59 @@
+<!-- notification-bell.component.html -->
+<div class="notification-bell">
+  <button
+    class="notification-bell__trigger"
+    (click)="toggle()"
+    [attr.aria-label]="'Notifications' + (unreadCount() > 0 ? ' (' + unreadCount() + ' non lues)' : '')"
+  >
+    <i class="fas fa-bell"></i>
+    @if (unreadCount() > 0) {
+      <span class="notification-bell__badge">{{ badgeLabel() }}</span>
+    }
+  </button>
+
+  @if (isOpen()) {
+    <div class="notification-bell__panel" [class.notification-bell__panel--up]="openDirection === 'up'">
+      <div class="notification-bell__header">
+        <span class="notification-bell__title">Notifications</span>
+        @if (unreadCount() > 0) {
+          <button class="notification-bell__mark-all" (click)="markAllAsRead()">
+            Tout marquer comme lu
+          </button>
+        }
+      </div>
+
+      <div class="notification-bell__list">
+        @if (notifications().length === 0) {
+          <div class="notification-bell__empty">
+            <i class="fas fa-bell-slash"></i>
+            <span>Aucune notification</span>
+          </div>
+        } @else {
+          @for (notification of notifications(); track notification.id) {
+            <div
+              class="notification-item"
+              [class.notification-item--unread]="!notification.read"
+              (click)="onNotificationClick(notification)"
+            >
+              <div class="notification-item__icon" [ngClass]="colorClassFor(notification.type)">
+                <i class="fas {{ iconFor(notification.type) }}"></i>
+              </div>
+              <div class="notification-item__content">
+                <div class="notification-item__title">{{ notification.title }}</div>
+                <div class="notification-item__message">{{ notification.message }}</div>
+                <div class="notification-item__time">{{ timeAgo(notification.createdAt) }}</div>
+              </div>
+              <button
+                class="notification-item__remove"
+                (click)="removeNotification($event, notification)"
+                aria-label="Supprimer la notification"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

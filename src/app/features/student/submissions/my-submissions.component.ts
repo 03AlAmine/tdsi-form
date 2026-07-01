@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { ThemeSubmission } from '../../../core/model/models';
 
 @Component({
@@ -17,11 +18,13 @@ import { ThemeSubmission } from '../../../core/model/models';
 export class MySubmissionsComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   submissions = signal<ThemeSubmission[]>([]);
   loading = signal(true);
   selectedSubmission = signal<ThemeSubmission | null>(null);
   drawerOpen = signal(false);
+  cancellingId = signal<string | null>(null);
 
   private subscription: Subscription | null = null;
 
@@ -65,6 +68,28 @@ export class MySubmissionsComponent implements OnInit, OnDestroy {
       this.selectedSubmission.set(null);
       document.body.style.overflow = '';
     }, 300);
+  }
+
+  // ✅ Annulation d'une proposition encore en attente. Le clic est
+  // porté par le bouton du tiroir de détail (event déjà isolé du
+  // click "ouvrir le tiroir" porté par la carte).
+  async cancelSubmission(sub: ThemeSubmission): Promise<void> {
+    if (!sub.id) return;
+    const confirmed = window.confirm(
+      `Annuler la proposition « ${sub.proposedTitle} » ? Cette action est définitive.`,
+    );
+    if (!confirmed) return;
+
+    this.cancellingId.set(sub.id);
+    try {
+      await this.themeService.cancelSubmission(sub.id);
+      this.toastService.info('Proposition annulée');
+      this.closeDrawer();
+    } catch {
+      this.toastService.error("Erreur lors de l'annulation");
+    } finally {
+      this.cancellingId.set(null);
+    }
   }
 
   getStatusIconClass(status: string): string {

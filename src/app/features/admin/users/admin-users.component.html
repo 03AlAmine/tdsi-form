@@ -1,193 +1,317 @@
 <!-- admin-users.component.html -->
-<div class="admin-users">
+<div class="admin-users" [class.panel-open]="selectedUser()">
 
-  <!-- Header -->
-  <div class="page-header">
-    <div>
-      <h1 class="page-header__title">
-        <i class="fas fa-users"></i>
-        Utilisateurs
-      </h1>
-      <p class="page-header__subtitle">Gérer les membres du club TDSI</p>
-    </div>
-    <div class="page-header__stats">
-      <div class="stat-badge">
-        <i class="fas fa-user-check"></i>
-        <span>{{ stats().total }} membres</span>
+  <!-- LEFT: liste -->
+  <div class="users-list-pane">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">
+          <i class="fas fa-users"></i>
+          Utilisateurs
+        </h1>
+        <p class="page-header__subtitle">{{ stats().total }} membres enregistrés</p>
+      </div>
+      <div class="header-badges">
+        <div class="info-badge info-badge--cyan">
+          <i class="fas fa-user-graduate"></i>
+          <span>{{ stats().students }} étudiants</span>
+        </div>
+        <div class="info-badge info-badge--violet">
+          <i class="fas fa-crown"></i>
+          <span>{{ stats().admins }} admins</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Search & Filters -->
-  <div class="toolbar">
-    <div class="search-wrapper">
-      <i class="fas fa-search"></i>
-      <input type="text" class="search-input" placeholder="Rechercher par nom, email..."
-             (input)="searchTerm.set($any($event.target).value)" />
-      @if (searchTerm()) {
-        <button class="search-clear" (click)="searchTerm.set('')">
-          <i class="fas fa-times"></i>
-        </button>
-      }
-    </div>
-    <div class="filters">
-      <button class="filter-chip" [class.active]="filterRole() === 'all'" (click)="filterRole.set('all')">
-        Tous
-      </button>
-      <button class="filter-chip" [class.active]="filterRole() === 'student'" (click)="filterRole.set('student')">
-        <i class="fas fa-user-graduate"></i>
-        Étudiants
-      </button>
-      <button class="filter-chip" [class.active]="filterRole() === 'admin'" (click)="filterRole.set('admin')">
-        <i class="fas fa-crown"></i>
-        Admins
-      </button>
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  @if (loading()) {
-    <div class="loading-state">
-      <div class="loading-spinner">
-        <div class="spinner-ring"></div>
-        <div class="spinner-ring-inner"></div>
-      </div>
-      <p>Chargement des utilisateurs...</p>
-    </div>
-  } @else if (filteredUsers().length === 0) {
-    <!-- Empty State -->
-    <div class="empty-state">
-      <div class="empty-state__icon">
-        <i class="fas fa-user-slash"></i>
-      </div>
-      <h3>Aucun utilisateur trouvé</h3>
-      <p>Aucun utilisateur ne correspond à votre recherche</p>
-    </div>
-  } @else {
-    <!-- Users Table -->
-    <div class="table-wrapper">
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>Utilisateur</th>
-            <th>Email</th>
-            <th>Promotion</th>
-            <th>Rôle</th>
-            <th>Inscrit le</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of filteredUsers(); track user.uid) {
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar">
-                    {{ user.displayName.charAt(0).toUpperCase() || '?' }}
-                  </div>
-                  <span class="user-name">{{ user.displayName }}</span>
-                </div>
-              </td>
-              <td class="cell-email">{{ user.email }}</td>
-              <td>
-                <span class="promo-badge">{{ user.promo || 'Non défini' }}</span>
-              </td>
-              <td>
-                <span class="role-badge" [class]="'role-badge--' + (user.role === 'admin' ? 'admin' : 'user')">
-                  @if (user.role === 'admin') {
-                    <i class="fas fa-crown"></i> Administrateur
-                  } @else {
-                    <i class="fas fa-user-graduate"></i> Membre
-                  }
-                </span>
-              </td>
-              <td class="cell-date">{{ user.createdAt | date:'dd MMM yyyy' }}</td>
-              <td class="cell-actions">
-                <button class="action-btn" title="Modifier le rôle" (click)="openRoleModal(user)">
-                  <i class="fas fa-user-tag"></i>
-                </button>
-                <button class="action-btn action-btn--danger" title="Suspendre" (click)="suspendUser(user)">
-                  <i class="fas fa-ban"></i>
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    @if (totalPages() > 1) {
-      <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
-        <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+    <!-- Promo stats mini -->
+    @if (stats().promos.length > 0) {
+      <div class="promo-stats">
+        @for (p of stats().promos.slice(0, 5); track p.promo) {
+          <div class="promo-chip" [class.active]="filterPromo() === p.promo"
+               (click)="filterPromo.set(filterPromo() === p.promo ? 'all' : p.promo)">
+            <span class="promo-chip__label">{{ p.promo }}</span>
+            <span class="promo-chip__count">{{ p.count }}</span>
+          </div>
+        }
       </div>
     }
-  }
 
-  <!-- Role Modal -->
-  @if (selectedUser()) {
-    <div class="modal-overlay" (click)="closeRoleModal()">
-      <div class="modal-container" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>Modifier le rôle</h3>
-          <button class="modal-close" (click)="closeRoleModal()">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Nom, email, promotion..."
+               [value]="searchTerm()"
+               (input)="searchTerm.set($any($event.target).value); currentPage.set(1)" />
+        @if (searchTerm()) {
+          <button class="search-clear" (click)="searchTerm.set('')">
             <i class="fas fa-times"></i>
           </button>
+        }
+      </div>
+      <div class="filters">
+        <button class="filter-chip" [class.active]="filterRole() === 'all'"
+                (click)="filterRole.set('all'); currentPage.set(1)">Tous</button>
+        <button class="filter-chip" [class.active]="filterRole() === 'student'"
+                (click)="filterRole.set('student'); currentPage.set(1)">
+          <i class="fas fa-user-graduate"></i> Étudiants
+        </button>
+        <button class="filter-chip" [class.active]="filterRole() === 'admin'"
+                (click)="filterRole.set('admin'); currentPage.set(1)">
+          <i class="fas fa-crown"></i> Admins
+        </button>
+        @if (filterPromo() !== 'all') {
+          <button class="filter-chip active filter-chip--promo"
+                  (click)="filterPromo.set('all')">
+            {{ filterPromo() }} <i class="fas fa-times"></i>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+          <div class="spinner-ring-inner"></div>
         </div>
-        <div class="modal-body">
-          <div class="user-info">
-            <div class="user-avatar-lg">
-              {{ selectedUser()!.displayName.charAt(0).toUpperCase() || '?' }}
+        <p>Chargement des utilisateurs...</p>
+      </div>
+
+    } @else if (filteredUsers().length === 0) {
+      <div class="empty-state">
+        <i class="fas fa-user-slash empty-state__icon"></i>
+        <h3>Aucun utilisateur trouvé</h3>
+        <p>Modifiez vos filtres de recherche</p>
+      </div>
+
+    } @else {
+      <!-- User Cards Grid -->
+      <div class="users-grid">
+        @for (user of paginatedUsers(); track user.uid) {
+          <div class="user-card" [class.active]="selectedUser()?.uid === user.uid"
+               (click)="openUserDetail(user)">
+            <div class="user-card__avatar" [attr.data-role]="user.role">
+              {{ getInitials(user.displayName) }}
+              @if (user.role === 'admin') {
+                <div class="user-card__crown"><i class="fas fa-crown"></i></div>
+              }
             </div>
-            <div>
-              <div class="user-name-lg">{{ selectedUser()!.displayName }}</div>
-              <div class="user-email">{{ selectedUser()!.email }}</div>
+            <div class="user-card__info">
+              <div class="user-card__name">{{ user.displayName }}</div>
+              <div class="user-card__email">{{ user.email }}</div>
+              <div class="user-card__meta">
+                @if (user.promo) {
+                  <span class="meta-badge meta-badge--promo">{{ user.promo }}</span>
+                }
+                <span class="meta-badge" [class.meta-badge--admin]="user.role === 'admin'"
+                      [class.meta-badge--student]="user.role !== 'admin'">
+                  {{ user.role === 'admin' ? 'Admin' : 'Étudiant' }}
+                </span>
+              </div>
             </div>
+            <i class="fas fa-chevron-right user-card__arrow"></i>
           </div>
-          <div class="role-selector">
-            <label class="form-label">Sélectionner un rôle</label>
-            <div class="role-options">
-              <label class="role-option" [class.active]="selectedRole() === 'student'">
-                <input type="radio" [value]="'student'" [(ngModel)]="selectedRole" />
-                <div class="role-option__content">
-                  <i class="fas fa-user-graduate"></i>
-                  <div>
-                    <strong>Membre</strong>
-                    <span>Accès étudiant standard</span>
-                  </div>
-                </div>
-              </label>
-              <label class="role-option" [class.active]="selectedRole() === 'admin'">
-                <input type="radio" [value]="'admin'" [(ngModel)]="selectedRole" />
-                <div class="role-option__content">
-                  <i class="fas fa-crown"></i>
-                  <div>
-                    <strong>Administrateur</strong>
-                    <span>Accès complet au panneau admin</span>
-                  </div>
-                </div>
-              </label>
-            </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="page-numbers">
+            <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn--ghost" (click)="closeRoleModal()">Annuler</button>
-          <button class="btn btn--primary" (click)="updateRole()" [disabled]="updatingRole()">
-            @if (updatingRole()) {
-              <div class="btn-loader"></div>
-              <span>Mise à jour...</span>
-            } @else {
-              <span>Enregistrer</span>
-            }
+          <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+            <i class="fas fa-chevron-right"></i>
           </button>
         </div>
+      }
+    }
+  </div>
+
+  <!-- RIGHT: panel détail -->
+  @if (selectedUser()) {
+    <div class="user-detail-panel">
+      <div class="panel-header">
+        <button class="panel-close" (click)="closePanel()">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
+
+      <!-- Mode: Détail -->
+      @if (panelMode() === 'detail') {
+        <!-- Profil -->
+        <div class="panel-profile">
+          <div class="panel-avatar" [attr.data-role]="selectedUser()!.role">
+            {{ getInitials(selectedUser()!.displayName) }}
+            @if (selectedUser()!.role === 'admin') {
+              <div class="panel-avatar__crown"><i class="fas fa-crown"></i></div>
+            }
+          </div>
+          <h2 class="panel-name">{{ selectedUser()!.displayName }}</h2>
+          <p class="panel-email">{{ selectedUser()!.email }}</p>
+          <div class="panel-badges">
+            @if (selectedUser()!.promo) {
+              <span class="meta-badge meta-badge--promo">
+                <i class="fas fa-graduation-cap"></i> {{ selectedUser()!.promo }}
+              </span>
+            }
+            <span class="meta-badge" [class.meta-badge--admin]="selectedUser()!.role === 'admin'"
+                  [class.meta-badge--student]="selectedUser()!.role !== 'admin'">
+              <i class="fas" [class.fa-crown]="selectedUser()!.role === 'admin'"
+                 [class.fa-user-graduate]="selectedUser()!.role !== 'admin'"></i>
+              {{ selectedUser()!.role === 'admin' ? 'Administrateur' : 'Étudiant' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Infos détail -->
+        <div class="panel-section">
+          <h3 class="panel-section__title">Informations</h3>
+          <div class="info-grid">
+            <div class="info-row">
+              <div class="info-row__label"><i class="fas fa-envelope"></i> Email</div>
+              <div class="info-row__value">{{ selectedUser()!.email }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-row__label"><i class="fas fa-graduation-cap"></i> Promotion</div>
+              <div class="info-row__value">{{ selectedUser()!.promo || 'Non renseignée' }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-row__label"><i class="fas fa-calendar-plus"></i> Inscrit le</div>
+              <div class="info-row__value">{{ selectedUser()!.createdAt | date:'dd MMM yyyy' }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-row__label"><i class="fas fa-shield-alt"></i> Rôle</div>
+              <div class="info-row__value">
+                {{ selectedUser()!.role === 'admin' ? 'Administrateur' : 'Membre étudiant' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats workshops -->
+        <div class="panel-section">
+          <h3 class="panel-section__title">Participation aux workshops</h3>
+          <div class="ws-stats-row">
+            <div class="ws-stat">
+              <div class="ws-stat__value">{{ userStats().total }}</div>
+              <div class="ws-stat__label">Total</div>
+            </div>
+            <div class="ws-stat">
+              <div class="ws-stat__value ws-stat__value--green">{{ userStats().completed }}</div>
+              <div class="ws-stat__label">Terminés</div>
+            </div>
+            <div class="ws-stat">
+              <div class="ws-stat__value ws-stat__value--cyan">{{ userStats().upcoming }}</div>
+              <div class="ws-stat__label">À venir</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Liste workshops -->
+        @if (userWorkshops().length > 0) {
+          <div class="panel-section">
+            <h3 class="panel-section__title">Ateliers suivis</h3>
+            <div class="ws-list">
+              @for (ws of userWorkshops().slice(0, 6); track ws.id) {
+                <div class="ws-item">
+                  <div class="ws-item__dot"
+                       [class.ws-item__dot--past]="ws.date < $any(today)"
+                       [class.ws-item__dot--future]="ws.date >= $any(today)">
+                  </div>
+                  <div class="ws-item__info">
+                    <div class="ws-item__title">{{ ws.themeTitle }}</div>
+                    <div class="ws-item__date">{{ ws.date | date:'dd MMM yyyy' }}</div>
+                  </div>
+                  <span class="ws-item__badge"
+                        [class.ws-item__badge--done]="ws.date < $any(today)"
+                        [class.ws-item__badge--soon]="ws.date >= $any(today)">
+                    {{ ws.date < $any(today) ? 'Terminé' : 'À venir' }}
+                  </span>
+                </div>
+              }
+              @if (userWorkshops().length > 6) {
+                <div class="ws-more">+ {{ userWorkshops().length - 6 }} autres ateliers</div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="panel-section">
+            <div class="ws-empty">
+              <i class="fas fa-calendar-times"></i>
+              <span>Aucun workshop suivi</span>
+            </div>
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="panel-actions">
+          <button class="btn btn--ghost btn--full" (click)="openRoleEdit()">
+            <i class="fas fa-user-tag"></i>
+            Modifier le rôle
+          </button>
+          <button class="btn btn--danger btn--full" (click)="suspendUser(selectedUser()!)">
+            <i class="fas fa-ban"></i>
+            Suspendre
+          </button>
+        </div>
+
+      <!-- Mode: Modifier le rôle -->
+      } @else if (panelMode() === 'role') {
+        <div class="panel-role-edit">
+          <button class="back-btn" (click)="backToDetail()">
+            <i class="fas fa-arrow-left"></i> Retour
+          </button>
+          <h3>Modifier le rôle</h3>
+          <p class="role-edit-sub">{{ selectedUser()!.displayName }}</p>
+
+          <div class="role-options">
+            <label class="role-option" [class.active]="selectedRole() === 'student'"
+                   (click)="selectedRole.set('student')">
+              <div class="role-option__icon"><i class="fas fa-user-graduate"></i></div>
+              <div class="role-option__body">
+                <strong>Membre étudiant</strong>
+                <span>Accès standard à la plateforme</span>
+              </div>
+              <div class="role-option__check" [class.checked]="selectedRole() === 'student'">
+                <i class="fas fa-check"></i>
+              </div>
+            </label>
+
+            <label class="role-option" [class.active]="selectedRole() === 'admin'"
+                   (click)="selectedRole.set('admin')">
+              <div class="role-option__icon role-option__icon--admin">
+                <i class="fas fa-crown"></i>
+              </div>
+              <div class="role-option__body">
+                <strong>Administrateur</strong>
+                <span>Accès complet au panneau admin</span>
+              </div>
+              <div class="role-option__check" [class.checked]="selectedRole() === 'admin'">
+                <i class="fas fa-check"></i>
+              </div>
+            </label>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn btn--ghost btn--full" (click)="backToDetail()">Annuler</button>
+            <button class="btn btn--primary btn--full" (click)="updateRole()" [disabled]="updatingRole()">
+              @if (updatingRole()) {
+                <div class="btn-loader"></div> Mise à jour...
+              } @else {
+                Enregistrer
+              }
+            </button>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>

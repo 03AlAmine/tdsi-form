@@ -1,0 +1,181 @@
+<!-- admin-configuration.component.html -->
+<div class="admin-configuration">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">
+        <i class="fas fa-sliders-h"></i>
+        Configuration
+      </h1>
+      <p class="page-header__subtitle">
+        Réglages globaux et valeurs par défaut du club
+      </p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de la configuration...</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" class="config-form">
+      <!-- Section Thématiques -->
+      <div class="config-section">
+        <h2 class="config-section__title">
+          <i class="fas fa-layer-group"></i>
+          Thématiques
+        </h2>
+        <p class="config-section__hint">
+          Valeurs pré-remplies lors de la création d'une nouvelle thématique.
+          Les thématiques déjà créées ne sont pas affectées.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label required">
+            <i class="fas fa-users"></i>
+            Nombre de participants par défaut
+          </label>
+          <input
+            type="number"
+            formControlName="defaultThemeMaxParticipants"
+            class="form-input"
+            min="1"
+            max="500"
+          />
+          @if (
+            form.get('defaultThemeMaxParticipants')?.invalid &&
+            form.get('defaultThemeMaxParticipants')?.touched
+          ) {
+            <span class="form-error">Doit être compris entre 1 et 500</span>
+          }
+        </div>
+      </div>
+
+      <!-- Section Ateliers -->
+      <div class="config-section">
+        <h2 class="config-section__title">
+          <i class="fas fa-chalkboard-user"></i>
+          Ateliers (workshops)
+        </h2>
+        <p class="config-section__hint">
+          Valeurs pré-remplies lors de la création d'un nouvel atelier.
+          Les ateliers déjà créés ne sont pas affectés.
+        </p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">
+              <i class="fas fa-clock"></i>
+              Durée par défaut (minutes)
+            </label>
+            <input
+              type="number"
+              formControlName="defaultWorkshopDuration"
+              class="form-input"
+              min="15"
+              max="480"
+              step="15"
+            />
+            @if (
+              form.get('defaultWorkshopDuration')?.invalid &&
+              form.get('defaultWorkshopDuration')?.touched
+            ) {
+              <span class="form-error">Doit être compris entre 15 et 480 minutes</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">
+              <i class="fas fa-users"></i>
+              Nombre de participants par défaut
+            </label>
+            <input
+              type="number"
+              formControlName="defaultWorkshopMaxParticipants"
+              class="form-input"
+              min="1"
+              max="500"
+            />
+            @if (
+              form.get('defaultWorkshopMaxParticipants')?.invalid &&
+              form.get('defaultWorkshopMaxParticipants')?.touched
+            ) {
+              <span class="form-error">Doit être compris entre 1 et 500</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">
+              <i class="fas fa-map-marker-alt"></i>
+              Lieu par défaut
+            </label>
+            <div class="select-wrapper">
+              <select formControlName="defaultWorkshopLocation" class="form-select">
+                <option value="en ligne">En ligne</option>
+                <option value="présentiel">Présentiel</option>
+                <option value="hybride">Hybride</option>
+              </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+              <div class="select-border"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required">
+              <i class="fas fa-business-time"></i>
+              Heure par défaut
+            </label>
+            <input
+              type="time"
+              formControlName="defaultWorkshopTime"
+              class="form-input"
+            />
+            @if (
+              form.get('defaultWorkshopTime')?.invalid &&
+              form.get('defaultWorkshopTime')?.touched
+            ) {
+              <span class="form-error">Format invalide (HH:mm)</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="config-footer">
+        @if (lastUpdated()) {
+          <span class="config-footer__meta">
+            <i class="fas fa-history"></i>
+            Dernière mise à jour : {{ lastUpdated() | date: 'dd/MM/yyyy à HH:mm' }}
+          </span>
+        }
+        <div class="config-footer__actions">
+          <button
+            type="button"
+            class="btn btn--outline"
+            (click)="resetToDefaults()"
+            [disabled]="saving()"
+          >
+            <i class="fas fa-undo"></i>
+            <span>Réinitialiser les valeurs</span>
+          </button>
+          <button
+            type="submit"
+            class="btn btn--primary"
+            [disabled]="saving() || form.invalid"
+          >
+            @if (saving()) {
+              <div class="btn-spinner"></div>
+              <span>Enregistrement...</span>
+            } @else {
+              <i class="fas fa-save"></i>
+              <span>Enregistrer</span>
+            }
+          </button>
+        </div>
+      </div>
+    </form>
+  }
+</div>

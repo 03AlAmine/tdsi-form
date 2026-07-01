@@ -685,7 +685,7 @@
               @for (
                 speaker of speakers.controls;
                 let i = $index;
-                track speaker.get("id")?.value
+                track i
               ) {
                 <div [formGroupName]="i" class="speaker-item">
                   <div class="speaker-item__drag">

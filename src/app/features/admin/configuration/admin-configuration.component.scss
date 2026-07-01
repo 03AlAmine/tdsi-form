@@ -1,0 +1,244 @@
+// admin-configuration.component.scss
+@use '../../../../styles/shared' as *;
+
+.admin-configuration {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ============================================================
+   LOADING STATE
+   ============================================================ */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  color: #64748b;
+  font-size: 0.875rem;
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(0, 212, 255, 0.15);
+    border-top-color: #00d4ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+/* ============================================================
+   FORM LAYOUT
+   ============================================================ */
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 720px;
+}
+
+.config-section {
+  background: rgba(21, 30, 45, 0.5);
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  border-radius: 16px;
+  padding: 1.5rem;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 0.375rem;
+
+    i {
+      font-size: 0.9375rem;
+      color: #00d4ff;
+    }
+  }
+
+  &__hint {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #cbd5e1;
+
+  i {
+    font-size: 0.75rem;
+    color: #00d4ff;
+  }
+
+  &.required::after {
+    content: '*';
+    color: #ef4444;
+    margin-left: 0.25rem;
+  }
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 14, 39, 0.6);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 10px;
+  color: #f1f5f9;
+  font-size: 0.875rem;
+  transition: all 0.18s;
+
+  &:focus {
+    outline: none;
+    border-color: #00d4ff;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+  }
+}
+
+.select-wrapper {
+  position: relative;
+
+  .form-select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+  }
+
+  .select-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    color: #64748b;
+    pointer-events: none;
+  }
+
+  .select-border {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #00d4ff, #8b5cf6);
+    transition: all 0.3s ease;
+    border-radius: 100px;
+    pointer-events: none;
+  }
+
+  .form-select:focus ~ .select-border {
+    width: 100%;
+    left: 0;
+  }
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  color: #ef4444;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.config-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #64748b;
+
+    i {
+      font-size: 0.6875rem;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .config-footer {
+    flex-direction: column;
+    align-items: stretch;
+
+    &__actions {
+      margin-left: 0;
+      flex-direction: column;
+    }
+  }
+}

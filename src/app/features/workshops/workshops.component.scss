@@ -475,10 +475,33 @@
   font-size: 0.75rem;
   font-family: var(--font-mono);
   transition: all var(--transition-fast);
+  border: none;
+  cursor: pointer;
 
   &:hover {
     background: rgba(0, 212, 255, 0.2);
     transform: translateX(4px);
+  }
+}
+
+.meet-locked {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(148, 163, 184, 0.08);
+  border-radius: var(--radius-md);
+  color: var(--gray-400);
+  font-size: 0.75rem;
+  margin: 0;
+
+  i {
+    color: var(--gray-500);
+  }
+
+  a {
+    color: var(--tech-cyan);
+    text-decoration: underline;
   }
 }
 

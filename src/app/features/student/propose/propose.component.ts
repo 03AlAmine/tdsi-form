@@ -85,7 +85,7 @@ export class ProposeComponent implements OnInit, OnDestroy {
       90,
       [Validators.required, Validators.min(30), Validators.max(480)],
     ],
-    description: ['', [Validators.required, Validators.minLength(50)]],
+    description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(500)]],
     objectives: ['', Validators.required],
     prerequisites: [''],
     materialsNeeded: [''],
@@ -236,8 +236,17 @@ export class ProposeComponent implements OnInit, OnDestroy {
         user.promo ?? 'étudiant',
       );
 
+      // ✅ Filet de sécurité : même si le prompt demande ≤480 caractères,
+      // rien ne garantit que le modèle respecte strictement la consigne.
+      // La règle Firestore plafonne 'description' à 500 caractères — on
+      // tronque donc ici pour ne jamais bloquer la soumission derrière.
+      const safeDescription =
+        result.description.length > 500
+          ? result.description.slice(0, 497) + '...'
+          : result.description;
+
       this.form.patchValue({
-        description: result.description,
+        description: safeDescription,
         objectives: result.objectives,
         prerequisites: result.prerequisites,
         materialsNeeded: result.materialsNeeded,
@@ -292,7 +301,7 @@ export class ProposeComponent implements OnInit, OnDestroy {
     this.loadingService.show('Envoi de votre proposition...');
 
     try {
-      await this.themeService.submitTheme({
+      const payload = {
         studentId: user.uid,
         studentName: user.displayName,
         studentEmail: user.email,
@@ -308,13 +317,17 @@ export class ProposeComponent implements OnInit, OnDestroy {
         prerequisites: this.form.value.prerequisites ?? '',
         estimatedDuration: this.form.value.estimatedDuration!,
         materialsNeeded: this.form.value.materialsNeeded ?? '',
-        status: 'en attente',
+        status: 'en attente' as const,
         submittedAt: new Date(),
-      });
+        aiAssisted: this.aiUsed(),
+      };
+
+      await this.themeService.submitTheme(payload);
       this.loadingService.hide();
       this.success.set(true);
       this.toastService.success('Proposition soumise avec succès !');
-    } catch {
+    } catch (e) {
+      console.error('Erreur soumission thématique:', e);
       this.loadingService.hide();
       this.error.set('Erreur lors de la soumission. Veuillez réessayer.');
       this.toastService.error('Erreur lors de la soumission');

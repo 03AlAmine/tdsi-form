@@ -1,33 +1,21 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter, NoPreloading, withPreloading } from '@angular/router';
+import { provideRouter, withPreloading } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { loadingInterceptor } from './core/interceptor/loading.interceptor';
+import { SelectivePreloadStrategy } from './core/strategy/selective-preload.strategy';
 
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // NoPreloading : les lazy modules ne sont chargés qu'à la navigation.
-    // Les utilisateurs standard (membres) ne téléchargent jamais le bundle admin.
-    // Si tu veux pré-charger uniquement certaines routes critiques (ex: workshops),
-    // remplace NoPreloading par une stratégie personnalisée (voir commentaire bas de fichier).
-    provideRouter(routes, withPreloading(NoPreloading)),
+    // ✅ Préchargement sélectif : seules les routes marquées
+    // `data: { preload: true }` (thematiques, workshops) sont
+    // téléchargées en arrière-plan après le chargement initial.
+    // Le bundle admin et les pages membre peu fréquentes restent
+    // en lazy-load pur (chargées uniquement à la navigation), donc
+    // les visiteurs anonymes et les membres standard ne téléchargent
+    // jamais le code admin. Voir core/strategy/selective-preload.strategy.ts.
+    provideRouter(routes, withPreloading(SelectivePreloadStrategy)),
     provideHttpClient(withInterceptors([loadingInterceptor]))
   ]
 };
-
-/*
- * Stratégie de préchargement sélectif (optionnel, pour plus tard) :
- *
- * import { PreloadingStrategy, Route } from '@angular/router';
- * import { Observable, of } from 'rxjs';
- *
- * export class SelectivePreload implements PreloadingStrategy {
- *   preload(route: Route, load: () => Observable<any>): Observable<any> {
- *     return route.data?.['preload'] ? load() : of(null);
- *   }
- * }
- *
- * Puis dans les routes : { path: 'workshops', data: { preload: true }, loadComponent: ... }
- * Et ici : withPreloading(SelectivePreload)
- */

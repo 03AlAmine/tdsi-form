@@ -1,13 +1,20 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class QrService {
 
-  // URL de base de l'app
-  private readonly BASE_URL = environment.production
-    ? 'https://club-tdsi-sign.web.app'
-    : 'http://localhost:4200';
+  // ✅ URL de base dynamique : on utilise le domaine réellement utilisé par
+  // l'utilisateur (window.location.origin) au lieu d'une URL Firebase
+  // Hosting figée en dur. Ainsi, si l'app est déployée sur un autre projet
+  // Firebase, un domaine personnalisé, ou consultée en local, les QR codes
+  // générés pointent toujours vers le bon endroit — plus besoin de
+  // régénérer les QR codes après chaque changement d'hébergement.
+  private get BASE_URL(): string {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin;
+    }
+    return 'http://localhost:4200';
+  }
 
   /**
    * Génère l'URL du QR code via QuickChart.io (plus fiable que Google Charts)

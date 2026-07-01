@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, filter, take } from 'rxjs';
 import { auth, db } from '../../../firebase.config';
@@ -23,6 +23,13 @@ export class AuthService {
   private manualAuth = false;
   private isInitialCheck = true;
 
+  // ✅ Listener temps réel sur le doc users/{uid} de l'utilisateur courant.
+  // Permet de détecter une suspension (disabled: true) décidée par un
+  // admin pendant que l'utilisateur est déjà connecté, sans Cloud Function
+  // ni rechargement de page : on coupe la session côté client dès que le
+  // document Firestore change.
+  private profileUnsubscribe: (() => void) | null = null;
+
   private readonly AUTH_REDIRECT_PATHS = [
     '/',
     '/connexion',
@@ -32,10 +39,13 @@ export class AuthService {
 
   constructor(private router: Router) {
     onAuthStateChanged(auth, async (firebaseUser) => {
+      this.stopProfileWatch();
+
       if (firebaseUser) {
         const user = await this.getUserProfile(firebaseUser.uid);
         this.currentUserSubject.next(user);
         this.authReadySubject.next(true);
+        this.watchProfile(firebaseUser.uid);
 
         if (this.isInitialCheck) {
           const currentPath = window.location.pathname;
@@ -53,6 +63,52 @@ export class AuthService {
         this.authReadySubject.next(true);
         this.isInitialCheck = false;
       }
+    });
+  }
+
+  // ── Surveillance temps réel de la suspension ──────────────────────
+  // Tant que l'utilisateur est connecté, on écoute son document Firestore.
+  // Si un admin passe `disabled` à true pendant la session, on déconnecte
+  // immédiatement côté client (quelques centaines de ms en pratique,
+  // selon la latence du listener Firestore).
+  private watchProfile(uid: string): void {
+    this.profileUnsubscribe = onSnapshot(
+      doc(db, 'users', uid),
+      (snap) => {
+        const data = snap.data() as Record<string, any> | undefined;
+        if (data?.['disabled']) {
+          this.forceLogoutDisabled();
+          return;
+        }
+        // On garde le profil en mémoire synchronisé (rôle, displayName...)
+        // sans déclencher de navigation : seule la suspension force un logout.
+        if (snap.exists()) {
+          const user: User = {
+            ...data,
+            uid,
+            createdAt: data?.['createdAt']?.toDate?.() ?? new Date(),
+          } as User;
+          this.currentUserSubject.next(user);
+        }
+      },
+      (err) => console.error('Erreur surveillance profil utilisateur:', err),
+    );
+  }
+
+  private stopProfileWatch(): void {
+    if (this.profileUnsubscribe) {
+      this.profileUnsubscribe();
+      this.profileUnsubscribe = null;
+    }
+  }
+
+  private async forceLogoutDisabled(): Promise<void> {
+    this.stopProfileWatch();
+    await signOut(auth);
+    this.currentUserSubject.next(null);
+    this.isInitialCheck = true;
+    this.router.navigate(['/connexion'], {
+      queryParams: { suspendu: '1' },
     });
   }
 
@@ -119,6 +175,7 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
+    this.stopProfileWatch();
     await signOut(auth);
     this.currentUserSubject.next(null);
     this.isInitialCheck = true;
@@ -159,4 +216,3 @@ export class AuthService {
     return !!this.currentUser;
   }
 }
- 

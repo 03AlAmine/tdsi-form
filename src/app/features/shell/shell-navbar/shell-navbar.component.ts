@@ -3,12 +3,13 @@ import { Component, HostListener, inject, signal, AfterViewInit, OnDestroy } fro
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-shell-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  imports: [RouterLink, RouterLinkActive, CommonModule, NotificationBellComponent],
   templateUrl: './shell-navbar.component.html',
   styleUrls: ['./shell-navbar.component.scss'],
   animations: [

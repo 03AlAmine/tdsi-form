@@ -91,6 +91,12 @@
                     <i class="fas fa-user-graduate"></i>
                     {{ sub.studentName }} · {{ sub.promo }}
                   </span>
+                  @if (sub.aiAssisted) {
+                    <span class="ai-badge ai-badge--sm" title="L'étudiant a utilisé la complétion IA pour pré-remplir ce formulaire">
+                      <i class="fas fa-robot"></i>
+                      Complété par IA
+                    </span>
+                  }
                   <span class="meta-date">
                     <i class="fas fa-calendar-alt"></i>
                     {{ sub.submittedAt | date: "dd/MM/yyyy à HH:mm" }}

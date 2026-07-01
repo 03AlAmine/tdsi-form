@@ -1,0 +1,101 @@
+<div class="not-found-page">
+  <!-- Animated Background -->
+  <div class="not-found-bg">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+  </div>
+
+  <div class="not-found-container">
+    <div class="not-found-card">
+      <!-- Animated 404 -->
+      <div class="error-code">
+        <div class="code-wrapper">
+          <span class="digit" [style.animation-delay]="'0s'">4</span>
+          <span class="digit digit--accent" [style.animation-delay]="'0.1s'"
+            >0</span
+          >
+          <span class="digit" [style.animation-delay]="'0.2s'">4</span>
+        </div>
+        <div class="code-glow"></div>
+      </div>
+
+      <!-- Terminal Message -->
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="terminal-title">terminal — 404</span>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-line">
+            <span class="prompt">$</span>
+            <span class="command">GET {{ path }}</span>
+            <span class="cursor" [class.blink]="cursorVisible">_</span>
+          </div>
+          <div class="terminal-line terminal-line--error">
+            <span class="error-icon">✖</span>
+            <span class="error-text">Error 404 — Page introuvable</span>
+          </div>
+          <div class="terminal-line terminal-line--suggestion">
+            <span class="suggestion-icon">➜</span>
+            <span class="suggestion-text"
+              >Essayez l'une des pages ci-dessous</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <h1 class="not-found-title">Page introuvable</h1>
+      <p class="not-found-message">
+        La page que vous recherchez n'existe pas ou a été déplacée.<br />
+        Vérifiez l'URL ou retournez à l'accueil.
+      </p>
+
+      <!-- Actions -->
+      <div class="not-found-actions">
+        <!-- ✅ Correction: Rediriger vers le bon espace selon connexion -->
+        <a [routerLink]="homeLink" class="btn btn--primary">
+          <i class="fas fa-home"></i>
+          Retour à l'accueil
+        </a>
+        @if (!isLoggedIn()) {
+          <a routerLink="/connexion" class="btn btn--outline">
+            <i class="fas fa-key"></i>
+            Se connecter
+          </a>
+        }
+      </div>
+
+      <!-- Quick Links -->
+      <div class="quick-links">
+        <span class="quick-links__label">Liens utiles :</span>
+        <a routerLink="/thematiques">
+          <i class="fas fa-layer-group"></i>
+          Thématiques
+        </a>
+        <span class="separator">•</span>
+        <a routerLink="/workshops">
+          <i class="fas fa-chalkboard-user"></i>
+          Workshops
+        </a>
+        @if (isLoggedIn()) {
+          <span class="separator">•</span>
+          <a [routerLink]="memberSpaceLink">
+            <i class="fas fa-user-circle"></i>
+            Mon espace
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+</div>

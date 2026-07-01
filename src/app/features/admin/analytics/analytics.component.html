@@ -8,19 +8,22 @@
         <i class="fas fa-chart-line"></i>
         Analytics
       </h1>
-      <p class="page-header__subtitle">Statistiques et tendances de la plateforme</p>
+      <p class="page-header__subtitle">Statistiques et classifications des membres</p>
     </div>
-    <div class="date-range">
+    <div class="header-actions">
       <select class="date-select" (change)="setDateRange($any($event.target).value)">
         <option value="7">7 derniers jours</option>
         <option value="30" selected>30 derniers jours</option>
         <option value="90">3 derniers mois</option>
         <option value="365">12 derniers mois</option>
       </select>
+      <button class="btn btn--ghost btn--sm" (click)="exportData('csv')">
+        <i class="fas fa-download"></i>
+        CSV
+      </button>
     </div>
   </div>
 
-  <!-- Loading State -->
   @if (loading()) {
     <div class="loading-state">
       <div class="loading-spinner">
@@ -33,129 +36,232 @@
 
     <!-- KPI Cards -->
     <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-card__icon">
-          <i class="fas fa-users"></i>
-        </div>
+      <div class="kpi-card kpi-card--cyan">
+        <div class="kpi-card__icon"><i class="fas fa-users"></i></div>
         <div class="kpi-card__value">{{ kpis().totalUsers }}</div>
-        <div class="kpi-card__label">Utilisateurs</div>
+        <div class="kpi-card__label">Membres</div>
         <div class="kpi-card__trend trend--up">
-          <i class="fas fa-arrow-up"></i>
-          <span>+{{ kpis().userGrowth }}%</span>
+          <i class="fas fa-arrow-up"></i> +{{ kpis().userGrowth }}%
         </div>
       </div>
-
-      <div class="kpi-card">
-        <div class="kpi-card__icon">
-          <i class="fas fa-chalkboard-user"></i>
-        </div>
+      <div class="kpi-card kpi-card--blue">
+        <div class="kpi-card__icon"><i class="fas fa-chalkboard-user"></i></div>
         <div class="kpi-card__value">{{ kpis().totalWorkshops }}</div>
         <div class="kpi-card__label">Workshops</div>
         <div class="kpi-card__trend trend--up">
-          <i class="fas fa-arrow-up"></i>
-          <span>+{{ kpis().workshopGrowth }}%</span>
+          <i class="fas fa-arrow-up"></i> +{{ kpis().workshopGrowth }}%
         </div>
       </div>
-
-      <div class="kpi-card">
-        <div class="kpi-card__icon">
-          <i class="fas fa-ticket-alt"></i>
-        </div>
+      <div class="kpi-card kpi-card--violet">
+        <div class="kpi-card__icon"><i class="fas fa-ticket-alt"></i></div>
         <div class="kpi-card__value">{{ kpis().totalRegistrations }}</div>
         <div class="kpi-card__label">Inscriptions</div>
         <div class="kpi-card__trend trend--up">
-          <i class="fas fa-arrow-up"></i>
-          <span>+{{ kpis().registrationGrowth }}%</span>
+          <i class="fas fa-arrow-up"></i> +{{ kpis().registrationGrowth }}%
         </div>
       </div>
-
-      <div class="kpi-card">
-        <div class="kpi-card__icon">
-          <i class="fas fa-percent"></i>
-        </div>
+      <div class="kpi-card kpi-card--green">
+        <div class="kpi-card__icon"><i class="fas fa-percent"></i></div>
         <div class="kpi-card__value">{{ kpis().participationRate }}%</div>
-        <div class="kpi-card__label">Taux participation</div>
-        <div class="kpi-card__trend" [class.trend--up]="kpis().participationTrend >= 0" [class.trend--down]="kpis().participationTrend < 0">
-          <i class="fas" [class.fa-arrow-up]="kpis().participationTrend >= 0" [class.fa-arrow-down]="kpis().participationTrend < 0"></i>
-          <span>{{ Math.abs(kpis().participationTrend) }}%</span>
+        <div class="kpi-card__label">Taux de participation</div>
+        <div class="kpi-card__trend" [class.trend--up]="kpis().participationTrend >= 0"
+             [class.trend--down]="kpis().participationTrend < 0">
+          <i class="fas" [class.fa-arrow-up]="kpis().participationTrend >= 0"
+             [class.fa-arrow-down]="kpis().participationTrend < 0"></i>
+          {{ Math.abs(kpis().participationTrend) }}%
         </div>
+      </div>
+      <div class="kpi-card kpi-card--orange">
+        <div class="kpi-card__icon"><i class="fas fa-users-line"></i></div>
+        <div class="kpi-card__value">{{ kpis().avgParticipantsPerWs }}</div>
+        <div class="kpi-card__label">Moy. participants/WS</div>
       </div>
     </div>
 
-    <!-- Charts Row -->
+    <!-- Section 1: Activité -->
+    <div class="section-title">
+      <i class="fas fa-chart-area"></i>
+      Activité dans le temps
+    </div>
     <div class="charts-row">
-      <div class="chart-card">
+      <div class="chart-card chart-card--wide">
         <div class="chart-card__header">
-          <h3>Activité mensuelle</h3>
+          <h3>Ateliers & inscriptions mensuels</h3>
           <div class="chart-legend">
-            <span><i class="fas fa-circle" style="color: #00d4ff"></i> Workshops</span>
-            <span><i class="fas fa-circle" style="color: #8b5cf6"></i> Inscriptions</span>
+            <span><i class="fas fa-circle" style="color:#00d4ff;font-size:8px"></i> Workshops</span>
+            <span><i class="fas fa-circle" style="color:#8b5cf6;font-size:8px"></i> Inscriptions</span>
           </div>
         </div>
-        <div class="chart-container">
-          <canvas #activityChart></canvas>
-        </div>
+        <div class="chart-container"><canvas #activityChart></canvas></div>
       </div>
-
       <div class="chart-card">
+        <div class="chart-card__header"><h3>Répartition par catégorie</h3></div>
+        <div class="chart-container"><canvas #categoryChart></canvas></div>
+      </div>
+    </div>
+
+    <!-- Section 2: Classifications membres -->
+    <div class="section-title">
+      <i class="fas fa-graduation-cap"></i>
+      Classification des membres
+    </div>
+
+    <div class="classification-grid">
+
+      <!-- Niveau (L1-M2) -->
+      <div class="class-card">
+        <div class="class-card__header">
+          <h3>Répartition par niveau</h3>
+          <span class="class-card__total">{{ kpis().totalUsers }} membres</span>
+        </div>
+        <div class="niveau-list">
+          @for (n of niveauStats(); track n.niveau) {
+            <div class="niveau-row">
+              <div class="niveau-row__dot" [style.background]="n.color"></div>
+              <div class="niveau-row__label">{{ n.label }}</div>
+              <div class="niveau-row__bar-wrap">
+                <div class="niveau-row__bar">
+                  <div class="niveau-row__fill" [style.width.%]="n.pct" [style.background]="n.color"></div>
+                </div>
+              </div>
+              <div class="niveau-row__count">{{ n.count }}</div>
+              <div class="niveau-row__pct">{{ n.pct }}%</div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Donut niveau -->
+      <div class="chart-card">
+        <div class="chart-card__header"><h3>Distribution niveaux</h3></div>
+        <div class="chart-container"><canvas #niveauChart></canvas></div>
+      </div>
+
+      <!-- Etablissement -->
+      <div class="chart-card">
+        <div class="chart-card__header"><h3>Par établissement</h3></div>
+        <div class="chart-container chart-container--sm"><canvas #etablissementChart></canvas></div>
+        <div class="etab-list">
+          @for (e of etablissementStats(); track e.etab) {
+            <div class="etab-row">
+              <span class="etab-row__name">{{ e.etab }}</span>
+              <div class="etab-row__bar">
+                <div class="etab-row__fill" [style.width.%]="e.pct"></div>
+              </div>
+              <span class="etab-row__count">{{ e.count }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Section 3: Promos -->
+    <div class="section-title">
+      <i class="fas fa-layer-group"></i>
+      Détail par promotion
+    </div>
+    <div class="charts-row">
+      <div class="chart-card chart-card--wide">
         <div class="chart-card__header">
-          <h3>Popularité des catégories</h3>
+          <h3>Membres par promotion</h3>
+          <span class="chart-card__sub">Top 8 promotions</span>
         </div>
-        <div class="chart-container">
-          <canvas #categoryChart></canvas>
+        <div class="chart-container chart-container--tall"><canvas #promoChart></canvas></div>
+      </div>
+
+      <div class="promo-table-card">
+        <div class="chart-card__header"><h3>Tableau des promotions</h3></div>
+        <div class="promo-table">
+          <div class="promo-table__head">
+            <span>Promotion</span>
+            <span>Membres</span>
+            <span>Workshops</span>
+            <span>Part</span>
+          </div>
+          @for (p of promoStats(); track p.promo) {
+            <div class="promo-table__row">
+              <span class="promo-name">{{ p.promo }}</span>
+              <span class="promo-count">{{ p.count }}</span>
+              <span class="promo-ws">{{ p.workshops }}</span>
+              <div class="promo-bar-cell">
+                <div class="promo-bar">
+                  <div class="promo-bar__fill" [style.width.%]="p.pct"></div>
+                </div>
+                <span class="promo-pct">{{ p.pct }}%</span>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
 
-    <!-- Popular Topics -->
-    <div class="topics-section">
-      <h3>Thématiques les plus populaires</h3>
-      <div class="topics-grid">
-        @for (topic of popularTopics(); track topic.name) {
-          <div class="topic-card">
-            <div class="topic-card__info">
-              <span class="topic-card__name">{{ topic.name }}</span>
-              <span class="topic-card__count">{{ topic.count }} inscriptions</span>
-            </div>
-            <div class="topic-card__bar">
-              <div class="topic-card__fill" [style.width.%]="topic.percentage"></div>
+    <!-- Section 4: Top participants -->
+    <div class="section-title">
+      <i class="fas fa-trophy"></i>
+      Top participants
+    </div>
+    <div class="top-participants">
+      @for (user of topParticipants(); track user.uid; let i = $index) {
+        <div class="top-user" [class.top-user--podium]="i < 3">
+          <div class="top-user__rank" [class.rank--gold]="i === 0"
+               [class.rank--silver]="i === 1" [class.rank--bronze]="i === 2">
+            {{ i + 1 }}
+          </div>
+          <div class="top-user__avatar">{{ getInitials(user.name) }}</div>
+          <div class="top-user__info">
+            <div class="top-user__name">{{ user.name }}</div>
+            <div class="top-user__meta">
+              @if (user.promo) { <span class="promo-pill">{{ user.promo }}</span> }
+              <span class="top-user__email">{{ user.email }}</span>
             </div>
           </div>
-        }
-      </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="recent-section">
-      <h3>Activité récente</h3>
-      <div class="recent-list">
-        @for (activity of recentActivities(); track activity.id) {
-          <div class="recent-item">
-            <div class="recent-item__icon">
-              <i class="fas" [class.fa-user-plus]="activity.type === 'inscription'" [class.fa-calendar-check]="activity.type === 'workshop'"></i>
-            </div>
-            <div class="recent-item__content">
-              <div class="recent-item__title">{{ activity.title }}</div>
-              <div class="recent-item__date">{{ activity.date | date:'dd MMM yyyy, HH:mm' }}</div>
-            </div>
+          <div class="top-user__score">
+            <div class="top-user__score-val">{{ user.total }}</div>
+            <div class="top-user__score-label">workshops</div>
           </div>
-        }
-      </div>
+        </div>
+      }
+      @if (topParticipants().length === 0) {
+        <div class="empty-participants">
+          <i class="fas fa-trophy"></i>
+          <span>Aucune donnée de participation</span>
+        </div>
+      }
     </div>
 
-    <!-- Export Section -->
-    <div class="export-section">
-      <h3>Exporter les données</h3>
-      <div class="export-buttons">
-        <button class="btn btn--outline" (click)="exportData('csv')">
-          <i class="fas fa-file-csv"></i>
-          Exporter en CSV
-        </button>
-        <button class="btn btn--outline" (click)="exportData('pdf')">
-          <i class="fas fa-file-pdf"></i>
-          Exporter en PDF
-        </button>
-      </div>
+    <!-- Section 5: Thématiques populaires -->
+    <div class="section-title"><i class="fas fa-fire"></i> Thématiques populaires</div>
+    <div class="topics-grid">
+      @for (topic of popularTopics(); track topic.name; let i = $index) {
+        <div class="topic-card">
+          <div class="topic-card__rank">#{{ i + 1 }}</div>
+          <div class="topic-card__info">
+            <span class="topic-card__name">{{ topic.name }}</span>
+            <span class="topic-card__count">{{ topic.count }} thèmes</span>
+          </div>
+          <div class="topic-card__bar">
+            <div class="topic-card__fill" [style.width.%]="topic.percentage"></div>
+          </div>
+        </div>
+      }
     </div>
+
+    <!-- Activité récente -->
+    <div class="section-title"><i class="fas fa-clock-rotate-left"></i> Activité récente</div>
+    <div class="recent-list">
+      @for (activity of recentActivities(); track activity.id) {
+        <div class="recent-item">
+          <div class="recent-item__icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="recent-item__content">
+            <div class="recent-item__title">{{ activity.title }}</div>
+            <div class="recent-item__date">{{ activity.date | date:'dd MMM yyyy' }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
   }
 </div>

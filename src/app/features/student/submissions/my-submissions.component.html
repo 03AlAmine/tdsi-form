@@ -319,6 +319,19 @@
             <i class="fas fa-hourglass-half"></i>
             <span>Votre proposition est en cours d'examen par l'administrateur.</span>
           </div>
+          <button
+            class="btn btn--danger btn--full"
+            [disabled]="cancellingId() === selectedSubmission()?.id"
+            (click)="cancelSubmission(selectedSubmission()!)"
+          >
+            @if (cancellingId() === selectedSubmission()?.id) {
+              <div class="btn-loader"></div>
+              <span>Annulation...</span>
+            } @else {
+              <i class="fas fa-ban"></i>
+              <span>Annuler la proposition</span>
+            }
+          </button>
         }
 
         @if (selectedSubmission()?.status === 'approuvé') {
