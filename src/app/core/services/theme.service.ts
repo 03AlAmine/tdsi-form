@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import {
   collection, addDoc, updateDoc, deleteDoc,
   doc, getDoc, query, where, orderBy, Timestamp, getDocs,
-  onSnapshot
+  onSnapshot, arrayUnion, arrayRemove
 } from 'firebase/firestore';
 import { Observable, shareReplay, finalize } from 'rxjs';
 import { db } from '../../../firebase.config';
@@ -242,6 +242,53 @@ export class ThemeService {
   // simplement le document : une soumission non traitée n'a pas de
   // trace à conserver ailleurs (contrairement à approve/refuse qui
   // laissent un historique + créent éventuellement une thématique).
+  // ✅ Vide le tableau 'interested' d'une thématique — appelé quand un
+  // workshop y est lié pour la première fois. L'intérêt exprimé avant
+  // programmation n'a plus de sens une fois le workshop réel ouvert
+  // aux inscriptions (qui a son propre compteur), et laisser les
+  // anciennes données traîner referait surface bêtement si le
+  // workshop est un jour annulé et le champ redevient visible.
+  async clearInterest(themeId: string): Promise<void> {
+    await updateDoc(doc(db, 'themes', themeId), { interested: [] });
+  }
+
+  // ✅ Bascule l'intérêt d'un membre pour une thématique qui n'a pas
+  // encore de workshop programmé. Chacun ne peut ajouter/retirer que
+  // son propre uid (borné côté Firestore rules).
+  //
+  // Notification admin best-effort quand le seuil configuré est
+  // atteint : pas de verrou anti-doublon (pas de Cloud Function dans
+  // cette architecture) — si des membres se désintéressent puis se
+  // réintéressent en repassant plusieurs fois par le seuil exact, une
+  // notification pourrait repartir à chaque franchissement. Risque
+  // jugé acceptable vu la taille du club ; à surveiller si ça devient
+  // gênant (solution propre : champ 'interestNotifiedAt' + Cloud
+  // Function pour un vrai verrou serveur).
+  async toggleInterest(theme: Theme, uid: string, currentlyInterested: boolean): Promise<void> {
+    if (!theme.id) return;
+
+    await updateDoc(doc(db, 'themes', theme.id), {
+      interested: currentlyInterested ? arrayRemove(uid) : arrayUnion(uid),
+    });
+
+    if (currentlyInterested) return; // désintérêt : jamais de notification
+
+    const newCount = (theme.interested?.length ?? 0) + 1;
+    try {
+      const settings = await this.settingsService.getSettingsOnce();
+      if (newCount === settings.interestNotificationThreshold) {
+        await this.notificationService.notifyAllAdmins(
+          'theme_interest_threshold',
+          'Thématique très demandée 🔥',
+          `« ${theme.title} » a atteint ${newCount} membres intéressés — envisagez de programmer un workshop.`,
+          '/admin/themes',
+        );
+      }
+    } catch (e) {
+      console.error('Erreur notification theme_interest_threshold:', e);
+    }
+  }
+
   async cancelSubmission(id: string): Promise<void> {
     await deleteDoc(doc(db, 'submissions', id));
   }

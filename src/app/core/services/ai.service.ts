@@ -267,13 +267,13 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ni après, sans 
       `Génère le contenu complet pour un workshop intitulé "${title}" dans la catégorie "${category}".
 Retourne exactement ce JSON :
 {
-  "description": "3-4 phrases descriptives (80 à 100 mots, 480 caractères MAXIMUM — c'est une limite stricte, ne pas dépasser)",
+  "description": "3-5 phrases descriptives (100 à 150 mots, 950 caractères MAXIMUM — c'est une limite stricte, ne pas dépasser)",
   "objectives": "3 objectifs séparés par des retours à la ligne, formulés avec 'À la fin, le participant saura...'",
   "prerequisites": "liste des prérequis nécessaires",
   "materialsNeeded": "outils et logiciels nécessaires",
   "estimatedDuration": 90
 }`,
-      600,
+      900,
       key
     );
   }

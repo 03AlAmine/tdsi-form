@@ -29,6 +29,12 @@ export interface Theme {
   fromSubmissionId?: string;
   fromStudentName?: string;
   fromStudentPromo?: string;
+  // ✅ Liste des uid des membres ayant manifesté un intérêt pour cette
+  // thématique tant qu'aucun workshop n'y est encore lié. Sert de
+  // signal de demande pour l'admin ("faut-il programmer ce workshop ?").
+  // Une fois un workshop lié, ce champ n'est plus affiché côté public
+  // (remplacé par le vrai compteur d'inscriptions du workshop).
+  interested?: string[];
 }
 
 export type ThemeCategory =
@@ -138,6 +144,11 @@ export interface AppSettings {
   defaultWorkshopLocation: 'en ligne' | 'présentiel' | 'hybride';
   defaultWorkshopTime: string; // format HH:mm
 
+  // ✅ Nombre d'"intéressés" à partir duquel les admins reçoivent une
+  // notification automatique les invitant à envisager de programmer
+  // un workshop sur cette thématique.
+  interestNotificationThreshold: number;
+
   updatedAt: Date;
   updatedBy: string; // uid de l'admin ayant fait la dernière modification
 }
@@ -155,7 +166,8 @@ export type NotificationType =
   | 'submission_received'
   | 'workshop_created'
   | 'workshop_cancelled'
-  | 'account_suspended';
+  | 'account_suspended'
+  | 'theme_interest_threshold';
 
 export interface AppNotification {
   id?: string;

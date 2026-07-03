@@ -54,6 +54,10 @@ export class AdminThemesComponent implements OnInit, OnDestroy {
   showForm = signal(false);
   saving = signal(false);
   searchQuery = signal('');
+  // ✅ 'interest' priorise les thématiques SANS workshop programmé,
+  // triées par nombre d'intéressés décroissant — pour répondre
+  // directement à "faut-il programmer un workshop sur ce sujet ?".
+  sortBy = signal<'recent' | 'interest'>('recent');
   selectedTheme = signal<Theme | null>(null);
 
   private subscription: Subscription | null = null;
@@ -70,12 +74,26 @@ export class AdminThemesComponent implements OnInit, OnDestroy {
   filteredThemes = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const themes = this.allThemes();
-    if (!query) return themes;
-    return themes.filter(t =>
-      t.title.toLowerCase().includes(query) ||
-      t.description.toLowerCase().includes(query) ||
-      t.category.toLowerCase().includes(query)
-    );
+    const filtered = !query
+      ? themes
+      : themes.filter(t =>
+          t.title.toLowerCase().includes(query) ||
+          t.description.toLowerCase().includes(query) ||
+          t.category.toLowerCase().includes(query)
+        );
+
+    if (this.sortBy() !== 'interest') return filtered;
+
+    // Thématiques sans workshop d'abord (celles qui ont besoin d'une
+    // décision), triées par intérêt décroissant ; celles déjà
+    // programmées passent à la fin, triées par intérêt aussi pour
+    // rester cohérent mais sans polluer le haut de liste.
+    return [...filtered].sort((a, b) => {
+      const aScheduled = !!a.linkedWorkshop;
+      const bScheduled = !!b.linkedWorkshop;
+      if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
+      return (b.interested?.length ?? 0) - (a.interested?.length ?? 0);
+    });
   });
 
   ngOnInit(): void {

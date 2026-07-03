@@ -143,6 +143,44 @@
         </div>
       </div>
 
+      <!-- Section Notifications -->
+      <div class="config-section">
+        <h2 class="config-section__title">
+          <i class="fas fa-bell"></i>
+          Notifications
+        </h2>
+        <p class="config-section__hint">
+          Seuils déclenchant des notifications automatiques pour l'équipe admin.
+        </p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label required">
+              <i class="fas fa-thumbs-up"></i>
+              Seuil "intéressés" avant notification
+            </label>
+            <input
+              type="number"
+              formControlName="interestNotificationThreshold"
+              class="form-input"
+              min="1"
+              max="1000"
+            />
+            <span class="form-hint">
+              Quand une thématique sans workshop programmé atteint ce nombre
+              de membres intéressés, tous les admins reçoivent une
+              notification.
+            </span>
+            @if (
+              form.get('interestNotificationThreshold')?.invalid &&
+              form.get('interestNotificationThreshold')?.touched
+            ) {
+              <span class="form-error">Doit être compris entre 1 et 1000</span>
+            }
+          </div>
+        </div>
+      </div>
+
       <!-- Footer actions -->
       <div class="config-footer">
         @if (lastUpdated()) {

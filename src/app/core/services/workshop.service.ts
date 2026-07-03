@@ -72,6 +72,15 @@ export class WorkshopService {
       registrations: workshop.registrations ?? [],
     });
 
+    // ✅ Le badge "intéressé" n'a plus lieu d'être une fois un workshop
+    // réellement programmé — best-effort, ne doit pas bloquer la
+    // création du workshop si ça échoue.
+    try {
+      await this.themeService.clearInterest(workshop.themeId);
+    } catch (e) {
+      console.error('Erreur nettoyage interested:', e);
+    }
+
     // ✅ Notification annonce — tous les membres, best-effort.
     try {
       await this.notificationService.notifyAllStudents(

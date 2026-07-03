@@ -45,6 +45,45 @@
    ============================================================ */
 .search-section {
   margin-bottom: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.sort-toggle {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  background: rgba(21, 30, 45, 0.8);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  border-radius: 10px;
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+
+    &:hover {
+      color: #f1f5f9;
+    }
+
+    &--active {
+      background: rgba(0, 212, 255, 0.12);
+      color: #00d4ff;
+    }
+  }
 }
 
 .search-wrapper {

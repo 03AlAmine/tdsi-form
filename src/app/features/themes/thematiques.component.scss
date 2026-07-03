@@ -756,6 +756,68 @@
   }
 }
 
+.interest-card {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), transparent);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.06);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+    font-weight: 600;
+    color: var(--tech-purple);
+    font-size: 0.875rem;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+
+  &__body {
+    padding: 1rem;
+
+    p {
+      font-size: 0.8125rem;
+      color: var(--gray-400);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+.interest-card__hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--tech-purple) !important;
+  font-weight: 500;
+  font-size: 0.75rem !important;
+}
+
+/* ============================================================
+   INDICATEUR "INTÉRESSÉ" — pouce vert, sans texte
+   ============================================================ */
+.participants--interested {
+  color: var(--tech-success);
+  font-weight: 700;
+
+  i {
+    color: var(--tech-success);
+  }
+}
+
+.participants--right {
+  padding: 0.25rem 0.625rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-full);
+}
+
 /* ============================================================
    GUEST TEASER
    ============================================================ */

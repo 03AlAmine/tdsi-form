@@ -36,6 +36,27 @@
         </button>
       }
     </div>
+    <div class="sort-toggle">
+      <button
+        type="button"
+        class="sort-toggle__btn"
+        [class.sort-toggle__btn--active]="sortBy() === 'recent'"
+        (click)="sortBy.set('recent')"
+      >
+        <i class="fas fa-clock"></i>
+        Récentes
+      </button>
+      <button
+        type="button"
+        class="sort-toggle__btn"
+        [class.sort-toggle__btn--active]="sortBy() === 'interest'"
+        (click)="sortBy.set('interest')"
+        title="Thématiques sans workshop, les plus demandées en premier"
+      >
+        <i class="fas fa-thumbs-up"></i>
+        Plus demandées
+      </button>
+    </div>
   </div>
 
   <!-- Create Form -->
@@ -330,20 +351,26 @@
           </p>
 
           <div class="theme-card__stats">
-            <div class="stat">
-              <i class="fas fa-users"></i>
-              <span
-                >{{ theme.currentParticipants }}/{{
-                  theme.maxParticipants
-                }}</span
-              >
-              <span class="stat-label">inscrits</span>
-            </div>
             @if (theme.linkedWorkshop) {
+              <div class="stat">
+                <i class="fas fa-users"></i>
+                <span
+                  >{{ theme.currentParticipants }}/{{
+                    theme.maxParticipants
+                  }}</span
+                >
+                <span class="stat-label">inscrits</span>
+              </div>
               <div class="stat">
                 <i class="fas fa-clock"></i>
                 <span>{{ theme.linkedWorkshop.duration }} min</span>
                 <span class="stat-label">durée</span>
+              </div>
+            } @else {
+              <div class="stat" title="Membres ayant signalé leur intérêt — aucun workshop programmé pour l'instant">
+                <i class="fas fa-thumbs-up"></i>
+                <span>{{ theme.interested?.length ?? 0 }}</span>
+                <span class="stat-label">intéressés</span>
               </div>
             }
           </div>

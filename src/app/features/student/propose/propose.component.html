@@ -313,18 +313,18 @@
                     [class.ai-filled]="aiUsed()"
                     [class.error]="isInvalid('description')"
                     rows="4"
-                    maxlength="500"
+                    maxlength="1000"
                     placeholder="Décrivez le sujet, l'approche, ce qui sera traité durant le workshop..."
                   ></textarea>
                   <div class="textarea-border"></div>
                 </div>
-                <span class="char-counter" [class.char-counter--over]="(form.value.description?.length ?? 0) > 500">
-                  {{ form.value.description?.length ?? 0 }} / 500
+                <span class="char-counter" [class.char-counter--over]="(form.value.description?.length ?? 0) > 1000">
+                  {{ form.value.description?.length ?? 0 }} / 1000
                 </span>
                 @if (isInvalid("description")) {
                   @if (form.get('description')?.errors?.['maxlength']) {
                     <span class="form-error"
-                      >Description trop longue (500 caractères maximum)</span
+                      >Description trop longue (1000 caractères maximum)</span
                     >
                   } @else {
                     <span class="form-error"

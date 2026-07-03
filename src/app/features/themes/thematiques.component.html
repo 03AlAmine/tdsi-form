@@ -179,9 +179,7 @@
                       ></i>
                       {{ theme.difficulty }}
                     </span>
-                    @if (
-                      isLoggedIn() && theme.currentParticipants !== undefined
-                    ) {
+                    @if (isLoggedIn() && theme.linkedWorkshop && theme.currentParticipants !== undefined) {
                       <span class="participants">
                         <i class="fas fa-users"></i>
                         {{ theme.currentParticipants }}/{{
@@ -195,6 +193,17 @@
                       <i class="fas fa-calendar-check"></i>
                       <span>Workshop</span>
                     </div>
+                  } @else if (isLoggedIn() && !theme.linkedWorkshop && (isInterested(theme) || showsInterestCount(theme))) {
+                    <span
+                      class="participants participants--right"
+                      [class.participants--interested]="isInterested(theme)"
+                      title="Signaler votre intérêt — voir le détail"
+                    >
+                      <i class="fas fa-thumbs-up"></i>
+                      @if (showsInterestCount(theme)) {
+                        {{ theme.interested?.length }}
+                      }
+                    </span>
                   }
                 </div>
               </div>
@@ -691,6 +700,60 @@
                     </a>
                   }
                 </div>
+              </div>
+            </div>
+          }
+
+          <!-- Intérêt — visible uniquement tant qu'aucun workshop n'est
+               encore programmé pour cette thématique. Remplace le bouton
+               de la carte, inatteignable au clic à cause de l'overlay
+               "Détails" qui recouvre toute la carte au survol. -->
+          @if (isLoggedIn() && !selectedTheme()?.linkedWorkshop) {
+            <div class="interest-card">
+              <div class="interest-card__header">
+                <i class="fas fa-thumbs-up"></i>
+                <span>Aucun workshop programmé pour l'instant</span>
+              </div>
+              <div class="interest-card__body">
+                <p>
+                  Signalez votre intérêt : plus il y a de membres
+                  intéressés, plus l'équipe Club TDSI est susceptible de
+                  programmer un workshop sur cette thématique.
+                </p>
+                @if (!showsInterestCount(selectedTheme()!) && !isInterested(selectedTheme()!)) {
+                  <p class="interest-card__hint">
+                    <i class="fas fa-sparkles"></i>
+                    Soyez parmi les premiers à manifester votre intérêt !
+                  </p>
+                }
+                <button
+                  type="button"
+                  class="btn btn--full"
+                  [class.btn--primary]="!isInterested(selectedTheme()!)"
+                  [class.btn--outline]="isInterested(selectedTheme()!)"
+                  [disabled]="interestPending() === selectedTheme()?.id"
+                  (click)="toggleInterest(selectedTheme()!, $event)"
+                >
+                  @if (interestPending() === selectedTheme()?.id) {
+                    <div class="btn-loader"></div>
+                  } @else if (isInterested(selectedTheme()!)) {
+                    <i class="fas fa-check"></i>
+                    <span>
+                      Vous êtes intéressé
+                      @if (showsInterestCount(selectedTheme()!)) {
+                        ({{ selectedTheme()?.interested?.length }})
+                      }
+                    </span>
+                  } @else {
+                    <i class="fas fa-thumbs-up"></i>
+                    <span>
+                      Je suis intéressé
+                      @if (showsInterestCount(selectedTheme()!)) {
+                        ({{ selectedTheme()?.interested?.length }})
+                      }
+                    </span>
+                  }
+                </button>
               </div>
             </div>
           }

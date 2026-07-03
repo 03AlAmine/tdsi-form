@@ -81,6 +81,78 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   /** True si l'utilisateur est connecté */
   isLoggedIn = () => this.authService.isLoggedIn;
 
+  // ✅ Bouton "intéressé" — visible uniquement tant qu'aucun workshop
+  // n'est encore lié à la thématique (voir toggleInterest ci-dessous).
+  interestPending = signal<string | null>(null);
+
+  isInterested(theme: ThemeWithWorkshop): boolean {
+    const uid = this.authService.currentUser?.uid;
+    return !!uid && !!theme.interested?.includes(uid);
+  }
+
+  // ✅ On n'affiche le nombre brut qu'à partir d'un seuil : "1 intéressé"
+  // ou "2 intéressés" donne une impression négative pour une thématique
+  // toute neuve. En dessous du seuil, un message encourageant neutre
+  // remplace le chiffre — sans jamais afficher un nombre inventé.
+  private static readonly INTEREST_DISPLAY_THRESHOLD = 3;
+
+  showsInterestCount(theme: ThemeWithWorkshop): boolean {
+    return (theme.interested?.length ?? 0) >= ThematiquesComponent.INTEREST_DISPLAY_THRESHOLD;
+  }
+
+  async toggleInterest(theme: ThemeWithWorkshop, event: Event): Promise<void> {
+    event.stopPropagation(); // ne pas ouvrir le tiroir de détail
+    const uid = this.authService.currentUser?.uid;
+    if (!uid || !theme.id) return;
+
+    const wasInterested = this.isInterested(theme);
+    const previousList = theme.interested ?? [];
+    const optimisticList = wasInterested
+      ? previousList.filter((id) => id !== uid)
+      : [...previousList, uid];
+
+    // ✅ Mise à jour optimiste immédiate — évite d'attendre l'aller-retour
+    // Firestore + le prochain snapshot pour voir le bouton changer d'état.
+    // Le listener temps réel (onSnapshot) confirmera/corrigera ensuite.
+    this.applyThemeUpdate(theme.id, { interested: optimisticList });
+
+    this.interestPending.set(theme.id);
+    try {
+      await this.themeService.toggleInterest(theme, uid, wasInterested);
+    } catch {
+      // Rollback optimiste en cas d'échec réel (le listener aurait de
+      // toute façon fini par corriger, mais on ne veut pas laisser un
+      // état incorrect affiché pendant ce temps).
+      this.applyThemeUpdate(theme.id, { interested: previousList });
+    } finally {
+      this.interestPending.set(null);
+    }
+  }
+
+  // ✅ Applique un patch à une thématique à la fois dans la liste
+  // affichée et dans le tiroir de détail s'il est ouvert sur cette
+  // même thématique — sans ça, `selectedTheme` reste une copie figée
+  // prise à l'ouverture et ne reflète pas les changements en direct.
+  // ✅ Recale le tiroir de détail (s'il est ouvert) sur la version la
+  // plus récente de la thématique venant du listener temps réel —
+  // couvre les changements faits ailleurs (autre onglet, admin...).
+  private resyncSelectedTheme(): void {
+    const current = this.selectedTheme();
+    if (!current) return;
+    const fresh = this.themes().find((t) => t.id === current.id);
+    if (fresh) this.selectedTheme.set(fresh);
+  }
+
+  private applyThemeUpdate(themeId: string, patch: Partial<ThemeWithWorkshop>): void {
+    this.themes.update((list) =>
+      list.map((t) => (t.id === themeId ? { ...t, ...patch } : t)),
+    );
+    const current = this.selectedTheme();
+    if (current?.id === themeId) {
+      this.selectedTheme.set({ ...current, ...patch });
+    }
+  }
+
   filteredThemes = computed(() => {
     const all = this.themes();
     const category = this.activeCategory();
@@ -119,6 +191,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   private initPublic(): void {
     this.sub = this.themeService.getThemes().subscribe((themes) => {
       this.themes.set(themes.map((t) => ({ ...t })));
+      this.resyncSelectedTheme();
       this.loading.set(false);
       this.initComplete.set(true);
     });
@@ -144,6 +217,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
       }));
 
       this.themes.set(themesWithWorkshop);
+      this.resyncSelectedTheme();
       this.loading.set(false);
       this.initComplete.set(true);
 

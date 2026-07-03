@@ -6,10 +6,11 @@ cd dist/tdsi-form/browser
 
 # Déployer sur le serveur
 scp -r ./* thementalist@clubtdsi.sn:/var/www/campus
+ scp -r ./* thementalist@51.254.205.246:/var/www/campus
 
 # Connexion au serveur
 ssh thementalist@clubtdsi.sn
-ssh thementalist@51.254.205.246 
+ssh thementalist@51.254.205.246
 
 sudo chown -R thementalist:thementalist /var/www/campus
 

@@ -21,6 +21,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultWorkshopMaxParticipants: 30,
   defaultWorkshopLocation: 'en ligne',
   defaultWorkshopTime: '14:00',
+  interestNotificationThreshold: 10,
   updatedAt: new Date(),
   updatedBy: '',
 };

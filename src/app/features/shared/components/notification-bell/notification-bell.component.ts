@@ -123,6 +123,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       workshop_created: 'fa-calendar-plus',
       workshop_cancelled: 'fa-calendar-xmark',
       account_suspended: 'fa-triangle-exclamation',
+      theme_interest_threshold: 'fa-thumbs-up',
     };
     return map[type] ?? 'fa-bell';
   }
@@ -135,6 +136,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       workshop_created: 'icon--info',
       workshop_cancelled: 'icon--warning',
       account_suspended: 'icon--danger',
+      theme_interest_threshold: 'icon--success',
     };
     return map[type] ?? 'icon--info';
   }

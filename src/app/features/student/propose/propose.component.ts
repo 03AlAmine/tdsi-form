@@ -85,7 +85,7 @@ export class ProposeComponent implements OnInit, OnDestroy {
       90,
       [Validators.required, Validators.min(30), Validators.max(480)],
     ],
-    description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(500)]],
+    description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(1000)]],
     objectives: ['', Validators.required],
     prerequisites: [''],
     materialsNeeded: [''],
@@ -238,11 +238,11 @@ export class ProposeComponent implements OnInit, OnDestroy {
 
       // ✅ Filet de sécurité : même si le prompt demande ≤480 caractères,
       // rien ne garantit que le modèle respecte strictement la consigne.
-      // La règle Firestore plafonne 'description' à 500 caractères — on
+      // La règle Firestore plafonne 'description' à 1000 caractères — on
       // tronque donc ici pour ne jamais bloquer la soumission derrière.
       const safeDescription =
-        result.description.length > 500
-          ? result.description.slice(0, 497) + '...'
+        result.description.length > 1000
+          ? result.description.slice(0, 997) + '...'
           : result.description;
 
       this.form.patchValue({
@@ -326,6 +326,10 @@ export class ProposeComponent implements OnInit, OnDestroy {
       this.loadingService.hide();
       this.success.set(true);
       this.toastService.success('Proposition soumise avec succès !');
+      // ✅ Le succès s'affiche en haut du wrapper (remplace le formulaire),
+      // mais l'utilisateur est resté scrollé au niveau du bouton "Soumettre"
+      // (en bas du form) — on remonte doucement pour qu'il le voie.
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       console.error('Erreur soumission thématique:', e);
       this.loadingService.hide();

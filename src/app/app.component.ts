@@ -21,6 +21,6 @@ export class AppComponent implements OnInit {
   private readonly devtools    = inject(DevtoolsProtectionService);
 
   ngOnInit(): void {
-  //  this.devtools.init();
+    this.devtools.init();
   }
 }

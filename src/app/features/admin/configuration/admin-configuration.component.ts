@@ -45,6 +45,10 @@ export class AdminConfigurationComponent implements OnInit {
       DEFAULT_SETTINGS.defaultWorkshopTime,
       [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)],
     ],
+    interestNotificationThreshold: [
+      DEFAULT_SETTINGS.interestNotificationThreshold,
+      [Validators.required, Validators.min(1), Validators.max(1000)],
+    ],
   });
 
   ngOnInit(): void {
