@@ -1,8 +1,9 @@
 // login.component.ts
 import {
   Component, inject, signal,
-  OnInit, AfterViewInit, OnDestroy,
+  OnInit, AfterViewInit, OnDestroy, PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder, ReactiveFormsModule, Validators,
   AbstractControl, ValidationErrors,
@@ -37,6 +38,8 @@ interface TerminalLine {
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private fb       = inject(FormBuilder);
   private auth     = inject(AuthService);
   private router   = inject(Router);
@@ -107,7 +110,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.router.url.includes('/inscription')) this.showRegister = true;
-    document.addEventListener('keydown', this.onKey);
+    // ✅ SSR-safe : /connexion et /inscription peuvent être découverts
+    // et prérendus par le crawler de routes (discoverRoutes).
+    if (this.isBrowser) document.addEventListener('keydown', this.onKey);
 
     // ✅ Redirigé ici par AuthService.forceLogoutDisabled() suite à une
     // suspension détectée en temps réel pendant une session active.
@@ -121,7 +126,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    document.removeEventListener('keydown', this.onKey);
+    if (this.isBrowser) document.removeEventListener('keydown', this.onKey);
     this.termTimers.forEach(clearTimeout);
   }
 
@@ -146,9 +151,19 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     return !!c && c.invalid && c.touched;
   }
 
+  isValid(f: string): boolean {
+    const c = this.form.get(f);
+    return !!c && c.valid && c.touched;
+  }
+
   isRegInvalid(f: string): boolean {
     const c = this.registerForm.get(f);
     return !!c && c.invalid && c.touched;
+  }
+
+  isRegValid(f: string): boolean {
+    const c = this.registerForm.get(f);
+    return !!c && c.valid && c.touched;
   }
 
   togglePassword():    void { this.showPassword.update(v => !v); }
@@ -193,6 +208,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       if (e.code === 'auth/user-disabled')       msg = 'Ce compte a été désactivé.';
       this.error.set(msg);
       this.addLine('[AUTH] Access denied.', 'warn');
+      this.shake();
     } finally {
       this.loading.set(false);
     }
@@ -211,11 +227,11 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       const { email, password, displayName, promo } = this.registerForm.value;
       await this.auth.register({ email: email!, password: password!, displayName: displayName!, promo: promo! });
-
-      const fu = getAuth().currentUser;
-      if (fu && !fu.emailVerified) {
-        try { await sendEmailVerification(fu); this.emailVerificationSent.set(true); } catch {}
-      }
+      // Note : l'email de vérification et l'email de bienvenue sont
+      // maintenant envoyés depuis AuthService.register() lui-même — plus
+      // besoin de le refaire ici (et ça n'aurait de toute façon pas eu le
+      // temps de s'afficher, register() navigue déjà vers /espace-membre
+      // au moment où ce await se termine).
       this.addLine('Account created. Verify email.', 'ok');
     } catch (e: any) {
       let msg = 'Erreur lors de la création du compte.';
@@ -224,6 +240,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       if (e.code === 'auth/invalid-email')         msg = 'Email invalide.';
       this.registerError.set(msg);
       this.addLine('[REGISTER] Error: ' + msg, 'warn');
+      this.shake();
     } finally {
       this.regLoading.set(false);
     }

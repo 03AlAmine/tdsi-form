@@ -106,3 +106,71 @@
   .hide-#{$bp} { @media (max-width: #{$w - 1px}) { display: none;  } }
   .show-#{$bp} { @media (min-width: $w)           { display: block; } }
 }
+
+// ── Skeleton loading ──────────────────────────────
+// Bloc de base pour les skeleton screens (remplace les spinners plein-page).
+// Réutilise le @keyframes shimmer déjà défini dans _animations.scss.
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg, rgba(255, 255, 255, 0.06));
+  border-radius: var(--radius-md, 8px);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+}
+
+.skeleton-text {
+  @extend .skeleton;
+  height: 0.9em;
+  margin-bottom: 0.5em;
+  border-radius: var(--radius-sm, 4px);
+
+  &--60 { width: 60%; }
+  &--80 { width: 80%; }
+  &--40 { width: 40%; }
+}
+
+// ── Accessibilité ─────────────────────────────────
+// Contenu utile aux lecteurs d'écran mais masqué visuellement (états de
+// chargement, libellés de contexte...). Ne pas utiliser `display:none`,
+// qui retire l'élément de l'arbre d'accessibilité.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ── Focus clavier ──────────────────────────────────
+// Anneau de focus cohérent avec la marque (cyan, cohérent avec
+// --shadow-glow) pour toute navigation au clavier — boutons, liens,
+// champs, éléments interactifs custom (cards cliquables, etc.).
+// :focus-visible seul (pas :focus) : n'affecte que la navigation clavier,
+// jamais un clic souris — comportement natif attendu par les utilisateurs.
+:focus-visible {
+  outline: 2px solid var(--tech-cyan);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+  transition: outline-offset var(--transition-fast, 150ms);
+}
+
+// Sur fond déjà clair/blanc (rare sur ce site, mais au cas où), l'anneau
+// cyan reste lisible ; pas de règle spécifique nécessaire pour l'instant.
+

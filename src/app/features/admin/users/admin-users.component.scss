@@ -1,12 +1,10 @@
 // admin-users.component.scss
-$cyan:   #00d4ff;
-$blue:   #3b82f6;
-$violet: #8b5cf6;
-$green:  #10b981;
-$red:    #ef4444;
-$card-bg: rgba(15, 18, 53, 0.9);
-$panel-bg: #0c1030;
-$border: rgba(0, 212, 255, 0.08);
+
+
+
+$card-bg: var(--bg-card-admin);
+
+$border:  rgba(var(--tech-cyan-rgb), 0.08);
 
 // ============================================================
 //  LAYOUT: liste + panel côte à côte
@@ -42,7 +40,7 @@ $border: rgba(0, 212, 255, 0.08);
     display: flex;
     align-items: center;
     gap: 0.625rem;
-    i { color: $cyan; font-size: 1.1rem; }
+    i { color: var(--tech-cyan); font-size: 1.1rem; }
   }
 
   &__subtitle { color: #475569; font-size: 0.875rem; margin-top: 0.2rem; }
@@ -64,8 +62,8 @@ $border: rgba(0, 212, 255, 0.08);
   font-weight: 500;
   border: 1px solid;
 
-  &--cyan   { background: rgba($cyan, 0.08);   color: $cyan;   border-color: rgba($cyan, 0.2); }
-  &--violet { background: rgba($violet, 0.08); color: $violet; border-color: rgba($violet, 0.2); }
+  &--cyan   { background: rgba(var(--tech-cyan-rgb), 0.08);   color: var(--tech-cyan);   border-color: rgba(var(--tech-cyan-rgb), 0.2); }
+  &--violet { background: rgba(var(--tech-purple-rgb), 0.08); color: var(--tech-purple); border-color: rgba(var(--tech-purple-rgb), 0.2); }
   i { font-size: 0.75rem; }
 }
 
@@ -95,15 +93,15 @@ $border: rgba(0, 212, 255, 0.08);
     font-size: 0.7rem;
     font-weight: 600;
     color: white;
-    background: rgba($cyan, 0.15);
+    background: rgba(var(--tech-cyan-rgb), 0.15);
     padding: 0.05rem 0.4rem;
     border-radius: 100px;
   }
 
   &.active {
-    background: rgba($cyan, 0.1);
-    border-color: rgba($cyan, 0.3);
-    .promo-chip__label { color: $cyan; }
+    background: rgba(var(--tech-cyan-rgb), 0.1);
+    border-color: rgba(var(--tech-cyan-rgb), 0.3);
+    .promo-chip__label { color: var(--tech-cyan); }
   }
   &:hover:not(.active) { background: rgba(255,255,255,0.04); }
 }
@@ -139,7 +137,7 @@ $border: rgba(0, 212, 255, 0.08);
     font-size: 0.8125rem;
     transition: border-color 0.2s;
     &::placeholder { color: #334155; }
-    &:focus { outline: none; border-color: rgba($cyan, 0.35); }
+    &:focus { outline: none; border-color: rgba(var(--tech-cyan-rgb), 0.35); }
   }
 
   .search-clear {
@@ -147,7 +145,7 @@ $border: rgba(0, 212, 255, 0.08);
     transform: translateY(-50%);
     background: none; border: none;
     color: #334155; cursor: pointer; font-size: 0.8rem;
-    &:hover { color: $cyan; }
+    &:hover { color: var(--tech-cyan); }
   }
 }
 
@@ -167,15 +165,15 @@ $border: rgba(0, 212, 255, 0.08);
   transition: all 0.18s;
   i { font-size: 0.7rem; }
 
-  &:hover { background: rgba($cyan, 0.06); color: #94a3b8; }
+  &:hover { background: rgba(var(--tech-cyan-rgb), 0.06); color: #94a3b8; }
 
   &.active {
-    background: rgba($cyan, 0.12);
-    border-color: rgba($cyan, 0.3);
-    color: $cyan;
+    background: rgba(var(--tech-cyan-rgb), 0.12);
+    border-color: rgba(var(--tech-cyan-rgb), 0.3);
+    color: var(--tech-cyan);
   }
 
-  &--promo { background: rgba($violet, 0.1); border-color: rgba($violet, 0.25); color: $violet; }
+  &--promo { background: rgba(var(--tech-purple-rgb), 0.1); border-color: rgba(var(--tech-purple-rgb), 0.25); color: var(--tech-purple); }
 }
 
 // ============================================================
@@ -199,16 +197,35 @@ $border: rgba(0, 212, 255, 0.08);
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  overflow: hidden;
+
+  // Spotlight qui suit le curseur — posé par appTiltSpotlight
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(var(--tech-cyan-rgb), 0.08),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity var(--transition-base, 250ms ease);
+    pointer-events: none;
+  }
 
   &:hover {
-    border-color: rgba($cyan, 0.2);
+    border-color: rgba(var(--tech-cyan-rgb), 0.2);
     transform: translateY(-1px);
     box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+
+    &::after { opacity: 1; }
   }
 
   &.active {
-    border-color: rgba($cyan, 0.4);
-    background: rgba($cyan, 0.06);
+    border-color: rgba(var(--tech-cyan-rgb), 0.4);
+    background: rgba(var(--tech-cyan-rgb), 0.06);
   }
 
   &__avatar {
@@ -219,16 +236,16 @@ $border: rgba(0, 212, 255, 0.08);
     color: white;
     flex-shrink: 0;
     position: relative;
-    background: linear-gradient(135deg, $cyan, $blue);
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
 
-    &[data-role="admin"] { background: linear-gradient(135deg, #f59e0b, $violet); }
+    &[data-role="admin"] { background: linear-gradient(135deg, var(--tech-warning), var(--tech-purple)); }
   }
 
   &__crown {
     position: absolute;
     top: -5px; right: -5px;
     width: 16px; height: 16px;
-    background: #f59e0b;
+    background: var(--tech-warning);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     i { font-size: 0.55rem; color: white; }
@@ -253,8 +270,8 @@ $border: rgba(0, 212, 255, 0.08);
   font-size: 0.7rem;
   font-weight: 500;
 
-  &--promo   { background: rgba($cyan, 0.1);   color: $cyan; }
-  &--admin   { background: rgba(245,158,11,0.12); color: #f59e0b; }
+  &--promo   { background: rgba(var(--tech-cyan-rgb), 0.1);   color: var(--tech-cyan); }
+  &--admin   { background: rgba(245,158,11,0.12); color: var(--tech-warning); }
   &--student { background: rgba(255,255,255,0.06); color: #64748b; }
   i { font-size: 0.65rem; }
 }
@@ -276,7 +293,7 @@ $border: rgba(0, 212, 255, 0.08);
   background: $card-bg; border: 1px solid $border;
   border-radius: 9px; color: #475569; cursor: pointer;
   transition: all 0.18s;
-  &:hover:not(:disabled) { border-color: rgba($cyan, 0.3); color: $cyan; }
+  &:hover:not(:disabled) { border-color: rgba(var(--tech-cyan-rgb), 0.3); color: var(--tech-cyan); }
   &:disabled { opacity: 0.35; cursor: not-allowed; }
 }
 .page-info { font-size: 0.8125rem; color: #475569; }
@@ -285,8 +302,8 @@ $border: rgba(0, 212, 255, 0.08);
 //  DETAIL PANEL
 // ============================================================
 .user-detail-panel {
-  background: $panel-bg;
-  border: 1px solid rgba($cyan, 0.12);
+  background: var(--bg-panel);
+  border: 1px solid rgba(var(--tech-cyan-rgb), 0.12);
   border-radius: 18px;
   overflow-y: auto;
   max-height: calc(100vh - 120px);
@@ -319,7 +336,7 @@ $border: rgba(0, 212, 255, 0.08);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 8px;
   color: #475569; cursor: pointer;
-  &:hover { color: $cyan; border-color: rgba($cyan, 0.25); background: rgba($cyan, 0.08); }
+  &:hover { color: var(--tech-cyan); border-color: rgba(var(--tech-cyan-rgb), 0.25); background: rgba(var(--tech-cyan-rgb), 0.08); }
 }
 
 // ── Profil ────────────────────────────────────────────────
@@ -338,17 +355,17 @@ $border: rgba(0, 212, 255, 0.08);
   color: white;
   margin: 0 auto 1rem;
   position: relative;
-  background: linear-gradient(135deg, $cyan, $blue);
+  background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
 
-  &[data-role="admin"] { background: linear-gradient(135deg, #f59e0b, $violet); }
+  &[data-role="admin"] { background: linear-gradient(135deg, var(--tech-warning), var(--tech-purple)); }
 
   &__crown {
     position: absolute; top: -8px; right: -8px;
     width: 22px; height: 22px;
-    background: #f59e0b;
+    background: var(--tech-warning);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    border: 2px solid $panel-bg;
+    border: 2px solid var(--bg-panel);
     i { font-size: 0.7rem; color: white; }
   }
 }
@@ -416,8 +433,8 @@ $border: rgba(0, 212, 255, 0.08);
     font-size: 1.5rem;
     font-weight: 700;
     color: #f1f5f9;
-    &--green { color: $green; }
-    &--cyan  { color: $cyan; }
+    &--green { color: var(--tech-success); }
+    &--cyan  { color: var(--tech-cyan); }
   }
 
   &__label { font-size: 0.7rem; color: #475569; margin-top: 0.2rem; }
@@ -440,7 +457,7 @@ $border: rgba(0, 212, 255, 0.08);
     border-radius: 50%;
     flex-shrink: 0;
     &--past   { background: #475569; }
-    &--future { background: $cyan; box-shadow: 0 0 6px rgba($cyan, 0.5); }
+    &--future { background: var(--tech-cyan); box-shadow: 0 0 6px rgba(var(--tech-cyan-rgb), 0.5); }
   }
 
   &__info { flex: 1; min-width: 0; }
@@ -454,7 +471,7 @@ $border: rgba(0, 212, 255, 0.08);
     border-radius: 100px;
     flex-shrink: 0;
     &--done { background: rgba(100,116,139,0.12); color: #64748b; }
-    &--soon { background: rgba($cyan, 0.1); color: $cyan; }
+    &--soon { background: rgba(var(--tech-cyan-rgb), 0.1); color: var(--tech-cyan); }
   }
 }
 
@@ -496,7 +513,7 @@ $border: rgba(0, 212, 255, 0.08);
   gap: 0.5rem;
   background: none;
   border: none;
-  color: $cyan;
+  color: var(--tech-cyan);
   font-size: 0.8125rem;
   cursor: pointer;
   padding: 0;
@@ -521,19 +538,19 @@ $border: rgba(0, 212, 255, 0.08);
   transition: all 0.18s;
 
   &.active {
-    background: rgba($cyan, 0.08);
-    border-color: rgba($cyan, 0.3);
+    background: rgba(var(--tech-cyan-rgb), 0.08);
+    border-color: rgba(var(--tech-cyan-rgb), 0.3);
   }
 
   &__icon {
     width: 38px; height: 38px;
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba($cyan, 0.1);
-    color: $cyan;
+    background: rgba(var(--tech-cyan-rgb), 0.1);
+    color: var(--tech-cyan);
     flex-shrink: 0;
     i { font-size: 1rem; }
-    &--admin { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    &--admin { background: rgba(245,158,11,0.1); color: var(--tech-warning); }
   }
 
   &__body {
@@ -552,8 +569,8 @@ $border: rgba(0, 212, 255, 0.08);
     i { font-size: 0.6rem; color: white; opacity: 0; }
 
     &.checked {
-      background: $cyan;
-      border-color: $cyan;
+      background: var(--tech-cyan);
+      border-color: var(--tech-cyan);
       i { opacity: 1; }
     }
   }
@@ -578,8 +595,8 @@ $border: rgba(0, 212, 255, 0.08);
   &--full { width: 100%; }
 
   &--primary {
-    background: linear-gradient(135deg, $cyan, $blue);
-    color: #0a0e27;
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+    color: var(--tech-deep);
     font-weight: 600;
     &:hover:not(:disabled) { opacity: 0.88; }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -589,14 +606,14 @@ $border: rgba(0, 212, 255, 0.08);
     background: transparent;
     color: #64748b;
     border: 1px solid rgba(255,255,255,0.08);
-    &:hover { border-color: rgba($cyan, 0.25); color: $cyan; }
+    &:hover { border-color: rgba(var(--tech-cyan-rgb), 0.25); color: var(--tech-cyan); }
   }
 
   &--danger {
-    background: rgba($red, 0.1);
-    border: 1px solid rgba($red, 0.2);
+    background: rgba(var(--tech-danger-rgb), 0.1);
+    border: 1px solid rgba(var(--tech-danger-rgb), 0.2);
     color: #f87171;
-    &:hover { background: rgba($red, 0.18); }
+    &:hover { background: rgba(var(--tech-danger-rgb), 0.18); }
   }
 
   .btn-loader {
@@ -626,15 +643,15 @@ $border: rgba(0, 212, 255, 0.08);
   width: 48px; height: 48px;
   .spinner-ring {
     position: absolute; inset: 0;
-    border: 2px solid rgba($cyan, 0.1);
-    border-top-color: $cyan;
+    border: 2px solid rgba(var(--tech-cyan-rgb), 0.1);
+    border-top-color: var(--tech-cyan);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
   .spinner-ring-inner {
     position: absolute; inset: 10px;
-    border: 2px solid rgba($cyan, 0.1);
-    border-bottom-color: $violet;
+    border: 2px solid rgba(var(--tech-cyan-rgb), 0.1);
+    border-bottom-color: var(--tech-purple);
     border-radius: 50%;
     animation: spinRev 0.6s linear infinite;
   }

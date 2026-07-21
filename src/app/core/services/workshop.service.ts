@@ -1,4 +1,5 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   collection,
   addDoc,
@@ -14,16 +15,24 @@ import {
   getDoc,
   runTransaction,
 } from 'firebase/firestore';
-import { Observable, shareReplay, finalize } from 'rxjs';
+import { Observable, shareReplay, finalize, EMPTY } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Workshop, PresenceRecord } from '../model/models';
 import { ThemeService } from './theme.service';
 import { NotificationService } from './notification.service';
+import { EmailService } from './email.service';
+import { UserService } from './user.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorkshopService {
+  // ✅ SSR-safe : les listeners Firestore (onSnapshot) utilisent le
+  // bundle navigateur de Firebase (window) — jamais au prerender.
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private themeService = inject(ThemeService);
   private notificationService = inject(NotificationService);
+  private emailService = inject(EmailService);
+  private userService = inject(UserService);
 
   // ─────────────────────────────────────────────────────────────
   // Cache partagé : un seul listener Firestore actif à la fois.
@@ -34,6 +43,8 @@ export class WorkshopService {
   private workshops$: Observable<Workshop[]> | null = null;
 
   getWorkshops(): Observable<Workshop[]> {
+    if (!this.isBrowser) return EMPTY;
+
     if (!this.workshops$) {
       this.workshops$ = new Observable<Workshop[]>((observer) => {
         const ref = collection(db, 'workshops');
@@ -46,6 +57,7 @@ export class WorkshopService {
               date: d.date?.toDate?.() ?? new Date(),
               createdAt: d.createdAt?.toDate?.() ?? new Date(),
               registrations: d.registrations ?? [],
+              waitlist: d.waitlist ?? [],
             } as Workshop;
           });
           observer.next(data);
@@ -91,6 +103,18 @@ export class WorkshopService {
       );
     } catch (e) {
       console.error('Erreur notification workshop_created:', e);
+    }
+
+    try {
+      const emails = await this.userService.getStudentEmails();
+      await this.emailService.sendWorkshopCreated(
+        emails,
+        workshop.themeTitle,
+        workshop.presenter,
+        workshop.date,
+      );
+    } catch (e) {
+      console.error('Erreur email workshop_created:', e);
     }
 
     return ref.id;
@@ -162,6 +186,13 @@ export class WorkshopService {
       } catch (e) {
         console.error('Erreur notification workshop_cancelled:', e);
       }
+
+      try {
+        const emails = await this.userService.getEmailsByUids(registrationsSnapshot);
+        await this.emailService.sendWorkshopCancelled(emails, themeTitleSnapshot);
+      } catch (e) {
+        console.error('Erreur email workshop_cancelled:', e);
+      }
     }
   }
 
@@ -230,6 +261,7 @@ export class WorkshopService {
       date: data['date']?.toDate?.() ?? new Date(),
       createdAt: data['createdAt']?.toDate?.() ?? new Date(),
       registrations: data['registrations'] ?? [],
+      waitlist: data['waitlist'] ?? [],
     } as Workshop;
   }
 
@@ -238,11 +270,39 @@ export class WorkshopService {
     userId: string,
   ): Promise<void> {
     const workshopRef = doc(db, 'workshops', workshopId);
-    const workshopSnap = await getDoc(workshopRef);
-    if (!workshopSnap.exists()) throw new Error('Workshop non trouvé');
+    let themeId: string | undefined;
+    let promotedUid: string | null = null;
 
-    const workshop = workshopSnap.data();
-    const themeId = workshop['themeId'];
+    // ✅ Transaction : la désinscription et la promotion éventuelle de la
+    // première personne en file d'attente doivent être atomiques, sinon
+    // deux désinscriptions concurrentes pourraient promouvoir deux fois
+    // la même personne (double lecture du même waitlist[0]).
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(workshopRef);
+      if (!snap.exists()) throw new Error('Workshop non trouvé');
+
+      const data = snap.data();
+      themeId = data['themeId'];
+
+      const registrations: string[] = (data['registrations'] ?? []).filter(
+        (id: string) => id !== userId,
+      );
+      const waitlist: string[] = data['waitlist'] ?? [];
+      const maxParticipants: number = data['maxParticipants'] ?? 30;
+
+      if (waitlist.length > 0 && registrations.length < maxParticipants) {
+        // Une place se libère ET quelqu'un attend : on recompose le
+        // tableau à la main (impossible de combiner arrayRemove +
+        // arrayUnion sur le même champ en une seule écriture).
+        promotedUid = waitlist[0];
+        transaction.update(workshopRef, {
+          registrations: [...registrations, promotedUid],
+          waitlist: waitlist.slice(1),
+        });
+      } else {
+        transaction.update(workshopRef, { registrations: arrayRemove(userId) });
+      }
+    });
 
     // ✅ La désinscription elle-même est l'opération critique : elle doit
     // réussir/échouer indépendamment de la mise à jour du compteur de
@@ -250,11 +310,13 @@ export class WorkshopService {
     // (thème supprimé) ou si la mise à jour du thème échoue pour une
     // autre raison, l'utilisateur ne doit pas voir une erreur alors que
     // sa désinscription a bien été enregistrée.
-    await updateDoc(workshopRef, { registrations: arrayRemove(userId) });
-
     if (themeId) {
       try {
         await this.themeService.decrementParticipants(themeId);
+        // La place libérée est immédiatement reprise par la personne
+        // promue : le compteur de participants de la thématique doit
+        // refléter qu'elle reste occupée.
+        if (promotedUid) await this.themeService.incrementParticipants(themeId);
         await this.themeService.updateThemeStatus(themeId);
       } catch (err) {
         console.error(
@@ -263,6 +325,73 @@ export class WorkshopService {
         );
       }
     }
+
+    // Notification best-effort à la personne promue — un échec ici ne
+    // doit jamais faire échouer la désinscription déjà actée.
+    if (promotedUid) {
+      let title = 'un workshop';
+      try {
+        const freshSnap = await getDoc(workshopRef);
+        title = freshSnap.data()?.['themeTitle'] ?? 'un workshop';
+        await this.notificationService.notifyOne(
+          promotedUid,
+          'waitlist_promoted',
+          "Une place s'est libérée 🎉",
+          `Vous étiez en file d'attente pour « ${title} » — une place vient de se libérer et vous êtes maintenant inscrit·e !`,
+          '/workshops',
+        );
+      } catch (e) {
+        console.error('Erreur notification waitlist_promoted:', e);
+      }
+
+      try {
+        const promotedUser = await this.userService.getProfile(promotedUid);
+        if (promotedUser?.email) {
+          await this.emailService.sendWaitlistPromoted(promotedUser.email, title);
+        }
+      } catch (e) {
+        console.error('Erreur email waitlist_promoted:', e);
+      }
+    }
+  }
+
+  // ✅ Rejoindre la file d'attente d'un workshop complet. Refuse
+  // explicitement si des places sont encore libres (il faut s'inscrire
+  // directement dans ce cas) ou en cas de doublon.
+  async joinWaitlist(workshopId: string, userId: string): Promise<void> {
+    const workshopRef = doc(db, 'workshops', workshopId);
+
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(workshopRef);
+      if (!snap.exists()) throw new Error('Workshop non trouvé');
+
+      const data = snap.data();
+      const registrations: string[] = data['registrations'] ?? [];
+      const waitlist: string[] = data['waitlist'] ?? [];
+      const maxParticipants: number = data['maxParticipants'] ?? 30;
+
+      if (registrations.length < maxParticipants) {
+        throw new Error(
+          'Des places sont encore disponibles, inscrivez-vous directement',
+        );
+      }
+      if (registrations.includes(userId)) throw new Error('Déjà inscrit');
+      if (waitlist.includes(userId)) throw new Error("Déjà en file d'attente");
+
+      transaction.update(workshopRef, { waitlist: arrayUnion(userId) });
+    });
+  }
+
+  async leaveWaitlist(workshopId: string, userId: string): Promise<void> {
+    await updateDoc(doc(db, 'workshops', workshopId), {
+      waitlist: arrayRemove(userId),
+    });
+  }
+
+  /** Position (1-based) de l'utilisateur dans la file d'attente, ou null. */
+  getWaitlistPosition(workshop: Workshop, userId: string): number | null {
+    const idx = (workshop.waitlist ?? []).indexOf(userId);
+    return idx === -1 ? null : idx + 1;
   }
 
   async submitPresence(record: Omit<PresenceRecord, 'id'>): Promise<string> {

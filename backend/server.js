@@ -5,7 +5,7 @@ const cors = require('cors');
 const axios = require('axios');
 
 const app = express();
-
+const { sendTemplate, TEMPLATES } = require('./mailer');
 // ── Middleware ─────────────────────────────────────────────
 app.use(express.json());
 app.set('trust proxy', 1);
@@ -84,6 +84,52 @@ app.post('/api/ai', async (req, res) => {
     return res.status(500).json({
       error: 'Erreur API Groq'
     });
+  }
+});
+
+// ── EMAIL — envoi transactionnel (SMTP OVH) ────────────────
+// Le front n'envoie jamais de HTML : uniquement un nom de template
+// (whitelist dans mailer.js) + des données. Ça évite qu'un appel
+// malveillant transforme ce endpoint en relais spam générique.
+//
+// Protection légère : clé partagée (mêmes garanties que le reste de
+// cette API, qui n'a pas d'auth utilisateur) + rate-limit mémoire par
+// IP. Suffisant pour un club étudiant, pas un rempart absolu — si le
+// volume d'abus augmente, passer par un vrai service (Resend, SES...).
+const emailRateLimit = new Map(); // ip -> [timestamps]
+const EMAIL_RATE_WINDOW_MS = 60_000;
+const EMAIL_RATE_MAX = 20;
+
+app.post('/api/email', async (req, res) => {
+  const apiKey = req.get('x-email-key');
+  if (!process.env.EMAIL_API_KEY || apiKey !== process.env.EMAIL_API_KEY) {
+    return res.status(401).json({ error: 'Clé API email invalide' });
+  }
+
+  const ip = req.ip;
+  const now = Date.now();
+  const hits = (emailRateLimit.get(ip) || []).filter((t) => now - t < EMAIL_RATE_WINDOW_MS);
+  if (hits.length >= EMAIL_RATE_MAX) {
+    return res.status(429).json({ error: 'Trop de requêtes email, réessaie dans une minute' });
+  }
+  hits.push(now);
+  emailRateLimit.set(ip, hits);
+
+  const { template, to, data } = req.body;
+
+  if (!template || !TEMPLATES[template]) {
+    return res.status(400).json({ error: `Template inconnu. Valeurs possibles: ${Object.keys(TEMPLATES).join(', ')}` });
+  }
+  if (!to) {
+    return res.status(400).json({ error: '"to" est requis (string ou tableau)' });
+  }
+
+  try {
+    await sendTemplate(template, to, data);
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error('Erreur envoi email:', error.message);
+    return res.status(500).json({ error: "Échec de l'envoi de l'email" });
   }
 });
 

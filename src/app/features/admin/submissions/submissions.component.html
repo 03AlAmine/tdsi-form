@@ -66,10 +66,12 @@
       </p>
     </div>
   } @else {
-    <div class="submissions-list">
+    <div class="submissions-list stagger-children">
       @for (sub of filteredSubmissions(); track sub.id) {
         <div
           class="submission-card"
+          appTiltSpotlight
+          [tiltMax]="3"
           [class.status-pending]="sub.status === 'en attente'"
           [class.status-approved]="sub.status === 'approuvé'"
           [class.status-refused]="sub.status === 'refusé'"

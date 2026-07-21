@@ -170,6 +170,7 @@
                   placeholder="prenom.nom@clubtdsi.sn"
                   autocomplete="email"
                   class="field-input"
+                  [class.field-input--ok]="isValid('email')"
                 />
                 <svg
                   class="field-ico"
@@ -177,6 +178,7 @@
                   height="15"
                   viewBox="0 0 15 15"
                   fill="none"
+                  [class.ico--ok]="isValid('email')"
                 >
                   <rect
                     x="1.5"
@@ -211,6 +213,7 @@
                   placeholder="••••••••••••"
                   autocomplete="current-password"
                   class="field-input"
+                  [class.field-input--ok]="isValid('password')"
                 />
                 <button
                   type="button"
@@ -420,6 +423,7 @@
                     placeholder="Fatou Diallo"
                     autocomplete="name"
                     class="field-input"
+                    [class.field-input--ok]="isRegValid('displayName')"
                   />
                   <svg
                     class="field-ico"
@@ -427,6 +431,7 @@
                     height="15"
                     viewBox="0 0 15 15"
                     fill="none"
+                    [class.ico--ok]="isRegValid('displayName')"
                   >
                     <circle
                       cx="7.5"
@@ -496,6 +501,7 @@
                   placeholder="prenom.nom@clubtdsi.sn"
                   autocomplete="email"
                   class="field-input"
+                  [class.field-input--ok]="isRegValid('email')"
                 />
                 <svg
                   class="field-ico"
@@ -503,6 +509,7 @@
                   height="15"
                   viewBox="0 0 15 15"
                   fill="none"
+                  [class.ico--ok]="isRegValid('email')"
                 >
                   <rect
                     x="1.5"
@@ -538,6 +545,7 @@
                     placeholder="Min. 6 car."
                     autocomplete="new-password"
                     class="field-input"
+                    [class.field-input--ok]="isRegValid('password')"
                   />
                   <button
                     type="button"

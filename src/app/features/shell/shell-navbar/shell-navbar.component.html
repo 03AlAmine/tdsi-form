@@ -10,6 +10,9 @@
       <div class="navbar__brand-logo">
         <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
         <div class="logo-pulse"></div>
+        <span class="logo-campus-badge" aria-hidden="true">
+          <i class="fas fa-graduation-cap"></i>
+        </span>
       </div>
       <div class="navbar__brand-text">
         <span class="brand-main">Club TDSI</span>
@@ -37,7 +40,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           class="navbar__link"
         >
-          <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+          <span class="link-icon"><i class="fas fa-graduation-cap"></i></span>
           <span class="link-text">Campus</span>
           <span class="link-indicator"></span>
         </a>
@@ -103,6 +106,34 @@
 
     <!-- Actions -->
     <div class="navbar__actions">
+      <div class="navbar__cmdk-wrapper">
+        <button
+          type="button"
+          class="navbar__cmdk-btn"
+          aria-label="Ouvrir la recherche rapide"
+          (click)="openCommandPalette()"
+        >
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <span class="navbar__cmdk-hint">
+            <kbd>⌘</kbd><kbd>K</kbd>
+          </span>
+        </button>
+
+        @if (showCmdkHint()) {
+          <div class="cmdk-hint-bubble" role="status">
+            <span>Essayez <kbd>⌘</kbd><kbd>K</kbd> pour chercher rapidement</span>
+            <button
+              type="button"
+              class="cmdk-hint-bubble__close"
+              aria-label="Fermer l'astuce"
+              (click)="dismissCmdkHint()"
+            >
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+        }
+      </div>
+
       @if (!isLoggedIn()) {
         <!-- Version desktop -->
         <a routerLink="/connexion" class="btn btn--ghost btn--desktop">
@@ -238,16 +269,15 @@
 
       <!-- Liens de navigation -->
       <div class="mobile-nav__links">
-        @if (isLoggedIn()) {
-          <a
-            routerLink="/espace-membre"
-            routerLinkActive="active"
-            (click)="mobileMenuOpen.set(false)"
-          >
-            <i class="fas fa-lightbulb"></i>
-            <span>Campus</span>
-          </a>
-        }
+        <button
+          type="button"
+          class="mobile-nav__search-btn"
+          (click)="openCommandPalette()"
+        >
+          <i class="fas fa-search"></i>
+          <span>Recherche rapide</span>
+        </button>
+
         <a
           routerLink="/thematiques"
           routerLinkActive="active"
@@ -292,7 +322,7 @@
             routerLinkActive="active"
             (click)="mobileMenuOpen.set(false)"
           >
-            <i class="fas fa-lightbulb"></i>
+            <i class="fas fa-graduation-cap"></i>
             <span>Campus</span>
           </a>
           <a

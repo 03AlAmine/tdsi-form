@@ -17,33 +17,39 @@
 }
 
 .toast {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   background: var(--bg-secondary);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
+  overflow: hidden;
   animation: slideInRight 0.3s ease-out;
 
   &--success {
-    border-left: 3px solid var(--accent-success);
-    .toast__icon { color: var(--accent-success); }
+    border-left: 3px solid var(--tech-success);
+    .toast__icon { color: var(--tech-success); }
+    .toast__progress-bar { background: var(--tech-success); }
   }
   &--error {
-    border-left: 3px solid var(--accent-danger);
-    .toast__icon { color: var(--accent-danger); }
+    border-left: 3px solid var(--tech-danger);
+    .toast__icon { color: var(--tech-danger); }
+    .toast__progress-bar { background: var(--tech-danger); }
   }
   &--warning {
-    border-left: 3px solid var(--accent-warning);
-    .toast__icon { color: var(--accent-warning); }
+    border-left: 3px solid var(--tech-warning);
+    .toast__icon { color: var(--tech-warning); }
+    .toast__progress-bar { background: var(--tech-warning); }
   }
   &--info {
-    border-left: 3px solid var(--accent-primary);
-    .toast__icon { color: var(--accent-primary); }
+    border-left: 3px solid var(--tech-cyan);
+    .toast__icon { color: var(--tech-cyan); }
+    .toast__progress-bar { background: var(--tech-cyan); }
   }
 
   &--exiting {
@@ -63,7 +69,7 @@
 
 .toast__message {
   font-size: 0.8125rem;
-  color: var(--text-primary);
+  color: var(--white);
   margin: 0;
   line-height: 1.4;
 }
@@ -72,7 +78,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-tertiary);
+  color: var(--gray-500);
   padding: 0.25rem;
   display: flex;
   align-items: center;
@@ -82,8 +88,39 @@
 
   &:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    color: var(--white);
   }
+}
+
+// ─── Barre de progression auto-dismiss ─────────────────────────
+// Largeur 100% → 0% sur la durée exacte du toast (voir toast.duration,
+// posé en inline style [style.animation-duration.ms]). Purement CSS,
+// pas de tick JS : la barre EST le minuteur, aucun risque de désync.
+.toast__progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.toast__progress-bar {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  animation-name: toastProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes toastProgress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast__progress-bar { animation: none; transform: scaleX(0); }
 }
 
 @keyframes slideInRight {

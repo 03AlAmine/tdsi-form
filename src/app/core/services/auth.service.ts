@@ -1,21 +1,37 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   updateProfile,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, filter, take } from 'rxjs';
 import { auth, db } from '../../../firebase.config';
 import { User } from '../model/models';
+import { EmailService } from './email.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
+
+  // ✅ "Ticket" éphémère posé par register() juste avant la navigation vers
+  // /espace-membre, pour que le dashboard puisse afficher une modale de
+  // bienvenue une seule fois. consumeJustRegistered() le lit ET le vide en
+  // un seul appel — un rechargement de page ou une navigation ultérieure
+  // ne redéclenche donc jamais la modale.
+  private justRegisteredSubject = new BehaviorSubject<{ displayName: string; email: string } | null>(null);
+
+  consumeJustRegistered(): { displayName: string; email: string } | null {
+    const value = this.justRegisteredSubject.value;
+    if (value) this.justRegisteredSubject.next(null);
+    return value;
+  }
 
   private authReadySubject = new BehaviorSubject<boolean>(false);
   authReady$ = this.authReadySubject.asObservable();
@@ -37,7 +53,20 @@ export class AuthService {
     '/mot-de-passe-oublie',
   ];
 
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private emailService = inject(EmailService);
+
   constructor(private router: Router) {
+    // ✅ SSR-safe : au prerender, pas de Firebase Auth (bundle
+    // navigateur). On émet immédiatement "non connecté, auth prête"
+    // pour que le shell rende le contenu public — condition sine qua
+    // non pour que les pages prérendues ne soient pas vides.
+    if (!this.isBrowser) {
+      this.currentUserSubject.next(null);
+      this.authReadySubject.next(true);
+      return;
+    }
+
     onAuthStateChanged(auth, async (firebaseUser) => {
       this.stopProfileWatch();
 
@@ -168,6 +197,30 @@ export class AuthService {
 
       await setDoc(doc(db, 'users', cred.user.uid), user);
       this.currentUserSubject.next(user);
+
+      // ✅ Vérification d'email — best-effort, ne doit jamais bloquer
+      // l'inscription. Centralisé ici (et non dans le composant appelant)
+      // pour que ça marche quel que soit l'écran d'où register() est
+      // déclenché, sans dépendre d'un ordre d'exécution fragile avant
+      // la navigation ci-dessous.
+      try {
+        await sendEmailVerification(cred.user);
+      } catch (e) {
+        console.error('Erreur envoi email de vérification:', e);
+      }
+
+      // ✅ Email de bienvenue — best-effort, ne doit jamais bloquer
+      // ni faire échouer l'inscription si l'envoi échoue.
+      try {
+        await this.emailService.sendWelcome(data.email, data.displayName);
+      } catch (e) {
+        console.error('Erreur email de bienvenue:', e);
+      }
+
+      // Pose le ticket AVANT la navigation : le dashboard le lira dès
+      // son ngOnInit et affichera la modale de bienvenue une fois.
+      this.justRegisteredSubject.next({ displayName: data.displayName, email: data.email });
+
       await this.router.navigate(['/espace-membre']);
     } finally {
       this.manualAuth = false;

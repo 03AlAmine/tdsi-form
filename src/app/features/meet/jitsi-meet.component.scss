@@ -16,7 +16,7 @@
   bottom: 80px;
   right: 20px;
   z-index: 1001;
-  background: linear-gradient(135deg, #00d4ff, #0a0e27);
+  background: linear-gradient(135deg, var(--tech-cyan), var(--tech-deep));
   border: 1px solid rgba(0, 212, 255, 0.4);
   border-radius: 50px;
   padding: 10px 20px;
@@ -48,7 +48,7 @@
   }
 
   &.active {
-    background: linear-gradient(135deg, #ef4444, #0a0e27);
+    background: linear-gradient(135deg, var(--tech-danger), var(--tech-deep));
     box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
 
     &:hover {
@@ -65,7 +65,7 @@
   top: 80px;
   right: 20px;
   width: 380px;
-  background: linear-gradient(135deg, #0f1235cc, #0a0e27cc);
+  background: linear-gradient(135deg, var(--tech-dark)cc, var(--tech-deep)cc);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 212, 255, 0.25);
   border-radius: 20px;
@@ -95,7 +95,7 @@
       flex-wrap: wrap;
 
       i {
-        color: #00d4ff;
+        color: var(--tech-cyan);
         font-size: 14px;
       }
 
@@ -111,7 +111,7 @@
         background: rgba(0, 212, 255, 0.15);
         padding: 2px 8px;
         border-radius: 12px;
-        color: #00d4ff;
+        color: var(--tech-cyan);
         font-family: monospace;
       }
     }
@@ -132,7 +132,7 @@
 
         &:hover {
           background: rgba(0, 212, 255, 0.15);
-          color: #00d4ff;
+          color: var(--tech-cyan);
         }
       }
     }
@@ -203,19 +203,19 @@
 
       &:hover {
         background: rgba(239, 68, 68, 0.15);
-        border-color: #ef4444;
-        color: #ef4444;
+        border-color: var(--tech-danger);
+        color: var(--tech-danger);
       }
     }
 
     .copy-btn:hover {
       background: rgba(0, 212, 255, 0.15);
-      border-color: #00d4ff;
-      color: #00d4ff;
+      border-color: var(--tech-cyan);
+      color: var(--tech-cyan);
     }
 
     .save-notes-btn {
-      background: linear-gradient(135deg, #00d4ff, #0ea5e9);
+      background: linear-gradient(135deg, var(--tech-cyan), #0ea5e9);
       border: none;
       padding: 6px 14px;
       border-radius: 8px;
@@ -260,7 +260,7 @@
   transition: all 0.2s;
 
   i:first-child {
-    color: #00d4ff;
+    color: var(--tech-cyan);
     font-size: 12px;
   }
 

@@ -1,14 +1,18 @@
 // core/services/mobile-blur.service.ts
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable, Renderer2, RendererFactory2, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class MobileBlurService {
   private renderer: Renderer2;
   private overlay: HTMLElement | null = null;
   private isMobile = false;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   constructor(rendererFactory: RendererFactory2) {
     this.renderer = rendererFactory.createRenderer(null, null);
+    // ✅ SSR-safe : `window` n'existe pas pendant le prerender.
+    if (!this.isBrowser) return;
     this.checkScreenSize();
     window.addEventListener('resize', () => this.checkScreenSize());
   }

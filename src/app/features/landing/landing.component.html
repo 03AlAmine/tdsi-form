@@ -27,7 +27,7 @@
             <span class="hero__title-animated">
               <span class="typing-wrapper">
                 <span class="typing-text" id="typingText"></span>
-                <span class="cursor">_</span>
+                <span class="cursor"></span>
               </span>
             </span>
           </h1>
@@ -48,12 +48,12 @@
 
         <!-- CTA Buttons -->
         <div class="hero__buttons">
-          <a routerLink="/workshops" class="btn btn--primary btn--lg">
+          <a routerLink="/workshops" class="btn btn--primary btn--lg" appMagnetic [magneticStrength]="0.25">
             <i class="fas fa-calendar-alt"></i>
             Explorer les workshops
             <i class="fas fa-arrow-right btn-arrow"></i>
           </a>
-          <a routerLink="/thematiques" class="btn btn--outline btn--lg">
+          <a routerLink="/thematiques" class="btn btn--outline btn--lg" appMagnetic [magneticStrength]="0.25">
             <i class="fas fa-th-large"></i>
             Découvrir les thématiques
           </a>
@@ -88,6 +88,7 @@
               class="hero__logo-img"
             />
             <div class="logo-pulse-ring"></div>
+            <i class="fas fa-graduation-cap logo-grad-cap" aria-hidden="true"></i>
           </div>
 
           <!-- Floating particles -->
@@ -119,7 +120,7 @@
           </div>
           <div class="stat-card__content">
             <div class="stat-card__value">
-              <span class="counter" data-target="22">0</span>
+              <span class="counter" [attr.data-target]="totalThemesCount()">0</span>
               <span class="stat-card__plus">+</span>
             </div>
             <div class="stat-card__label">Thématiques</div>
@@ -147,7 +148,7 @@
           </div>
           <div class="stat-card__content">
             <div class="stat-card__value">
-              <span class="counter" data-target="16">0</span>
+              <span class="counter" [attr.data-target]="totalWorkshopsCount()">0</span>
               <span class="stat-card__plus">+</span>
             </div>
             <div class="stat-card__label">Workshops</div>
@@ -172,6 +173,62 @@
     </div>
   </section>
 
+  <!-- Prochains événements -->
+  @if (upcomingEvents().length > 0) {
+    <section class="upcoming-events">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-badge">
+            <i class="fas fa-calendar-alt"></i>
+            Ça arrive bientôt
+          </span>
+          <h2 class="section-title">
+            Prochains <span class="gradient-text">événements</span>
+          </h2>
+          <p class="section-subtitle">
+            Réservez votre place aux prochaines sessions organisées par la communauté
+          </p>
+        </div>
+
+        <div class="events-grid">
+          @for (workshop of upcomingEvents(); track workshop.id) {
+            <a [routerLink]="['/workshops', workshopSlug(workshop)]" class="event-card">
+              <div class="event-card__date">
+                <span class="event-card__day">{{ workshop.date | date: "dd" }}</span>
+                <span class="event-card__month">{{ workshop.date | date: "MMM" }}</span>
+              </div>
+              <div class="event-card__body">
+                <h3 class="event-card__title">{{ workshop.themeTitle }}</h3>
+                <div class="event-card__meta">
+                  <span><i class="fas fa-chalkboard-user"></i> {{ workshop.presenter }}</span>
+                  <span><i class="fas fa-clock"></i> {{ workshop.date | date: "HH:mm" }}</span>
+                </div>
+                <span
+                  class="event-card__spots"
+                  [class.event-card__spots--full]="availableSpots(workshop) === 0"
+                >
+                  <i class="fas fa-users"></i>
+                  @if (availableSpots(workshop) === 0) {
+                    Complet
+                  } @else {
+                    {{ availableSpots(workshop) }} place{{ availableSpots(workshop) > 1 ? 's' : '' }} restante{{ availableSpots(workshop) > 1 ? 's' : '' }}
+                  }
+                </span>
+              </div>
+              <i class="fas fa-arrow-right event-card__arrow"></i>
+            </a>
+          }
+        </div>
+
+        <div class="upcoming-events__footer">
+          <a routerLink="/workshops" class="btn btn--outline">
+            Voir tous les workshops <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+  }
+
   <!-- Features Section -->
   <section class="features">
     <div class="container">
@@ -190,7 +247,7 @@
       </div>
 
       <div class="features-grid">
-        <div class="feature-card">
+        <div class="feature-card" appTiltSpotlight [tiltMax]="5">
           <div class="feature-card__icon">
             <div class="icon-bg"></div>
             <i class="fas fa-lightbulb"></i>
@@ -213,7 +270,7 @@
           <div class="feature-card__gradient"></div>
         </div>
 
-        <div class="feature-card">
+        <div class="feature-card" appTiltSpotlight [tiltMax]="5">
           <div class="feature-card__icon">
             <div class="icon-bg"></div>
             <i class="fas fa-microphone-alt"></i>
@@ -236,7 +293,7 @@
           <div class="feature-card__gradient"></div>
         </div>
 
-        <div class="feature-card">
+        <div class="feature-card" appTiltSpotlight [tiltMax]="5">
           <div class="feature-card__icon">
             <div class="icon-bg"></div>
             <i class="fas fa-shield-alt"></i>
@@ -259,7 +316,7 @@
           <div class="feature-card__gradient"></div>
         </div>
 
-        <div class="feature-card">
+        <div class="feature-card" appTiltSpotlight [tiltMax]="5">
           <div class="feature-card__icon">
             <div class="icon-bg"></div>
             <i class="fas fa-robot"></i>
@@ -282,7 +339,7 @@
           <div class="feature-card__gradient"></div>
         </div>
 
-        <div class="feature-card">
+        <div class="feature-card" appTiltSpotlight [tiltMax]="5">
           <div class="feature-card__icon">
             <div class="icon-bg"></div>
             <i class="fas fa-cloud-upload-alt"></i>
@@ -305,7 +362,7 @@
           <div class="feature-card__gradient"></div>
         </div>
 
-        <div class="feature-card">
+        <div class="feature-card" appTiltSpotlight [tiltMax]="5">
           <div class="feature-card__icon">
             <div class="icon-bg"></div>
             <i class="fas fa-code"></i>
@@ -739,12 +796,12 @@
             exclusifs
           </p>
           <div class="cta-buttons">
-            <a routerLink="/inscription" class="btn btn--primary btn--lg">
+            <a routerLink="/inscription" class="btn btn--primary btn--lg" appMagnetic [magneticStrength]="0.3">
               <i class="fas fa-user-plus"></i>
               Créer mon compte
               <i class="fas fa-arrow-right"></i>
             </a>
-            <a routerLink="/workshops" class="btn btn--outline btn--lg">
+            <a routerLink="/workshops" class="btn btn--outline btn--lg" appMagnetic [magneticStrength]="0.3">
               <i class="fas fa-calendar-alt"></i>
               Voir les workshops
             </a>

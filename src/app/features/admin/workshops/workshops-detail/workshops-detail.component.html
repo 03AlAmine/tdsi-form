@@ -1,7 +1,13 @@
 <!-- workshops-detail.component.html -->
 @if (isOpen() && workshop) {
   <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
+    <div
+      class="modal-container"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-workshop-modal-title"
+      (click)="$event.stopPropagation()"
+    >
       <!-- Header -->
       <div
         class="modal-header"
@@ -12,21 +18,21 @@
             class="status-badge"
             [class]="'status-badge--' + getStatusInfo(workshop.status).color"
           >
-            <i class="fas {{ getStatusInfo(workshop.status).icon }}"></i>
+            <i class="fas {{ getStatusInfo(workshop.status).icon }}" aria-hidden="true"></i>
             {{ getStatusInfo(workshop.status).label }}
           </span>
           <span class="location-badge">
-            <i class="fas {{ getLocationIconClass(workshop.location) }}"></i>
+            <i class="fas {{ getLocationIconClass(workshop.location) }}" aria-hidden="true"></i>
             {{ getLocationInfo(workshop.location).label }}
           </span>
         </div>
-        <button class="modal-close" (click)="closeModal()">
-          <i class="fas fa-times"></i>
+        <button class="modal-close" aria-label="Fermer le détail" (click)="closeModal()">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
 
       <div class="modal-body">
-        <h2 class="modal-title">{{ workshop.themeTitle }}</h2>
+        <h2 class="modal-title" id="admin-workshop-modal-title">{{ workshop.themeTitle }}</h2>
 
         <!-- Presenter Info -->
         <div class="presenter-card">
@@ -276,20 +282,26 @@
 <!-- Participant Profile Modal -->
 @if (showParticipantModal() && selectedParticipant()) {
   <div class="profile-modal-overlay" (click)="closeParticipantModal()">
-    <div class="profile-modal" (click)="$event.stopPropagation()">
+    <div
+      class="profile-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="participant-modal-name"
+      (click)="$event.stopPropagation()"
+    >
       <div class="profile-modal__header">
-        <div class="profile-modal__avatar">
+        <div class="profile-modal__avatar" aria-hidden="true">
           <span>{{
             selectedParticipant()!.displayName.charAt(0).toUpperCase()
           }}</span>
         </div>
-        <button class="profile-modal__close" (click)="closeParticipantModal()">
-          <i class="fas fa-times"></i>
+        <button class="profile-modal__close" aria-label="Fermer" (click)="closeParticipantModal()">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
 
       <div class="profile-modal__content">
-        <h3 class="profile-modal__name">
+        <h3 class="profile-modal__name" id="participant-modal-name">
           {{ selectedParticipant()!.displayName }}
         </h3>
 
@@ -335,18 +347,24 @@
 <!-- Guest Profile Modal -->
 @if (showGuestModal() && selectedGuest()) {
   <div class="profile-modal-overlay" (click)="closeGuestModal()">
-    <div class="profile-modal" (click)="$event.stopPropagation()">
+    <div
+      class="profile-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="guest-modal-name"
+      (click)="$event.stopPropagation()"
+    >
       <div class="profile-modal__header profile-modal__header--guest">
-        <div class="profile-modal__avatar profile-modal__avatar--guest">
+        <div class="profile-modal__avatar profile-modal__avatar--guest" aria-hidden="true">
           <span>{{ selectedGuest()!.fullName.charAt(0).toUpperCase() }}</span>
         </div>
-        <button class="profile-modal__close" (click)="closeGuestModal()">
-          <i class="fas fa-times"></i>
+        <button class="profile-modal__close" aria-label="Fermer" (click)="closeGuestModal()">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
 
       <div class="profile-modal__content">
-        <h3 class="profile-modal__name">{{ selectedGuest()!.fullName }}</h3>
+        <h3 class="profile-modal__name" id="guest-modal-name">{{ selectedGuest()!.fullName }}</h3>
 
         <div class="profile-info-list">
           <div class="profile-info-item">

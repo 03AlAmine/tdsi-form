@@ -33,9 +33,20 @@ export class ForgotPasswordComponent {
     return !!c && c.invalid && c.touched;
   }
 
+  isValid(field: string): boolean {
+    const c = this.form.get(field);
+    return !!c && c.valid && c.touched;
+  }
+
+  private shake(): void {
+    const el = document.querySelector('.fp-form');
+    if (el) { el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 450); }
+  }
+
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.shake();
       this.toast.error('Veuillez entrer un email valide');
       return;
     }
@@ -55,6 +66,7 @@ export class ForgotPasswordComponent {
       if (err.code === 'auth/invalid-email')   msg = 'Email invalide';
       this.error.set(msg);
       this.toast.error(msg);
+      this.shake();
     } finally {
       this.loading.set(false);
     }

@@ -1,0 +1,73 @@
+<!-- command-palette.component.html -->
+@if (isOpen()) {
+  <div class="cmdk-overlay" (click)="close()">
+    <div
+      class="cmdk-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Palette de commandes"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="cmdk-search">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input
+          id="command-palette-input"
+          type="text"
+          placeholder="Rechercher une page, une thématique, un workshop..."
+          aria-label="Rechercher"
+          role="combobox"
+          aria-expanded="true"
+          [attr.aria-activedescendant]="'cmdk-item-' + activeIndex()"
+          (input)="onQueryChange($any($event.target).value)"
+          [value]="query()"
+        />
+        <kbd class="cmdk-esc">Échap</kbd>
+      </div>
+
+      <div class="cmdk-results" role="listbox">
+        @if (results().length === 0) {
+          <div class="cmdk-empty">
+            <i class="fas fa-ghost" aria-hidden="true"></i>
+            <p>Aucun résultat pour "{{ query() }}"</p>
+          </div>
+        } @else {
+          @for (item of results(); track item.kind + item.id; let i = $index) {
+            <button
+              type="button"
+              class="cmdk-item"
+              [id]="'cmdk-item-' + i"
+              role="option"
+              [attr.aria-selected]="i === activeIndex()"
+              [class.cmdk-item--active]="i === activeIndex()"
+              (mouseenter)="activeIndex.set(i)"
+              (click)="select(item)"
+            >
+              <span class="cmdk-item__icon">
+                <i class="fas" [ngClass]="item.icon" aria-hidden="true"></i>
+              </span>
+              <span class="cmdk-item__text">
+                <span class="cmdk-item__title">{{ item.title }}</span>
+                @if (item.subtitle) {
+                  <span class="cmdk-item__subtitle">{{ item.subtitle }}</span>
+                }
+              </span>
+              <span class="cmdk-item__kind">
+                @switch (item.kind) {
+                  @case ('theme') { Thématique }
+                  @case ('workshop') { Workshop }
+                  @default { Aller à }
+                }
+              </span>
+            </button>
+          }
+        }
+      </div>
+
+      <div class="cmdk-footer">
+        <span><kbd>↑</kbd><kbd>↓</kbd> naviguer</span>
+        <span><kbd>↵</kbd> ouvrir</span>
+        <span><kbd>Échap</kbd> fermer</span>
+      </div>
+    </div>
+  </div>
+}

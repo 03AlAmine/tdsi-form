@@ -9,13 +9,15 @@ import { UserService } from '../../../core/services/user.service';
 import { LoggerService } from '../../../core/services/logger.service';
 import { ActivityService } from '../../../core/services/activity.service';
 import { combineLatest, map, Subscription } from 'rxjs';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
+import { RevealDirective } from '../../../core/directives/reveal.directive';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TiltSpotlightDirective, RevealDirective],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })

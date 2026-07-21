@@ -53,6 +53,33 @@ export class PresenceComponent implements OnInit, OnDestroy {
     return this.authService.currentUser;
   }
 
+  // ── Statut / countdown de la session ───────────────────────
+  sessionStatus(): { label: string; icon: string; variant: 'upcoming' | 'today' | 'past' } {
+    if (!this.workshop?.date) {
+      return { label: '', icon: 'fa-calendar', variant: 'upcoming' };
+    }
+    const now = new Date();
+    const sessionDate = new Date(this.workshop.date);
+    const isSameDay = sessionDate.toDateString() === now.toDateString();
+
+    if (isSameDay) {
+      return { label: "Aujourd'hui", icon: 'fa-bolt', variant: 'today' };
+    }
+
+    const diffMs = sessionDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      return {
+        label: diffDays === 1 ? 'Dans 1 jour' : `Dans ${diffDays} jours`,
+        icon: 'fa-hourglass-half',
+        variant: 'upcoming',
+      };
+    }
+
+    return { label: 'Session passée', icon: 'fa-check', variant: 'past' };
+  }
+
   async ngOnInit() {
     this.workshopId = this.route.snapshot.params['workshopId'];
 

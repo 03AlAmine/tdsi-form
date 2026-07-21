@@ -120,10 +120,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       submission_approved: 'fa-circle-check',
       submission_refused: 'fa-circle-xmark',
       submission_received: 'fa-inbox',
+      theme_created: 'fa-book-open',
       workshop_created: 'fa-calendar-plus',
       workshop_cancelled: 'fa-calendar-xmark',
       account_suspended: 'fa-triangle-exclamation',
       theme_interest_threshold: 'fa-thumbs-up',
+      waitlist_promoted: 'fa-circle-check',
     };
     return map[type] ?? 'fa-bell';
   }
@@ -133,10 +135,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       submission_approved: 'icon--success',
       submission_refused: 'icon--danger',
       submission_received: 'icon--info',
+      theme_created: 'icon--info',
       workshop_created: 'icon--info',
       workshop_cancelled: 'icon--warning',
       account_suspended: 'icon--danger',
       theme_interest_threshold: 'icon--success',
+      waitlist_promoted: 'icon--success',
     };
     return map[type] ?? 'icon--info';
   }

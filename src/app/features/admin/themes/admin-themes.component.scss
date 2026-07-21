@@ -26,7 +26,7 @@
 
     i {
       font-size: 1.25rem;
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
 
     @media (min-width: 768px) {
@@ -81,7 +81,7 @@
 
     &--active {
       background: rgba(0, 212, 255, 0.12);
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
   }
 }
@@ -110,7 +110,7 @@
 
     &:focus {
       outline: none;
-      border-color: #00d4ff;
+      border-color: var(--tech-cyan);
       box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
     }
 
@@ -130,7 +130,7 @@
     cursor: pointer;
 
     &:hover {
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
   }
 }
@@ -163,7 +163,7 @@
 
     i {
       font-size: 1.25rem;
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
 
     h3 {
@@ -206,12 +206,12 @@
 
   i {
     font-size: 0.75rem;
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 
   &.required::after {
     content: '*';
-    color: #ef4444;
+    color: var(--tech-danger);
     margin-left: 0.25rem;
   }
 }
@@ -230,12 +230,12 @@
 
     &:focus {
       outline: none;
-      border-color: #00d4ff;
+      border-color: var(--tech-cyan);
       box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
     }
 
     &.error {
-      border-color: #ef4444;
+      border-color: var(--tech-danger);
     }
 
     &.ai-filled {
@@ -266,7 +266,7 @@
     left: 50%;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, #00d4ff, #8b5cf6);
+    background: linear-gradient(90deg, var(--tech-cyan), var(--tech-purple));
     transition: all 0.3s ease;
     border-radius: 100px;
     pointer-events: none;
@@ -295,7 +295,7 @@
   align-items: center;
   gap: 0.375rem;
   font-size: 0.6875rem;
-  color: #ef4444;
+  color: var(--tech-danger);
 
   i {
     font-size: 0.625rem;
@@ -343,7 +343,7 @@
 
   i {
     font-size: 1.25rem;
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 }
 
@@ -362,7 +362,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+  background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
   border: none;
   border-radius: 10px;
   color: white;
@@ -413,7 +413,7 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 10px;
-  color: #ef4444;
+  color: var(--tech-danger);
   font-size: 0.8125rem;
 }
 
@@ -427,18 +427,38 @@
 }
 
 .theme-card {
+  position: relative;
   background: rgba(15, 18, 53, 0.9);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 212, 255, 0.08);
   border-radius: 14px;
   padding: 1.25rem;
   cursor: pointer;
+  overflow: hidden;
   transition: all 0.22s ease;
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(0, 212, 255, 0.08),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    pointer-events: none;
+  }
 
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-4px) perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     border-color: rgba(0, 212, 255, 0.3);
     box-shadow: 0 8px 32px rgba(0, 212, 255, 0.12);
+
+    &::after { opacity: 1; }
   }
 
   &__header {
@@ -501,7 +521,7 @@
 
       i {
         font-size: 0.6875rem;
-        color: #00d4ff;
+        color: var(--tech-cyan);
       }
 
       .stat-label {
@@ -533,7 +553,7 @@
   border-radius: 100px;
   font-size: 0.625rem;
   font-family: monospace;
-  color: #00d4ff;
+  color: var(--tech-cyan);
 
   &.more {
     background: rgba(255, 255, 255, 0.03);
@@ -580,12 +600,12 @@
 
   &:hover {
     background: rgba(0, 212, 255, 0.1);
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 
   &--delete:hover {
     background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    color: var(--tech-danger);
   }
 }
 
@@ -607,12 +627,12 @@
 
   &--primary {
     background: rgba(0, 212, 255, 0.12);
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 
   &--success {
     background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
+    color: var(--tech-success);
   }
 
   &--warning {
@@ -622,7 +642,7 @@
 
   &--danger {
     background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
+    color: var(--tech-danger);
   }
 }
 
@@ -651,7 +671,7 @@
     position: absolute;
     inset: 0;
     border: 3px solid rgba(0, 212, 255, 0.1);
-    border-top-color: #00d4ff;
+    border-top-color: var(--tech-cyan);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -660,7 +680,7 @@
     position: absolute;
     inset: 10px;
     border: 3px solid rgba(0, 212, 255, 0.1);
-    border-bottom-color: #00d4ff;
+    border-bottom-color: var(--tech-cyan);
     border-radius: 50%;
     animation: spin-reverse 0.6s linear infinite;
   }
@@ -713,7 +733,7 @@
   border: none;
 
   &--primary {
-    background: linear-gradient(135deg, #00d4ff, #3b82f6);
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
     color: white;
     box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
 
@@ -729,8 +749,8 @@
     border: 1px solid #334155;
 
     &:hover {
-      border-color: #00d4ff;
-      color: #00d4ff;
+      border-color: var(--tech-cyan);
+      color: var(--tech-cyan);
     }
   }
 

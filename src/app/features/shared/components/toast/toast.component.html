@@ -23,6 +23,11 @@
       <button class="toast__close" (click)="removeToast(toast.id)">
         <i class="fas fa-times"></i>
       </button>
+      @if (toast.duration && toast.duration > 0) {
+        <div class="toast__progress">
+          <div class="toast__progress-bar" [style.animation-duration.ms]="toast.duration"></div>
+        </div>
+      }
     </div>
   }
 </div>

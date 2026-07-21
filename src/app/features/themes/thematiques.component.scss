@@ -84,7 +84,40 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+  transform: perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+
+  // ✅ Spotlight qui suit le curseur — voir TiltSpotlightDirective, qui
+  // pose --mouse-x/--mouse-y/--tilt-x/--tilt-y sur l'élément au mousemove.
+  // Léger et purement CSS/transform, pas de particules ni de lib.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(0, 212, 255, 0.12),
+      transparent 55%
+    );
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  &--skeleton {
+    cursor: default;
+    min-height: 220px;
+
+    &:hover {
+      transform: none;
+      border-color: var(--glass-border);
+    }
+  }
 
   &__icon {
     position: absolute;
@@ -147,28 +180,35 @@
   &__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #0a0e27f1, #0f123599);
+    background: linear-gradient(135deg, var(--tech-deep)f1, var(--tech-dark)99);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
     transition: opacity var(--transition-base);
 
-    span {
+    span,
+    .theme-card__overlay-link {
       color: white;
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      text-decoration: none;
 
       i {
         transition: transform var(--transition-fast);
+      }
+
+      &:hover i {
+        transform: translateX(4px);
       }
     }
   }
 
   &:hover {
-    transform: translateY(-4px);
+    transform: perspective(800px) translateY(-4px)
+      rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     border-color: rgba(0, 212, 255, 0.3);
     box-shadow: var(--shadow-glow);
 
@@ -293,7 +333,7 @@
     position: relative;
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #00d4ff, #8b5cf6, #6366f1);
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple), #6366f1);
     background-size: 200% 200%;
     border-radius: 50%;
     display: flex;
@@ -307,7 +347,7 @@
       content: '';
       position: absolute;
       inset: -2px;
-      background: linear-gradient(135deg, #00d4ff, #8b5cf6, #6366f1);
+      background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple), #6366f1);
       background-size: 200% 200%;
       border-radius: 50%;
       z-index: -1;
@@ -345,7 +385,7 @@
     right: -4px;
     min-width: 22px;
     height: 22px;
-    background: linear-gradient(135deg, #3b82f6, #1e2a5e);
+    background: linear-gradient(135deg, var(--tech-blue), var(--tech-light));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -389,7 +429,7 @@
     right: 70px;
     top: 50%;
     transform: translateY(-50%);
-    background: linear-gradient(135deg, #0f1235, #0a0e27);
+    background: linear-gradient(135deg, var(--tech-dark), var(--tech-deep));
     padding: 0.5rem 1rem;
     border-radius: var(--radius-lg);
     white-space: nowrap;
@@ -429,7 +469,7 @@
       height: 0;
       border-style: solid;
       border-width: 5px 0 5px 7px;
-      border-color: transparent transparent transparent #0f1235;
+      border-color: transparent transparent transparent var(--tech-dark);
     }
   }
 

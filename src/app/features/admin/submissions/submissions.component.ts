@@ -7,13 +7,14 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { AiService, SubmissionSummary } from '../../../core/services/ai.service';
 import { ThemeSubmission } from '../../../core/model/models';
 import { ToastService } from '../../../core/services/toast.service';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 
 type FilterType = 'all' | 'en attente' | 'approuvé' | 'refusé';
 
 @Component({
   selector: 'app-submissions',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TiltSpotlightDirective],
   templateUrl: './submissions.component.html',
   styleUrls: ['./submissions.component.scss'],
 })

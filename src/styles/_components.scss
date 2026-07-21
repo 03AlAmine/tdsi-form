@@ -128,7 +128,20 @@
   &--danger  { background: rgba(239, 68, 68, 0.12);   color: var(--tech-danger);  border: 1px solid rgba(239, 68, 68, 0.2);   }
   &--info    { background: rgba(139, 92, 246, 0.12);  color: var(--tech-purple);  border: 1px solid rgba(139, 92, 246, 0.2);  }
   &--gradient{ background: var(--gradient-primary);   color: var(--white); }
+
+  // ✅ Preuve sociale : réutilise le même seuil que la notification admin
+  // (voir isHotDemand() dans thematiques.component.ts).
+  &--hot {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--tech-warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    animation: badgeHotPulse 2.4s ease-in-out infinite;
+  }
 }
+
+@keyframes badgeHotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35); }
+  50%      { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }}
 
 // ── AI badge ──────────────────────────────────────
 .ai-badge {

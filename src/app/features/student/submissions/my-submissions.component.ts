@@ -1,6 +1,6 @@
 // my-submissions.component.ts - Version corrigée
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -16,6 +16,8 @@ import { ThemeSubmission } from '../../../core/model/models';
   styleUrls: ['./my-submissions.component.scss'],
 })
 export class MySubmissionsComponent implements OnInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private themeService = inject(ThemeService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
@@ -44,7 +46,7 @@ export class MySubmissionsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
-    document.body.style.overflow = '';
+    if (this.isBrowser) document.body.style.overflow = '';
   }
 
   getStats(): { pending: number; approved: number; refused: number } {

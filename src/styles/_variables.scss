@@ -18,6 +18,26 @@
   --tech-warning: #f59e0b;
   --tech-danger: #ef4444;
 
+  // Panel/sidebar (admin) — teinte distincte, légèrement plus sombre que --tech-dark
+  --bg-panel: #0c1030;
+
+  // Triplets RGB — nécessaires pour rgba(var(--x-rgb), alpha) en CSS pur
+  // (un rgba() en CSS ne peut pas prendre une seule var() couleur en 1er argument,
+  // contrairement à Sass ; on expose donc aussi les composantes r,g,b séparément)
+  --tech-deep-rgb: 10, 14, 39;
+  --tech-dark-rgb: 15, 18, 53;
+  --tech-mid-rgb: 22, 28, 63;
+  --tech-light-rgb: 30, 42, 94;
+  --tech-cyan-rgb: 0, 212, 255;
+  --tech-blue-rgb: 59, 130, 246;
+  --tech-blue-light-rgb: 96, 165, 250;
+  --tech-purple-rgb: 139, 92, 246;
+  --tech-pink-rgb: 236, 72, 153;
+  --tech-success-rgb: 16, 185, 129;
+  --tech-warning-rgb: 245, 158, 11;
+  --tech-danger-rgb: 239, 68, 68;
+  --bg-panel-rgb: 12, 16, 48;
+
   // Neutres
   --white: #ffffff;
   --gray-100: #f1f5f9;
@@ -37,6 +57,9 @@
   --bg-card: rgba(22, 28, 63, 0.7);
   --bg-card-solid: #161c3f;
   --bg-elevated: rgba(30, 42, 94, 0.5);
+  // Cards admin (tableaux de bord denses) : plus opaques que --bg-card
+  // pour réduire le bruit visuel sur les écrans à forte densité de données.
+  --bg-card-admin: rgba(var(--tech-dark-rgb), 0.9);
 
   // Glassmorphism
   --glass-bg: rgba(22, 28, 63, 0.6);

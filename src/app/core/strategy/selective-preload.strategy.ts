@@ -24,6 +24,14 @@ import { Observable, of } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class SelectivePreloadStrategy implements PreloadingStrategy {
   preload(route: Route, load: () => Observable<unknown>): Observable<unknown> {
+    // ✅ SSR-safe : pas de préchargement au prerender. Attention :
+    // `typeof (window as any).requestIdleCallback` évalue `window`
+    // AVANT le typeof → ReferenceError en Node. On teste donc
+    // l'existence de `window` elle-même en premier.
+    if (typeof window === 'undefined') {
+      return of(null);
+    }
+
     if (!route.data?.['preload']) {
       return of(null);
     }

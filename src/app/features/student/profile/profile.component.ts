@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormGroup, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -6,6 +6,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { LoggerService } from '../../../core/services/logger.service';
+import { ThemeService } from '../../../core/services/theme.service';
+import { WorkshopService } from '../../../core/services/workshop.service';
 import { auth } from '../../../../firebase.config';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { Subscription } from 'rxjs';
@@ -24,9 +26,54 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private router       = inject(Router);
   private toastService = inject(ToastService);
   private logger       = inject(LoggerService);
+  private themeService    = inject(ThemeService);
+  private workshopService = inject(WorkshopService);
 
   user = this.authService.currentUser;
   private sub: Subscription | null = null;
+
+  // ── Stats & badges ────────────────────────────────────────
+  stats = signal({ mySubmissions: 0, myRegistrations: 0 });
+
+  engagementPoints = computed(
+    () => this.stats().myRegistrations * 10 + this.stats().mySubmissions * 25,
+  );
+
+  certificatesCount = computed(() => Math.floor(this.stats().myRegistrations / 2));
+
+  memberSince = computed(() => {
+    const createdAt = this.user?.createdAt;
+    if (!createdAt) return 0;
+    const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
+    return Math.max(0, Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24)));
+  });
+
+  badges = computed(() => [
+    {
+      icon: 'fa-lightbulb',
+      label: 'Premier pas',
+      description: 'Proposer une thématique',
+      unlocked: this.stats().mySubmissions >= 1,
+    },
+    {
+      icon: 'fa-calendar-check',
+      label: 'Habitué',
+      description: 'S’inscrire à 3 workshops',
+      unlocked: this.stats().myRegistrations >= 3,
+    },
+    {
+      icon: 'fa-pen-nib',
+      label: 'Contributeur actif',
+      description: 'Proposer 3 thématiques',
+      unlocked: this.stats().mySubmissions >= 3,
+    },
+    {
+      icon: 'fa-hourglass-half',
+      label: 'Membre fidèle',
+      description: 'Membre depuis plus de 90 jours',
+      unlocked: this.memberSince() >= 90,
+    },
+  ]);
 
   savingProfile       = signal(false);
   changingPassword    = signal(false);
@@ -52,6 +99,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get newPassword(): AbstractControl     { return this.passwordForm.get('newPassword')!; }
   get confirmPassword(): AbstractControl { return this.passwordForm.get('confirmPassword')!; }
 
+  private statsSubs: Subscription[] = [];
+
   // ── Lifecycle ─────────────────────────────────────────────
   ngOnInit(): void {
     this.sub = this.authService.currentUser$.subscribe(user => {
@@ -63,9 +112,29 @@ export class ProfileComponent implements OnInit, OnDestroy {
         );
       }
     });
+    this.loadStats();
   }
 
-  ngOnDestroy(): void { this.sub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this.statsSubs.forEach((s) => s.unsubscribe());
+  }
+
+  private loadStats(): void {
+    const uid = this.user?.uid;
+    if (!uid) return;
+    this.statsSubs.push(
+      this.themeService.getMySubmissions(uid).subscribe((subs) => {
+        this.stats.update((s) => ({ ...s, mySubmissions: subs.length }));
+      }),
+    );
+    this.statsSubs.push(
+      this.workshopService.getWorkshops().subscribe((workshops) => {
+        const registrations = workshops.filter((w) => w.registrations?.includes(uid));
+        this.stats.update((s) => ({ ...s, myRegistrations: registrations.length }));
+      }),
+    );
+  }
 
   // ── Validation ────────────────────────────────────────────
   passwordMatchValidator(group: AbstractControl): ValidationErrors | null {

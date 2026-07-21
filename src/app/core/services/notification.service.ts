@@ -1,5 +1,6 @@
 // core/services/notification.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   collection,
   addDoc,
@@ -15,7 +16,7 @@ import {
   Timestamp,
   writeBatch,
 } from 'firebase/firestore';
-import { Observable, shareReplay, finalize } from 'rxjs';
+import { Observable, shareReplay, finalize, EMPTY } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { AppNotification, NotificationType } from '../model/models';
 import { UserService } from './user.service';
@@ -39,6 +40,10 @@ import { UserService } from './user.service';
 // ─────────────────────────────────────────────────────────────
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
+  // ✅ SSR-safe : les listeners Firestore (onSnapshot) utilisent le
+  // bundle navigateur de Firebase (window) — jamais au prerender.
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private userService = inject(UserService);
 
   // Cache par uid : un seul listener Firestore actif par utilisateur connecté.
@@ -49,6 +54,8 @@ export class NotificationService {
   private readonly MAX_NOTIFICATIONS = 50;
 
   getNotifications(uid: string): Observable<AppNotification[]> {
+    if (!this.isBrowser) return EMPTY;
+
     if (!this.notifications$.has(uid)) {
       const obs = new Observable<AppNotification[]>((observer) => {
         const q = query(

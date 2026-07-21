@@ -1,6 +1,7 @@
 // jitsi-meet.component.ts - Version avec bouton bloc-notes amélioré
 
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { PLATFORM_ID, Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,6 +21,8 @@ declare var JitsiMeetExternalAPI: any;
   styleUrls: ['./jitsi-meet.component.scss'],
 })
 export class JitsiMeetComponent implements OnInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -39,6 +42,9 @@ export class JitsiMeetComponent implements OnInit, OnDestroy {
   workshopTitle = '';
 
   async ngOnInit(): Promise<void> {
+    // ✅ SSR-safe : jamais de Jitsi au prerender.
+    if (!this.isBrowser) return;
+
     this.workshopId = this.route.snapshot.paramMap.get('id');
     const user = this.authService.currentUser;
 

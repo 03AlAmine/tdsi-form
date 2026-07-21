@@ -194,10 +194,11 @@
                   formControlName="fullName"
                   class="form-input"
                   [class.error]="isInvalid('fullName')"
+                  [class.valid]="isValid('fullName')"
                   placeholder="Votre prénom et nom"
                 />
                 <div class="input-border"></div>
-                <i class="fas fa-user input-icon"></i>
+                <i class="fas input-icon" [class.fa-user]="!isValid('fullName')" [class.fa-check]="isValid('fullName')" [class.input-icon--ok]="isValid('fullName')"></i>
               </div>
               @if (isInvalid("fullName")) {
                 <span class="form-error">
@@ -218,10 +219,11 @@
                   formControlName="email"
                   class="form-input"
                   [class.error]="isInvalid('email')"
+                  [class.valid]="isValid('email')"
                   placeholder="votre@email.com"
                 />
                 <div class="input-border"></div>
-                <i class="fas fa-envelope input-icon"></i>
+                <i class="fas input-icon" [class.fa-envelope]="!isValid('email')" [class.fa-check]="isValid('email')" [class.input-icon--ok]="isValid('email')"></i>
               </div>
               @if (isInvalid("email")) {
                 <span class="form-error">
@@ -242,6 +244,7 @@
                     formControlName="establishment"
                     class="form-select"
                     [class.error]="isInvalid('establishment')"
+                    [class.valid]="isValid('establishment')"
                   >
                     <option value="" disabled>
                       Sélectionner votre établissement
@@ -271,6 +274,7 @@
                     formControlName="level"
                     class="form-select"
                     [class.error]="isInvalid('level')"
+                    [class.valid]="isValid('level')"
                   >
                     <option value="" disabled>Sélectionner votre niveau</option>
                     @for (level of studyLevels; track level) {

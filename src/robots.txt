@@ -1,0 +1,15 @@
+# robots.txt — Club TDSI Campus
+# ⚠️ À déclarer dans angular.json → projects.<app>.architect.build.options.assets :
+#    "src/robots.txt"
+
+User-agent: *
+Allow: /
+
+# Zones privées : inutiles à l'index (protégées par guard de toute façon)
+Disallow: /admin
+Disallow: /espace-membre
+Disallow: /connexion
+Disallow: /inscription
+Disallow: /mot-de-passe-oublie
+
+Sitemap: https://campus.clubtdsi.sn/sitemap.xml

@@ -1,5 +1,6 @@
 // tech-canvas.component.ts (version améliorée)
-import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-tech-canvas',
@@ -25,8 +26,11 @@ export class TechCanvasComponent implements AfterViewInit, OnDestroy {
   private mouseX = 0;
   private mouseY = 0;
   private readonly PARTICLE_COUNT = 60;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   ngAfterViewInit(): void {
+    // ✅ SSR-safe : canvas/window/rAF n'existent pas au prerender.
+    if (!this.isBrowser) return;
     this.initCanvas();
     window.addEventListener('resize', () => this.handleResize());
     document.addEventListener('mousemove', (e) => {

@@ -7,8 +7,23 @@ export interface User {
   createdAt: Date;
 }
 
+// ─────────────────────────────────────────────────────────────
+// Enrichissement IA persisté (généré une fois, servi à tous).
+//   • aiEnrichmentHash : empreinte du contenu source (titre/description)
+//     au moment de la génération → si le contenu change, l'enrichissement
+//     est considéré périmé et régénéré au prochain affichage.
+//   • aiEnrichmentAt : Timestamp Firestore (non utilisé côté UI).
+// ─────────────────────────────────────────────────────────────
+export interface AiEnrichmentData {
+  objectives: string[];
+  prerequisites: string[];
+  skills: string[];
+  outcomes?: string[]; // workshops uniquement
+  materials?: string[]; // thématiques uniquement
+}
+
 export interface Theme {
-  linkedWorkshop?: any;
+  linkedWorkshop?: Workshop;
   id?: string;
   title: string;
   description: string;
@@ -35,6 +50,10 @@ export interface Theme {
   // Une fois un workshop lié, ce champ n'est plus affiché côté public
   // (remplacé par le vrai compteur d'inscriptions du workshop).
   interested?: string[];
+  // Enrichissement IA persisté (voir AiEnrichmentData)
+  aiEnrichment?: AiEnrichmentData;
+  aiEnrichmentHash?: string;
+  aiEnrichmentAt?: unknown;
 }
 
 export type ThemeCategory =
@@ -83,9 +102,18 @@ export interface Workshop {
   presenceFormEnabled: boolean;
   presenceFormConfig?: PresenceFormConfig;
   registrations: string[];
+  // ✅ File d'attente : uids en attente d'une place, dans l'ordre
+  // d'arrivée (index 0 = prochain promu). Alimenté par
+  // WorkshopService.joinWaitlist() / promu automatiquement dans
+  // unregisterFromWorkshop() quand une place se libère.
+  waitlist?: string[];
   maxParticipants: number;
   createdAt: Date;
   endDate?: Date;
+  // Enrichissement IA persisté (voir AiEnrichmentData)
+  aiEnrichment?: AiEnrichmentData;
+  aiEnrichmentHash?: string;
+  aiEnrichmentAt?: unknown;
 }
 
 export interface PresenceFormConfig {
@@ -164,10 +192,12 @@ export type NotificationType =
   | 'submission_approved'
   | 'submission_refused'
   | 'submission_received'
+  | 'theme_created'
   | 'workshop_created'
   | 'workshop_cancelled'
   | 'account_suspended'
-  | 'theme_interest_threshold';
+  | 'theme_interest_threshold'
+  | 'waitlist_promoted';
 
 export interface AppNotification {
   id?: string;

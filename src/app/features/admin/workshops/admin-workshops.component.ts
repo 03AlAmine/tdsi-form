@@ -18,7 +18,13 @@ import { Workshop, Theme, AppSettings } from '../../../core/model/models';
 import { WorkshopDetailComponent } from './workshops-detail/workshops-detail.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { QrService } from '../../../core/services/qr.service';
+import {
+  getWorkshopStatusIcon as sharedWorkshopStatusIcon,
+  getAdminLocationIcon as sharedAdminLocationIcon,
+  formatDuration as sharedFormatDuration,
+} from '../../../core/utils/workshop-display.util';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 
 @Component({
   selector: 'app-admin-workshops',
@@ -28,6 +34,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
     ReactiveFormsModule,
     RouterLink,
     WorkshopDetailComponent,
+    TiltSpotlightDirective,
   ],
   templateUrl: './admin-workshops.component.html',
   styleUrls: ['./admin-workshops.component.scss'],
@@ -319,31 +326,15 @@ export class AdminWorkshopsComponent implements OnInit, OnDestroy {
   }
 
   getStatusIcon(status: string): string {
-    const map: Record<string, string> = {
-      planifié: 'fa-clock',
-      'en cours': 'fa-play-circle',
-      terminé: 'fa-check-circle',
-      annulé: 'fa-ban',
-    };
-    return map[status] || 'fa-circle';
+    return sharedWorkshopStatusIcon(status);
   }
 
   getLocationIconClass(location: string): string {
-    const map: Record<string, string> = {
-      'en ligne': 'fa-wifi',
-      présentiel: 'fa-building',
-      hybride: 'fa-sync-alt',
-    };
-    return map[location] || 'fa-map-marker-alt';
+    return sharedAdminLocationIcon(location);
   }
 
   formatDuration(minutes: number): string {
-    if (minutes >= 60) {
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
-      return m > 0 ? `${h}h ${m}min` : `${h}h`;
-    }
-    return `${minutes}min`;
+    return sharedFormatDuration(minutes);
   }
 
   isInvalid(field: string): boolean {

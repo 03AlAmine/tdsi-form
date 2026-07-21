@@ -100,3 +100,49 @@
 
   &.revealed { opacity: 1; transform: translateY(0); }
 }
+
+// ── View Transitions : morph card → détail ────────────────────────────
+// Noms utilisés par ThematiquesComponent / WorkshopsComponent pour animer
+// nativement l'ouverture/fermeture du drawer (voir openThemeDetail /
+// openWorkshopDetail). Un seul élément à la fois porte chaque nom, donc
+// pas de conflit malgré la liste + le drawer présents simultanément dans
+// le DOM. On règle juste la durée/l'easing par-dessus le défaut du navigateur.
+::view-transition-group(theme-detail-morph),
+::view-transition-group(workshop-detail-morph) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// ── View Transitions : navigation entre pages (racine) ─────────────────
+// withViewTransitions() est activé dans app.config.ts pour toutes les
+// navigations, mais sans réglage ici le navigateur applique son cross-fade
+// par défaut. On remplace par un fondu + léger glissement vertical qui
+// reprend le langage visuel du site (cubic-bezier "bounce" léger utilisé
+// ailleurs pour les cards). ::view-transition-old/new(root) ciblent
+// spécifiquement la transition de page — pas les morphs nommés ci-dessus,
+// qui restent prioritaires sur leurs propres éléments.
+@keyframes page-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+::view-transition-old(root) {
+  animation: 180ms cubic-bezier(0.4, 0, 1, 1) both page-fade-out;
+}
+::view-transition-new(root) {
+  animation: 280ms cubic-bezier(0.22, 1, 0.36, 1) both page-fade-in;
+}
+
+// Respect de prefers-reduced-motion : le morph devient un changement
+// instantané plutôt qu'une animation (déjà la convention retenue pour
+// withViewTransitions() côté router, on l'aligne ici).
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

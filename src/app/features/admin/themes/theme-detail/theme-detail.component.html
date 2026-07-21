@@ -1,26 +1,32 @@
 <!-- theme-detail.component.html -->
 @if (isOpen() && theme) {
   <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
+    <div
+      class="modal-container"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-theme-modal-title"
+      (click)="$event.stopPropagation()"
+    >
       <!-- Header with gradient border -->
       <div class="modal-header" [class]="'modal-header--' + getStatusColor(theme.status)">
         <div class="modal-header__badges">
           <span class="badge" [class]="'badge--' + getStatusColor(theme.status)">
-            @if (theme.status === 'ouvert') { <i class="fas fa-circle"></i> }
+            @if (theme.status === 'ouvert') { <i class="fas fa-circle" aria-hidden="true"></i> }
             {{ theme.status }}
           </span>
           <span class="badge badge--primary">
-            <i class="fas fa-tag"></i>
+            <i class="fas fa-tag" aria-hidden="true"></i>
             {{ theme.category }}
           </span>
         </div>
-        <button class="modal-close" (click)="closeModal()">
-          <i class="fas fa-times"></i>
+        <button class="modal-close" aria-label="Fermer le détail" (click)="closeModal()">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       </div>
 
       <div class="modal-body">
-        <h2 class="modal-title">{{ theme.title }}</h2>
+        <h2 class="modal-title" id="admin-theme-modal-title">{{ theme.title }}</h2>
 
         <!-- Meta Cards -->
         <div class="meta-grid">

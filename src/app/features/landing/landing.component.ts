@@ -7,16 +7,24 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
+  PLATFORM_ID,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { ArticleService } from '../../core/services/article.service';
+import { SeoService } from '../../core/services/seo.service';
+import { WorkshopService } from '../../core/services/workshop.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { Article } from '../../core/model/article.model';
+import { Workshop } from '../../core/model/models';
+import { buildSlug } from '../../core/utils/slug.util';
 import { TechBackgroundComponent } from '../shared/components/tech-background/tech-background.component';
 import { MemberCalendarComponent } from '../calendar/calendar.component';
 import { MemberNotesComponent } from '../notes/notes.component';
 import { Subscription } from 'rxjs';
+import { TiltSpotlightDirective } from '../../core/directives/tilt-spotlight.directive';
+import { MagneticDirective } from '../../core/directives/magnetic.directive';
 
 interface FeatureDetail {
   icon: string;
@@ -36,6 +44,8 @@ interface FeatureDetail {
     TechBackgroundComponent,
     MemberCalendarComponent,
     MemberNotesComponent,
+    TiltSpotlightDirective,
+    MagneticDirective,
   ],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
@@ -43,7 +53,11 @@ interface FeatureDetail {
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
   private articleService = inject(ArticleService);
+  private workshopService = inject(WorkshopService);
+  private themeService = inject(ThemeService);
   private renderer = inject(Renderer2);
+  private seo = inject(SeoService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   userMenuOpen = signal(false);
 
@@ -149,6 +163,13 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   latestArticles = signal<Article[]>([]);
   private articleSub: Subscription | null = null;
 
+  // ── Événements à venir & statistiques dynamiques ────────────────────────
+  upcomingEvents = signal<Workshop[]>([]);
+  totalThemesCount = signal(22);
+  totalWorkshopsCount = signal(16);
+  private workshopsSub: Subscription | null = null;
+  private themesSub: Subscription | null = null;
+
   // Category icons map
   readonly categoryIcons: Record<string, string> = {
     'Cybersécurité': 'fa-shield-alt',
@@ -215,10 +236,51 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // ── SEO de la page d'accueil ──
+    this.seo.setPage({
+      title: 'Club TDSI Campus — communauté cybersécurité & IA, ESP Dakar',
+      description:
+        'La communauté sénégalaise dédiée à la cybersécurité, l’IA et les ' +
+        'technologies de l’information. Workshops gratuits, thématiques, ' +
+        'réseau. ESP – UCAD, Dakar.',
+      path: '/',
+    });
+
+    // ✅ SSR-safe : le listener Firestore temps réel ne doit s'ouvrir
+    // que dans le navigateur (il empêcherait le prerender de se
+    // stabiliser). Le HTML prérendu contient le shell + les meta.
+    if (!this.isBrowser) return;
+
     // Charger les 3 derniers articles publiés
     this.articleSub = this.articleService.getPublishedArticles().subscribe(articles => {
       this.latestArticles.set(articles.slice(0, 3));
     });
+
+    // Charger les workshops (événements à venir + compteur réel)
+    this.workshopsSub = this.workshopService.getWorkshops().subscribe((workshops) => {
+      this.totalWorkshopsCount.set(workshops.length);
+      const now = new Date();
+      const upcoming = workshops
+        .filter((w) => w.status === 'planifié' && new Date(w.date).getTime() >= now.getTime())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 3);
+      this.upcomingEvents.set(upcoming);
+    });
+
+    // Charger le nombre réel de thématiques
+    this.themesSub = this.themeService.getThemes().subscribe((themes) => {
+      this.totalThemesCount.set(themes.length);
+    });
+  }
+
+  workshopSlug(workshop: Workshop): string {
+    return buildSlug(workshop.themeTitle, workshop.id!);
+  }
+
+  availableSpots(workshop: Workshop): number {
+    const max = workshop.maxParticipants || 30;
+    const registrations = workshop.registrations?.length || 0;
+    return Math.max(max - registrations, 0);
   }
 
   // ── Ouverture du carnet guest avec feuilletage ────────────────────────
@@ -244,12 +306,16 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Lifecycle ─────────────────────────────────────────────────────────
 
   ngAfterViewInit(): void {
+    // ✅ SSR-safe : animations DOM (querySelector, IntersectionObserver,
+    // mousemove) uniquement dans le navigateur.
+    if (!this.isBrowser) return;
     this.initCounters();
     this.initTypingAnimation();
     this.initMouseGlow();
     this.initScrollReveal();
     this.initParticlesAnimation();
     this.initCodeTyping();
+    this.initParallax();
   }
 
   ngOnDestroy(): void {
@@ -260,6 +326,66 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.scrollObservers.forEach((obs) => obs.disconnect());
     if (this.mouseMoveHandler) this.mouseMoveHandler();
     this.articleSub?.unsubscribe();
+    this.workshopsSub?.unsubscribe();
+    this.themesSub?.unsubscribe();
+    if (this.parallaxScrollHandler) {
+      window.removeEventListener('scroll', this.parallaxScrollHandler);
+    }
+    if (this.parallaxRafId) cancelAnimationFrame(this.parallaxRafId);
+  }
+
+  // ── Parallax scroll léger (hero + showcase) ─────────────────────────────
+  // Donne une sensation de profondeur sans lib externe : deux éléments
+  // (logo du hero, mockup du showcase) se translatent à une vitesse
+  // légèrement différente du scroll. Throttled via requestAnimationFrame
+  // pour rester fluide, et désactivé si prefers-reduced-motion.
+  private parallaxScrollHandler: (() => void) | null = null;
+  private parallaxRafId: number | null = null;
+
+  private initParallax(): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const heroLogo = document.querySelector<HTMLElement>('.hero__logo-container');
+    const showcaseCard = document.querySelector<HTMLElement>('.showcase__card');
+    if (!heroLogo && !showcaseCard) return;
+
+    let ticking = false;
+
+    const apply = () => {
+      const scrollY = window.scrollY;
+
+      if (heroLogo) {
+        // Ratio doux : le logo suit le scroll à 15% de sa vitesse et
+        // s'arrête de bouger dès qu'on est sorti du hero, pour ne pas
+        // dériver sur le reste de la page.
+        const heroSection = heroLogo.closest('.hero') as HTMLElement | null;
+        const heroHeight = heroSection?.offsetHeight ?? window.innerHeight;
+        if (scrollY < heroHeight) {
+          heroLogo.style.transform = `translateY(${scrollY * 0.15}px)`;
+        }
+      }
+
+      if (showcaseCard) {
+        const rect = showcaseCard.getBoundingClientRect();
+        const viewportCenter = window.innerHeight / 2;
+        const distanceFromCenter = rect.top + rect.height / 2 - viewportCenter;
+        // Amplitude bornée pour rester subtil même sur les grands écrans.
+        const offset = Math.max(-24, Math.min(24, distanceFromCenter * -0.06));
+        showcaseCard.style.transform = `translateY(${offset}px)`;
+      }
+
+      ticking = false;
+    };
+
+    this.parallaxScrollHandler = () => {
+      if (!ticking) {
+        this.parallaxRafId = requestAnimationFrame(apply);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', this.parallaxScrollHandler, { passive: true });
+    apply();
   }
 
   // ── Animations existantes ─────────────────────────────────────────────

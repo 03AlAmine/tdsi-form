@@ -6,13 +6,14 @@ import { Subscription } from 'rxjs';
 import { ArticleService } from '../../../core/services/article.service';
 import { Article } from '../../../core/model/article.model';
 import { ToastService } from '../../../core/services/toast.service';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 
 type Filter = 'en attente' | 'approuvé' | 'refusé' | 'all';
 
 @Component({
   selector: 'app-admin-articles',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TiltSpotlightDirective],
   templateUrl: './admin-articles.component.html',
   styleUrls: ['./admin-articles.component.scss'],
 })

@@ -248,12 +248,19 @@
     </div>
   } @else {
     <!-- Workshops Grid -->
-    <div class="workshops-grid">
+    <div class="workshops-grid stagger-children">
       @for (workshop of workshops(); track workshop.id) {
         <div
           class="workshop-card"
+          appTiltSpotlight
+          [tiltMax]="4"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Voir le détail du workshop ' + workshop.themeTitle"
           [class.workshop-card--canceled]="workshop.status === 'annulé'"
           (click)="openWorkshopDetail(workshop)"
+          (keydown.enter)="openWorkshopDetail(workshop)"
+          (keydown.space)="$event.preventDefault(); openWorkshopDetail(workshop)"
         >
           <div class="workshop-card__header">
             <div class="workshop-card__badges">
@@ -263,12 +270,13 @@
                   'status-badge--' + getStatusBadgeClass(workshop.status)
                 "
               >
-                <i class="fas {{ getStatusIcon(workshop.status) }}"></i>
+                <i class="fas {{ getStatusIcon(workshop.status) }}" aria-hidden="true"></i>
                 {{ workshop.status }}
               </span>
               <span class="location-badge">
                 <i
                   class="fas {{ getLocationIconClass(workshop.location) }}"
+                  aria-hidden="true"
                 ></i>
                 {{ workshop.location }}
               </span>
@@ -280,29 +288,33 @@
               <button
                 class="action-btn"
                 title="Modifier"
+                aria-label="Modifier le workshop"
                 (click)="openEditModal(workshop)"
               >
-                <i class="fas fa-edit"></i>
+                <i class="fas fa-edit" aria-hidden="true"></i>
               </button>
               <button
                 class="action-btn"
                 title="QR Code"
+                aria-label="Afficher le QR code"
                 (click)="openQr(workshop)"
               >
-                <i class="fas fa-qrcode"></i>
+                <i class="fas fa-qrcode" aria-hidden="true"></i>
               </button>
               <a
                 [routerLink]="['/admin/presence', workshop.id]"
                 class="action-btn"
                 title="Configurer présence"
+                aria-label="Configurer la présence"
               >
-                <i class="fas fa-clipboard-list"></i>
+                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
               </a>
               <button
                 class="action-btn action-btn--delete"
+                aria-label="Supprimer le workshop"
                 (click)="deleteWorkshop(workshop)"
               >
-                <i class="fas fa-trash-alt"></i>
+                <i class="fas fa-trash-alt" aria-hidden="true"></i>
               </button>
             </div>
           </div>

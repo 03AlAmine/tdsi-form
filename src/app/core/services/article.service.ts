@@ -1,5 +1,6 @@
 // core/services/article.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   collection,
   addDoc,
@@ -13,17 +14,23 @@ import {
   orderBy,
   increment,
 } from 'firebase/firestore';
-import { Observable, shareReplay, finalize } from 'rxjs';
+import { Observable, shareReplay, finalize, EMPTY } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Article } from '../model/article.model';
 
 @Injectable({ providedIn: 'root' })
 export class ArticleService {
+  // ✅ SSR-safe : les listeners Firestore (onSnapshot) utilisent le
+  // bundle navigateur de Firebase (window) — jamais au prerender.
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
 
   // ── Cache public : articles approuvés ──────────────────────────────────────
   private published$: Observable<Article[]> | null = null;
 
   getPublishedArticles(): Observable<Article[]> {
+    if (!this.isBrowser) return EMPTY;
+
     if (!this.published$) {
       this.published$ = new Observable<Article[]>((observer) => {
         const ref = query(
@@ -47,6 +54,8 @@ export class ArticleService {
   private all$: Observable<Article[]> | null = null;
 
   getAllArticles(): Observable<Article[]> {
+    if (!this.isBrowser) return EMPTY;
+
     if (!this.all$) {
       this.all$ = new Observable<Article[]>((observer) => {
         const ref = query(

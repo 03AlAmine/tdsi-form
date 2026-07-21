@@ -1,26 +1,36 @@
 // member-dashboard.component.ts
 
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { WorkshopService } from '../../../core/services/workshop.service';
-import { ArticleService } from '../../../core/services/article.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Article } from '../../../core/model/article.model';
 import { Subscription } from 'rxjs';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../../../firebase.config';
 import { MemberCalendarComponent } from '../../calendar/calendar.component';
 import { MemberNotesComponent } from '../../notes/notes.component';
+import { WelcomeModalComponent } from '../../shared/components/welcome-modal/welcome-modal.component';
+import { RevealDirective } from '../../../core/directives/reveal.directive';
+import { CountUpDirective } from '../../../core/directives/count-up.directive';
 import { User } from '../../../core/model/models';
 
 @Component({
   selector: 'app-member-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, MemberCalendarComponent, FormsModule, MemberNotesComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MemberCalendarComponent,
+    FormsModule,
+    MemberNotesComponent,
+    WelcomeModalComponent,
+    RevealDirective,
+    CountUpDirective,
+  ],
   templateUrl: './member-dashboard.component.html',
   styleUrls: ['./member-dashboard.component.scss'],
 })
@@ -28,12 +38,16 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
   private authService    = inject(AuthService);
   private themeService   = inject(ThemeService);
   private workshopService = inject(WorkshopService);
-  private articleService = inject(ArticleService);
   private router         = inject(Router);
   private toastService   = inject(ToastService);
 
   // ── Signals ──────────────────────────────────────────────────────────────
   user = signal<User | null>(this.authService.currentUser);
+
+  // ✅ Modale de bienvenue post-inscription — voir
+  // AuthService.consumeJustRegistered(). null tant qu'il n'y a rien à
+  // afficher (utilisateur qui se connecte normalement, ou modale déjà vue).
+  justRegistered = signal<{ displayName: string; email: string } | null>(null);
 
   stats = signal({
     totalThemes: 0,
@@ -44,8 +58,57 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
 
   recentThemes      = signal<any[]>([]);
   upcomingWorkshops = signal<any[]>([]);
-  latestArticles    = signal<Article[]>([]);
   loading           = signal(true);
+
+  // Fusion chronologique des soumissions et workshops pour la timeline d'activité
+  activityTimeline = computed(() => {
+    const submissions = this.recentThemes().map((theme) => ({
+      type: 'submission' as const,
+      icon: 'fa-file-circle-plus',
+      title: `Thématique proposée : ${theme.title}`,
+      date: theme.createdAt instanceof Date ? theme.createdAt : new Date(theme.createdAt),
+      link: '/espace-membre/mes-soumissions',
+    }));
+    const workshops = this.upcomingWorkshops().map((w) => ({
+      type: 'workshop' as const,
+      icon: 'fa-chalkboard-user',
+      title: `Workshop à venir : ${w.themeTitle}`,
+      date: w.date instanceof Date ? w.date : new Date(w.date),
+      link: '/workshops',
+    }));
+    return [...submissions, ...workshops]
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 6);
+  });
+
+  // ── Widget de bienvenue : message contextuel selon l'activité du membre ────
+  welcomeTip = computed(() => {
+    if (this.stats().mySubmissions === 0) {
+      return {
+        icon: 'fa-lightbulb',
+        title: 'Une idée de workshop en tête ?',
+        message: "Bienvenue chez vous ! Vous pouvez proposer une thématique qui vous passionne, parler de cybersécurité, d'IA, de cloud... le club est fait pour ça.",
+        ctaLabel: 'Proposer une thématique',
+        ctaLink: '/espace-membre/proposer',
+      };
+    }
+    if (this.stats().myRegistrations === 0) {
+      return {
+        icon: 'fa-calendar-check',
+        title: 'Pas encore inscrit à un workshop ?',
+        message: 'Des sessions sont déjà planifiées par la communauté. Réservez votre place dès maintenant.',
+        ctaLabel: 'Voir les workshops',
+        ctaLink: '/workshops',
+      };
+    }
+    return {
+      icon: 'fa-rocket',
+      title: 'Continuez sur cette lancée !',
+      message: 'Explorez de nouvelles thématiques ou partagez une nouvelle idée avec la communauté.',
+      ctaLabel: 'Explorer les thématiques',
+      ctaLink: '/thematiques',
+    };
+  });
 
   // Notes
   notesContent    = signal('');
@@ -55,35 +118,14 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  // ── Category icons ────────────────────────────────────────────────────────
-  readonly categoryIcons: Record<string, string> = {
-    'Cybersécurité':          'fa-shield-alt',
-    'Intelligence Artificielle': 'fa-robot',
-    'Développement Web':      'fa-code',
-    'Cloud & DevOps':         'fa-cloud',
-    'Cryptographie':          'fa-lock',
-    'Réseaux':                'fa-network-wired',
-    'Autre':                  'fa-tag',
-  };
-
-  getCategoryIcon(cat: string): string {
-    return this.categoryIcons[cat] ?? 'fa-tag';
-  }
-
-  formatArticleDate(date: Date): string {
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    }).format(date);
-  }
-
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.subscriptions.push(
       this.authService.currentUser$.subscribe((u) => this.user.set(u))
     );
+    this.justRegistered.set(this.authService.consumeJustRegistered());
     this.loadData();
     this.loadUserNotes();
-    this.loadLatestArticles();
   }
 
   ngOnDestroy(): void {
@@ -125,15 +167,6 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
 
   lastActivityDate(): Date {
     return new Date();
-  }
-
-  // ── Articles ──────────────────────────────────────────────────────────────
-  private loadLatestArticles(): void {
-    this.subscriptions.push(
-      this.articleService.getPublishedArticles().subscribe((articles) => {
-        this.latestArticles.set(articles.slice(0, 3));
-      })
-    );
   }
 
   // ── Notes ─────────────────────────────────────────────────────────────────

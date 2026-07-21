@@ -60,6 +60,52 @@
         </div>
       </div>
 
+      <!-- Stats & Badges Widget -->
+      <div class="profile-stats">
+        <div class="profile-stats__row">
+          <div class="profile-stats__item">
+            <i class="fas fa-bolt"></i>
+            <div>
+              <div class="profile-stats__value">{{ engagementPoints() }}</div>
+              <div class="profile-stats__label">Points d'engagement</div>
+            </div>
+          </div>
+          <div class="profile-stats__item">
+            <i class="fas fa-certificate"></i>
+            <div>
+              <div class="profile-stats__value">{{ certificatesCount() }}</div>
+              <div class="profile-stats__label">Certificats</div>
+            </div>
+          </div>
+          <div class="profile-stats__item">
+            <i class="fas fa-file-alt"></i>
+            <div>
+              <div class="profile-stats__value">{{ stats().mySubmissions }}</div>
+              <div class="profile-stats__label">Thématiques proposées</div>
+            </div>
+          </div>
+          <div class="profile-stats__item">
+            <i class="fas fa-calendar-check"></i>
+            <div>
+              <div class="profile-stats__value">{{ stats().myRegistrations }}</div>
+              <div class="profile-stats__label">Workshops suivis</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-badges">
+          @for (badge of badges(); track badge.label) {
+            <div class="badge-chip" [class.badge-chip--unlocked]="badge.unlocked" [title]="badge.description">
+              <i class="fas {{ badge.icon }}"></i>
+              <span>{{ badge.label }}</span>
+              @if (!badge.unlocked) {
+                <i class="fas fa-lock badge-chip__lock"></i>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
       <!-- Alert Messages -->
       @if (successMessage()) {
         <div class="alert alert--success animate-slide-down">

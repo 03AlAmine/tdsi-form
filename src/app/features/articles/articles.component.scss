@@ -262,6 +262,16 @@
   transition: all var(--transition-base);
   overflow: hidden;
 
+  &--skeleton {
+    cursor: default;
+    min-height: 240px;
+
+    &:hover {
+      transform: none;
+      border-color: var(--glass-border);
+    }
+  }
+
   // Subtle glow on top-left
   &::before {
     content: '';

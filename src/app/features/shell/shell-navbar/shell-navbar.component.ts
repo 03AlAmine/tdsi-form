@@ -1,8 +1,9 @@
 // shell-navbar.component.ts
-import { Component, HostListener, inject, signal, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, inject, signal, effect, AfterViewInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { CommandPaletteService } from '../../../core/services/command-palette.service';
 import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -26,12 +27,51 @@ import { trigger, transition, style, animate } from '@angular/animations';
 })
 export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly commandPaletteService = inject(CommandPaletteService);
 
   userMenuOpen = signal(false);
   mobileMenuOpen = signal(false);
   isScrolled = false;
 
   private scrollListener: (() => void) | null = null;
+
+  // ── Découvrabilité du raccourci ⌘K ──────────────────────────────────
+  // Affiché une seule fois par navigateur (localStorage), uniquement
+  // pour les nouveaux visiteurs qui n'ont jamais ouvert la palette.
+  // Disparaît dès qu'ils l'ouvrent (clic ou clavier, via l'effect
+  // ci-dessous) ou tout seul après quelques secondes s'ils l'ignorent.
+  private static readonly CMDK_HINT_KEY = 'club-tdsi-cmdk-hint-seen';
+  showCmdkHint = signal(false);
+  private hintTimeout: ReturnType<typeof setTimeout> | null = null;
+  private hintAutoDismiss: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    // Se déclenche pour toute ouverture de la palette, qu'elle vienne du
+    // bouton de la navbar ou du raccourci clavier global.
+    effect(() => {
+      if (this.commandPaletteService.hasBeenOpened()) {
+        this.dismissCmdkHint();
+      }
+    });
+  }
+
+  dismissCmdkHint(): void {
+    this.showCmdkHint.set(false);
+    if (this.isBrowser) {
+      localStorage.setItem(ShellNavbarComponent.CMDK_HINT_KEY, '1');
+    }
+    if (this.hintAutoDismiss) {
+      clearTimeout(this.hintAutoDismiss);
+      this.hintAutoDismiss = null;
+    }
+  }
+
+  openCommandPalette(): void {
+    this.mobileMenuOpen.set(false);
+    document.body.style.overflow = '';
+    this.commandPaletteService.requestOpen();
+  }
 
   get user() {
     return this.authService.currentUser;
@@ -84,11 +124,25 @@ export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    // ✅ SSR-safe : pas de window au prerender.
+    if (!this.isBrowser) return;
     this.scrollListener = this.handleScroll;
     window.addEventListener('scroll', this.scrollListener);
+
+    if (!localStorage.getItem(ShellNavbarComponent.CMDK_HINT_KEY)) {
+      this.hintTimeout = setTimeout(() => {
+        this.showCmdkHint.set(true);
+        // Auto-dismiss si ignorée, pour ne pas rester collée en
+        // permanence à l'écran.
+        this.hintAutoDismiss = setTimeout(() => this.dismissCmdkHint(), 8000);
+      }, 1500);
+    }
   }
 
   ngOnDestroy(): void {
+    if (this.hintTimeout) clearTimeout(this.hintTimeout);
+    if (this.hintAutoDismiss) clearTimeout(this.hintAutoDismiss);
+    if (!this.isBrowser) return;
     if (this.scrollListener) {
       window.removeEventListener('scroll', this.scrollListener);
     }

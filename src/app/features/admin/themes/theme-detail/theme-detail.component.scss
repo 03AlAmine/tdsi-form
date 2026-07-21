@@ -16,7 +16,7 @@
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
-  background: linear-gradient(135deg, #0f1235, #0a0e27);
+  background: linear-gradient(135deg, var(--tech-dark), var(--tech-deep));
   border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: 16px;
   overflow: hidden;
@@ -30,10 +30,10 @@
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-  border-top: 3px solid #00d4ff;
+  border-top: 3px solid var(--tech-cyan);
 
   &--success {
-    border-top-color: #10b981;
+    border-top-color: var(--tech-success);
   }
 
   &--warning {
@@ -41,7 +41,7 @@
   }
 
   &--danger {
-    border-top-color: #ef4444;
+    border-top-color: var(--tech-danger);
   }
 
   &__badges {
@@ -69,7 +69,7 @@
 
   &:hover {
     background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
+    color: var(--tech-danger);
     transform: rotate(90deg);
   }
 }
@@ -124,7 +124,7 @@
 
     i {
       font-size: 1rem;
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
   }
 
@@ -149,7 +149,7 @@
   .meta-sub {
     display: block;
     font-size: 0.625rem;
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 }
 
@@ -169,7 +169,7 @@
     color: #cbd5e1;
 
     i {
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
   }
 
@@ -193,7 +193,7 @@
   border-radius: 100px;
   font-size: 0.6875rem;
   font-family: monospace;
-  color: #00d4ff;
+  color: var(--tech-cyan);
 }
 
 /* ============================================================
@@ -212,7 +212,7 @@
     color: #cbd5e1;
 
     i {
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
   }
 }
@@ -232,7 +232,7 @@
 
     i {
       width: 20px;
-      color: #00d4ff;
+      color: var(--tech-cyan);
     }
 
     &:last-child {
@@ -259,12 +259,12 @@
 
   &--primary {
     background: rgba(0, 212, 255, 0.12);
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 
   &--success {
     background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
+    color: var(--tech-success);
   }
 
   &--warning {
@@ -274,7 +274,7 @@
 
   &--danger {
     background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
+    color: var(--tech-danger);
   }
 }
 
@@ -304,14 +304,14 @@
     border: 1px solid #334155;
 
     &:hover {
-      border-color: #00d4ff;
-      color: #00d4ff;
+      border-color: var(--tech-cyan);
+      color: var(--tech-cyan);
     }
   }
 
   &--danger {
     background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    color: var(--tech-danger);
     border: 1px solid rgba(239, 68, 68, 0.2);
 
     &:hover {

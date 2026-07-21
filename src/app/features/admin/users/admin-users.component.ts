@@ -10,11 +10,12 @@ import { WorkshopService }from '../../../core/services/workshop.service';
 import { LoggerService }  from '../../../core/services/logger.service';
 import { User, Workshop } from '../../../core/model/models';
 import { firstValueFrom } from 'rxjs';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TiltSpotlightDirective],
   templateUrl: './admin-users.component.html',
   styleUrls: ['./admin-users.component.scss'],
 })

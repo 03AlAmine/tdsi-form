@@ -9,6 +9,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { QrService } from '../../../core/services/qr.service';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 import {
   Activity, ActivityType, ActivityStatus,
   ACTIVITY_TYPE_LABELS, ACTIVITY_STATUS_LABELS, ACTIVITY_TYPE_ICONS,
@@ -18,7 +19,7 @@ import {
 @Component({
   selector: 'app-admin-activities',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, TiltSpotlightDirective],
   templateUrl: './admin-activities.component.html',
   styleUrls: ['./admin-activities.component.scss'],
 })

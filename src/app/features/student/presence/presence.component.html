@@ -95,6 +95,13 @@
               <span>FORMULAIRE DE PRÉSENCE</span>
             </div>
             <h1 class="presence-title">{{ workshop.themeTitle }}</h1>
+
+            <div class="session-countdown" [class]="'session-countdown--' + sessionStatus().variant">
+              <i class="fas {{ sessionStatus().icon }}"></i>
+              <span>{{ sessionStatus().label }}</span>
+              <span class="session-countdown__date">{{ workshop.date | date: "EEEE dd MMMM 'à' HH:mm" }}</span>
+            </div>
+
             <div class="presence-meta">
               <span class="meta-item">
                 <i class="fas fa-chalkboard-user"></i>

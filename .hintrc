@@ -41,7 +41,8 @@
     "axe/structure": [
       "default",
       {
-        "list": "off"
+        "list": "off",
+        "definition-list": "off"
       }
     ],
     "axe/text-alternatives": [
@@ -52,6 +53,7 @@
       }
     ],
     "button-type": "off",
-    "disown-opener": "off"
+    "disown-opener": "off",
+    "typescript-config/consistent-casing": "off"
   }
 }

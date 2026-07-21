@@ -90,12 +90,29 @@
 
     <!-- Loading State -->
     @if (loading()) {
-      <div class="loading-state">
-        <div class="loading-spinner">
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring-inner"></div>
-        </div>
-        <p class="loading-text">Chargement des articles...</p>
+      <div class="articles-grid" role="status" aria-live="polite" aria-label="Chargement des articles">
+        <span class="visually-hidden">Chargement des articles…</span>
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="article-card article-card--skeleton" aria-hidden="true">
+            <div class="article-card__header">
+              <span class="skeleton" style="width: 90px; height: 20px; border-radius: 999px;"></span>
+              <span class="skeleton" style="width: 50px; height: 20px; border-radius: 999px;"></span>
+            </div>
+            <div class="skeleton-text skeleton-text--80" style="height: 1.2em;"></div>
+            <div class="skeleton-text skeleton-text--80"></div>
+            <div class="skeleton-text skeleton-text--60"></div>
+            <div class="article-card__footer">
+              <div class="article-card__author">
+                <span class="skeleton" style="width: 34px; height: 34px; border-radius: 50%;"></span>
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <span class="skeleton" style="width: 90px; height: 12px;"></span>
+                  <span class="skeleton" style="width: 60px; height: 10px;"></span>
+                </div>
+              </div>
+              <span class="skeleton" style="width: 70px; height: 28px; border-radius: var(--radius-lg);"></span>
+            </div>
+          </div>
+        }
       </div>
 
     } @else if (filtered().length === 0) {

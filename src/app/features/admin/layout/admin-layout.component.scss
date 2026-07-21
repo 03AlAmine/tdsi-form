@@ -1,17 +1,15 @@
 // admin-layout.component.scss
 
 // ── Tokens locaux ──────────────────────────────────────────
-$cyan:    #00d4ff;
-$blue:    #3b82f6;
-$violet:  #8b5cf6;
-$bg-base: #0a0e27;
-$bg-side: #0c1030;
+
+
+
 $border:  rgba(0, 212, 255, 0.08);
 
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: $bg-base;
+  background: var(--tech-deep);
 }
 
 // ============================================================
@@ -21,7 +19,7 @@ $border:  rgba(0, 212, 255, 0.08);
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: 240px;
-  background: $bg-side;
+  background: var(--bg-panel);
   border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
@@ -63,8 +61,8 @@ $border:  rgba(0, 212, 255, 0.08);
 
   &__logo {
     width: 34px; height: 34px;
-    background: rgba($cyan, 0.08);
-    border: 1px solid rgba($cyan, 0.2);
+    background: rgba(var(--tech-cyan-rgb), 0.08);
+    border: 1px solid rgba(var(--tech-cyan-rgb), 0.2);
     border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -79,7 +77,7 @@ $border:  rgba(0, 212, 255, 0.08);
     letter-spacing: -0.01em;
 
     span {
-      background: linear-gradient(135deg, $cyan, $blue);
+      background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -89,15 +87,15 @@ $border:  rgba(0, 212, 255, 0.08);
   &__toggle {
     width: 28px; height: 28px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba($cyan, 0.07);
-    border: 1px solid rgba($cyan, 0.15);
+    background: rgba(var(--tech-cyan-rgb), 0.07);
+    border: 1px solid rgba(var(--tech-cyan-rgb), 0.15);
     border-radius: 7px;
-    color: $cyan;
+    color: var(--tech-cyan);
     cursor: pointer;
     transition: background 0.2s;
     flex-shrink: 0;
 
-    &:hover { background: rgba($cyan, 0.14); }
+    &:hover { background: rgba(var(--tech-cyan-rgb), 0.14); }
     i { font-size: 0.75rem; }
   }
 
@@ -135,14 +133,14 @@ $border:  rgba(0, 212, 255, 0.08);
     i { width: 16px; font-size: 0.9rem; text-align: center; flex-shrink: 0; }
 
     &:hover {
-      background: rgba($cyan, 0.05);
+      background: rgba(var(--tech-cyan-rgb), 0.05);
       color: #94a3b8;
     }
 
     &.active {
-      background: rgba($cyan, 0.1);
-      color: $cyan;
-      border-left: 2px solid $cyan;
+      background: rgba(var(--tech-cyan-rgb), 0.1);
+      color: var(--tech-cyan);
+      border-left: 2px solid var(--tech-cyan);
       padding-left: calc(0.875rem - 2px);
     }
   }
@@ -150,7 +148,7 @@ $border:  rgba(0, 212, 255, 0.08);
   &__badge {
     margin-left: auto;
     padding: 0.1rem 0.45rem;
-    background: #ef4444;
+    background: var(--tech-danger);
     border-radius: 20px;
     font-size: 0.6rem;
     font-weight: 600;
@@ -195,7 +193,7 @@ $border:  rgba(0, 212, 255, 0.08);
 
   &__user-avatar {
     width: 32px; height: 32px;
-    background: linear-gradient(135deg, $cyan, $violet);
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.8125rem;
@@ -245,7 +243,7 @@ $border:  rgba(0, 212, 255, 0.08);
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 90;
-  background: rgba($bg-side, 0.97);
+  background: rgba(var(--bg-panel-rgb), 0.97);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid $border;
 
@@ -260,10 +258,10 @@ $border:  rgba(0, 212, 255, 0.08);
 
   &__menu-btn {
     width: 38px; height: 38px;
-    background: rgba($cyan, 0.08);
-    border: 1px solid rgba($cyan, 0.15);
+    background: rgba(var(--tech-cyan-rgb), 0.08);
+    border: 1px solid rgba(var(--tech-cyan-rgb), 0.15);
     border-radius: 9px;
-    color: $cyan;
+    color: var(--tech-cyan);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     i { font-size: 1rem; }
@@ -282,7 +280,7 @@ $border:  rgba(0, 212, 255, 0.08);
       font-size: 0.9375rem;
       color: #f1f5f9;
       span {
-        background: linear-gradient(135deg, $cyan, $blue);
+        background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
         background-clip: text;
         -webkit-background-clip: text;
         color: transparent;
@@ -292,7 +290,7 @@ $border:  rgba(0, 212, 255, 0.08);
 
   &__avatar {
     width: 34px; height: 34px;
-    background: linear-gradient(135deg, $cyan, $violet);
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.8125rem;
@@ -316,7 +314,7 @@ $border:  rgba(0, 212, 255, 0.08);
   &__container {
     width: 270px;
     height: 100%;
-    background: $bg-side;
+    background: var(--bg-panel);
     display: flex;
     flex-direction: column;
     animation: slideInRight 0.25s ease-out;
@@ -339,7 +337,7 @@ $border:  rgba(0, 212, 255, 0.08);
       font-weight: 600;
       color: #f1f5f9;
       span {
-        background: linear-gradient(135deg, $cyan, $blue);
+        background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
         background-clip: text;
         -webkit-background-clip: text;
         color: transparent;
@@ -362,13 +360,13 @@ $border:  rgba(0, 212, 255, 0.08);
     align-items: center;
     gap: 0.75rem;
     padding: 0.875rem;
-    background: rgba($cyan, 0.04);
+    background: rgba(var(--tech-cyan-rgb), 0.04);
     border-bottom: 1px solid $border;
   }
 
   &__avatar {
     width: 40px; height: 40px;
-    background: linear-gradient(135deg, $cyan, $violet);
+    background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     font-size: 1rem;
@@ -411,8 +409,8 @@ $border:  rgba(0, 212, 255, 0.08);
 
     i { width: 16px; font-size: 0.9rem; text-align: center; }
 
-    &:hover { background: rgba($cyan, 0.05); color: #94a3b8; }
-    &.active { background: rgba($cyan, 0.1); color: $cyan; }
+    &:hover { background: rgba(var(--tech-cyan-rgb), 0.05); color: #94a3b8; }
+    &.active { background: rgba(var(--tech-cyan-rgb), 0.1); color: var(--tech-cyan); }
   }
 
   &__logout {

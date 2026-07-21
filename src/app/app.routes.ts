@@ -58,6 +58,23 @@ export const routes: Routes = [
             (m) => m.WorkshopsComponent,
           ),
       },
+      // ── Pages détail SEO (URLs canoniques indexables et partageables)
+      //    Format : /workshops/{slug-du-titre}--{idFirestore}
+      //    Pas de conflit avec workshops/:id/meet (3 segments ≠ 2).
+      {
+        path: 'thematiques/:slug',
+        loadComponent: () =>
+          import('./features/themes/thematique-detail.component').then(
+            (m) => m.ThematiqueDetailComponent,
+          ),
+      },
+      {
+        path: 'workshops/:slug',
+        loadComponent: () =>
+          import('./features/workshops/workshop-detail.component').then(
+            (m) => m.WorkshopDetailComponent,
+          ),
+      },
       {
         path: 'workshops/:id/meet',
         canActivate: [authGuard],

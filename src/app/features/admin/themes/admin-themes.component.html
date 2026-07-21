@@ -23,16 +23,17 @@
   <!-- Search Bar -->
   <div class="search-section">
     <div class="search-wrapper">
-      <i class="fas fa-search"></i>
+      <i class="fas fa-search" aria-hidden="true"></i>
       <input
         type="text"
         placeholder="Rechercher une thématique..."
+        aria-label="Rechercher une thématique"
         (input)="searchQuery.set($any($event.target).value)"
         [value]="searchQuery()"
       />
       @if (searchQuery()) {
-        <button class="search-clear" (click)="searchQuery.set('')">
-          <i class="fas fa-times"></i>
+        <button class="search-clear" aria-label="Effacer la recherche" (click)="searchQuery.set('')">
+          <i class="fas fa-times" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -313,9 +314,19 @@
     </div>
   } @else {
     <!-- Themes Grid -->
-    <div class="themes-grid">
+    <div class="themes-grid stagger-children">
       @for (theme of filteredThemes(); track theme.id) {
-        <div class="theme-card" (click)="openThemeDetail(theme)">
+        <div
+          class="theme-card"
+          appTiltSpotlight
+          [tiltMax]="4"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Voir le détail de ' + theme.title"
+          (click)="openThemeDetail(theme)"
+          (keydown.enter)="openThemeDetail(theme)"
+          (keydown.space)="$event.preventDefault(); openThemeDetail(theme)"
+        >
           <div class="theme-card__header">
             <div class="theme-card__badges">
               <span class="badge badge--primary">{{ theme.category }}</span>
@@ -390,6 +401,7 @@
             <div class="status-select">
               <select
                 class="form-select-sm"
+                aria-label="Changer le statut de la thématique"
                 [value]="theme.status"
                 (change)="updateStatus(theme, $event)"
               >
@@ -400,15 +412,17 @@
             </div>
             <button
               class="action-btn action-btn--edit"
+              [attr.aria-label]="'Modifier ' + theme.title"
               (click)="editTheme(theme); $event.stopPropagation()"
             >
-              <i class="fas fa-edit"></i>
+              <i class="fas fa-edit" aria-hidden="true"></i>
             </button>
             <button
               class="action-btn action-btn--delete"
+              [attr.aria-label]="'Supprimer ' + theme.title"
               (click)="deleteTheme(theme); $event.stopPropagation()"
             >
-              <i class="fas fa-trash-alt"></i>
+              <i class="fas fa-trash-alt" aria-hidden="true"></i>
             </button>
           </div>
         </div>

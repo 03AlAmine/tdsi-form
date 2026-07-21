@@ -100,7 +100,7 @@
 
   &[data-status="en attente"] { border-left: 3px solid #eab308; }
   &[data-status="approuvé"]   { border-left: 3px solid #22c55e; }
-  &[data-status="refusé"]     { border-left: 3px solid #ef4444; }
+  &[data-status="refusé"]     { border-left: 3px solid var(--tech-danger); }
 
   &__header {
     padding: 1.25rem 1.5rem;

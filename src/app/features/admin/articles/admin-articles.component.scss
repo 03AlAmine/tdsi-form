@@ -22,7 +22,7 @@
     align-items: center;
     gap: 0.5rem;
     margin: 0 0 0.25rem;
-    i { color: #00d4ff; }
+    i { color: var(--tech-cyan); }
   }
 
   &__subtitle {
@@ -68,8 +68,8 @@
   transition: all 0.2s;
 
   &.active, &:hover {
-    border-color: #00d4ff;
-    color: #00d4ff;
+    border-color: var(--tech-cyan);
+    color: var(--tech-cyan);
   }
 }
 
@@ -79,7 +79,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   background: rgba(0, 212, 255, 0.1);
-  color: #00d4ff;
+  color: var(--tech-cyan);
 
   &[data-status="en attente"] { background: rgba(234,179,8,.15); color: #ca8a04; }
   &[data-status="approuvé"]   { background: rgba(34,197,94,.15); color: #16a34a; }
@@ -94,15 +94,37 @@
 }
 
 .article-item {
+  position: relative;
   background: rgba(15, 18, 53, 0.9);
   border: 1px solid rgba(0, 212, 255, 0.08);
   border-radius: 12px;
   overflow: hidden;
   transition: border-color 0.2s;
 
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(0, 212, 255, 0.06),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: rgba(0, 212, 255, 0.25);
+
+    &::after { opacity: 1; }
+  }
+
   &[data-status="en attente"] { border-left: 3px solid #eab308; }
   &[data-status="approuvé"]   { border-left: 3px solid #22c55e; }
-  &[data-status="refusé"]     { border-left: 3px solid #ef4444; }
+  &[data-status="refusé"]     { border-left: 3px solid var(--tech-danger); }
 
   &__header {
     padding: 1.25rem 1.5rem;
@@ -146,7 +168,7 @@
 
   &__toggle {
     font-size: 0.78rem;
-    color: #00d4ff;
+    color: var(--tech-cyan);
     display: flex;
     align-items: center;
     gap: 0.3rem;
@@ -183,7 +205,7 @@
   overflow-y: auto;
   margin: 0 0 1rem;
   padding: 1rem;
-  background: #0a0e27;
+  background: var(--tech-deep);
   border-radius: 8px;
   border: 1px solid rgba(0, 212, 255, 0.08);
 }
@@ -238,7 +260,7 @@
 .comment-input {
   width: 100%;
   padding: 0.55rem 0.8rem;
-  background: #0a0e27;
+  background: var(--tech-deep);
   border: 1px solid rgba(0, 212, 255, 0.08);
   border-radius: 8px;
   color: #f1f5f9;
@@ -246,7 +268,7 @@
   font-family: inherit;
   resize: vertical;
 
-  &:focus { outline: none; border-color: #00d4ff; }
+  &:focus { outline: none; border-color: var(--tech-cyan); }
 }
 
 .action-buttons {

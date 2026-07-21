@@ -1,0 +1,45 @@
+<div class="welcome-overlay" (click)="close()">
+  <div class="welcome-card" (click)="$event.stopPropagation()">
+    <button type="button" class="welcome-card__close" (click)="close()" aria-label="Fermer">
+      ×
+    </button>
+
+    <div class="welcome-card__header">
+      <div class="welcome-card__icon">🎉</div>
+      <h2 class="welcome-card__title">Inscription réussie, {{ firstName }} !</h2>
+      <p class="welcome-card__subtitle">
+        Bienvenue sur <strong>Campus Club TDSI</strong>, la plateforme du club
+        Transmission de Données et Sécurité de l'Information de l'ESP Dakar.
+      </p>
+    </div>
+
+    <ul class="welcome-card__list">
+      <li>
+        <span class="welcome-card__list-icon">📚</span>
+        <span>Découvre les thématiques proposées et manifeste ton intérêt</span>
+      </li>
+      <li>
+        <span class="welcome-card__list-icon">📅</span>
+        <span>Inscris-toi aux workshops déjà programmés</span>
+      </li>
+      <li>
+        <span class="welcome-card__list-icon">💡</span>
+        <span>Propose toi-même une thématique qui te passionne</span>
+      </li>
+    </ul>
+
+    @if (email) {
+      <div class="welcome-card__notice">
+        <span class="welcome-card__notice-icon">✉️</span>
+        <span>
+          Un email de vérification a été envoyé à <strong>{{ email }}</strong>.
+          Pense à cliquer sur le lien qu'il contient pour confirmer ton compte.
+        </span>
+      </div>
+    }
+
+    <button type="button" class="welcome-card__cta" (click)="close()">
+      C'est parti 🚀
+    </button>
+  </div>
+</div>

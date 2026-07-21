@@ -147,6 +147,47 @@
   line-height: 1.3;
 }
 
+.session-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+
+  &__date {
+    font-weight: 400;
+    opacity: 0.75;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+
+    &::before { content: '·'; margin-right: 0.625rem; opacity: 0.5; }
+  }
+
+  &--upcoming {
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    color: var(--tech-cyan);
+  }
+
+  &--today {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--tech-warning);
+
+    i { animation: pulse 1.5s infinite; }
+  }
+
+  &--past {
+    background: rgba(148, 163, 184, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: var(--gray-500);
+  }
+}
+
 .presence-meta {
   display: flex;
   flex-wrap: wrap;

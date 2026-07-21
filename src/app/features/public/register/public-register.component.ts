@@ -96,9 +96,20 @@ export class PublicRegisterComponent implements OnInit, OnDestroy {
     return !!control?.invalid && !!control?.touched;
   }
 
+  isValid(field: string): boolean {
+    const control = this.form.get(field);
+    return !!control?.valid && !!control?.touched;
+  }
+
+  private shake(): void {
+    const el = document.querySelector('.register-form');
+    if (el) { el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 450); }
+  }
+
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.shake();
       this.toastService.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -135,6 +146,7 @@ export class PublicRegisterComponent implements OnInit, OnDestroy {
     } catch (err) {
       this.error.set('Erreur lors de l\'inscription. Veuillez réessayer.');
       this.toastService.error('Erreur lors de l\'inscription');
+      this.shake();
     } finally {
       this.submitting.set(false);
     }

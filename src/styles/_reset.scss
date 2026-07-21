@@ -85,3 +85,12 @@ h3 { font-size: var(--text-2xl); }
 h4 { font-size: var(--text-xl);  }
 h5 { font-size: var(--text-lg);  }
 h6 { font-size: var(--text-base);}
+
+// ── Curseur custom (desktop uniquement, voir CustomCursorComponent) ──
+// Le body reçoit .has-custom-cursor seulement si pointer:fine et pas de
+// prefers-reduced-motion (vérifié en JS), donc ce masquage ne s'applique
+// jamais sur tactile ni pour les personnes qui préfèrent moins d'animation.
+body.has-custom-cursor,
+body.has-custom-cursor * {
+  cursor: none !important;
+}

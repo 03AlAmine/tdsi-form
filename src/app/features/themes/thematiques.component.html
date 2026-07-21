@@ -20,16 +20,17 @@
         <!-- Search Bar -->
         <div class="page-hero__search">
           <div class="search-wrapper search-wrapper--rounded">
-            <i class="fas fa-search"></i>
+            <i class="fas fa-search" aria-hidden="true"></i>
             <input
               type="text"
               placeholder="Rechercher une thématique..."
+              aria-label="Rechercher une thématique"
               (input)="searchTerm.set($any($event.target).value)"
               [value]="searchTerm()"
             />
             @if (searchTerm()) {
-              <button class="search-clear" (click)="searchTerm.set('')">
-                <i class="fas fa-times"></i>
+              <button class="search-clear" aria-label="Effacer la recherche" (click)="searchTerm.set('')">
+                <i class="fas fa-times" aria-hidden="true"></i>
               </button>
             }
           </div>
@@ -41,18 +42,30 @@
   <div class="container">
     <!-- Loading State -->
     @if (loading()) {
-      <div class="loading-state">
-        <div class="loading-spinner">
-          <div class="spinner-ring"></div>
-          <div class="spinner-ring-inner"></div>
-        </div>
-        <p class="loading-text">Chargement des thématiques...</p>
+      <div class="themes-grid" role="status" aria-live="polite" aria-label="Chargement des thématiques">
+        <span class="visually-hidden">Chargement des thématiques…</span>
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="theme-card theme-card--skeleton" aria-hidden="true">
+            <div class="theme-card__content">
+              <div class="theme-card__badges">
+                <span class="skeleton" style="width: 90px; height: 22px; border-radius: 999px;"></span>
+                <span class="skeleton" style="width: 70px; height: 22px; border-radius: 999px;"></span>
+              </div>
+              <div class="skeleton-text skeleton-text--80" style="height: 1.3em;"></div>
+              <div class="skeleton-text skeleton-text--80"></div>
+              <div class="skeleton-text skeleton-text--60"></div>
+              <div class="theme-card__footer">
+                <span class="skeleton" style="width: 100px; height: 20px;"></span>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     } @else {
       <!-- Filters Section -->
       <div class="filters-section">
         <div class="filters-header">
-          <div class="filters-stats">
+          <div class="filters-stats" aria-live="polite">
             <span class="stats-value">{{ filteredThemes().length }}</span>
             <span class="stats-label">
               thématique{{ filteredThemes().length > 1 ? "s" : "" }}
@@ -63,25 +76,28 @@
                 <button
                   (click)="activeCategory.set(null)"
                   class="remove-filter"
+                  [attr.aria-label]="'Retirer le filtre ' + activeCategory()"
                 >
-                  <i class="fas fa-times"></i>
+                  <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
               </span>
             }
           </div>
-          <div class="filters-scroll">
+          <div class="filters-scroll" role="group" aria-label="Filtrer par catégorie">
             <button
               class="filter-chip"
               [class.active]="!activeCategory()"
+              [attr.aria-pressed]="!activeCategory()"
               (click)="activeCategory.set(null)"
             >
-              <i class="fas fa-th-large"></i>
+              <i class="fas fa-th-large" aria-hidden="true"></i>
               Tous
             </button>
             @for (cat of categories; track cat) {
               <button
                 class="filter-chip"
                 [class.active]="activeCategory() === cat"
+                [attr.aria-pressed]="activeCategory() === cat"
                 (click)="activeCategory.set(cat)"
               >
                 {{ cat }}
@@ -132,10 +148,26 @@
       } @else {
         <!-- Themes Grid -->
         <div class="themes-grid">
-          @for (theme of filteredThemes(); track theme.id) {
-            <div class="theme-card" (click)="openThemeDetail(theme)">
+          @for (theme of filteredThemes(); track theme.id; let i = $index) {
+            <div
+              class="theme-card"
+              role="button"
+              tabindex="0"
+              appTiltSpotlight
+              appReveal
+              [appRevealDelay]="(i % 6) * 60"
+              [attr.aria-label]="'Voir le détail de ' + theme.title"
+              [style.view-transition-name]="
+                transitioningThemeId() === theme.id && !drawerOpen()
+                  ? 'theme-detail-morph'
+                  : null
+              "
+              (click)="openThemeDetail(theme)"
+              (keydown.enter)="openThemeDetail(theme)"
+              (keydown.space)="$event.preventDefault(); openThemeDetail(theme)"
+            >
               <div class="theme-card__icon">
-                <i class="fas fa-microchip"></i>
+                <i class="fas fa-microchip" aria-hidden="true"></i>
               </div>
 
               <div class="theme-card__content">
@@ -152,6 +184,11 @@
                     }
                     {{ theme.status }}
                   </span>
+                  @if (!theme.linkedWorkshop && isHotDemand(theme)) {
+                    <span class="badge badge--hot" title="Beaucoup de membres intéressés">
+                      🔥 Forte demande
+                    </span>
+                  }
                 </div>
 
                 <h3 class="theme-card__title">{{ theme.title }}</h3>
@@ -209,7 +246,16 @@
               </div>
 
               <div class="theme-card__overlay">
-                <span>Détails <i class="fas fa-arrow-right"></i></span>
+                <!-- ✅ Vrai lien <a> vers la page détail : crawlable par
+                     Google et partageable (le drawer reste accessible via
+                     le clic sur la carte). -->
+                <a
+                  [routerLink]="['/thematiques', slugOf(theme)]"
+                  (click)="$event.stopPropagation()"
+                  class="theme-card__overlay-link"
+                >
+                  Voir la fiche <i class="fas fa-arrow-right"></i>
+                </a>
               </div>
             </div>
           }
@@ -242,16 +288,24 @@
 
   <!-- Floating Recommendations Button -->
   @if (isLoggedIn() && !recommendationsDrawerOpen()) {
-    <div class="reco-fab" (click)="openRecommendationsDrawer()">
+    <div
+      class="reco-fab"
+      role="button"
+      tabindex="0"
+      aria-label="Voir mes recommandations"
+      (click)="openRecommendationsDrawer()"
+      (keydown.enter)="openRecommendationsDrawer()"
+      (keydown.space)="$event.preventDefault(); openRecommendationsDrawer()"
+    >
       <div class="reco-fab__inner">
-        <div class="reco-fab__icon">
+        <div class="reco-fab__icon" aria-hidden="true">
           <i class="fas fa-brain"></i>
         </div>
-        <div class="reco-fab__badge">{{ recommendations().length }}</div>
+        <div class="reco-fab__badge" aria-hidden="true">{{ recommendations().length }}</div>
       </div>
-      <div class="reco-fab__pulse"></div>
-      <div class="reco-fab__ring"></div>
-      <div class="reco-fab__tooltip">
+      <div class="reco-fab__pulse" aria-hidden="true"></div>
+      <div class="reco-fab__ring" aria-hidden="true"></div>
+      <div class="reco-fab__tooltip" aria-hidden="true">
         <span class="tooltip-text">Recommandé pour vous</span>
         <span class="tooltip-arrow"></span>
       </div>
@@ -268,22 +322,25 @@
       <div
         class="drawer drawer--recommendations"
         [class.drawer--open]="recommendationsDrawerOpen()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reco-drawer-title"
         (click)="$event.stopPropagation()"
       >
         <div class="drawer__header drawer__header--reco">
           <div class="drawer__header-content">
-            <div class="drawer__icon">
+            <div class="drawer__icon" aria-hidden="true">
               <i class="fas fa-magic"></i>
             </div>
             <div>
-              <h2 class="drawer__title">Recommandé pour vous</h2>
+              <h2 class="drawer__title" id="reco-drawer-title">Recommandé pour vous</h2>
               <p class="drawer__subtitle">
                 Basé sur votre profil et historique
               </p>
             </div>
           </div>
-          <button class="drawer__close" (click)="closeRecommendationsDrawer()">
-            <i class="fas fa-times"></i>
+          <button class="drawer__close" aria-label="Fermer les recommandations" (click)="closeRecommendationsDrawer()">
+            <i class="fas fa-times" aria-hidden="true"></i>
           </button>
         </div>
 
@@ -406,6 +463,14 @@
       <div
         class="drawer"
         [class.drawer--open]="drawerOpen()"
+        [style.view-transition-name]="
+          drawerOpen() && selectedTheme()?.id === transitioningThemeId()
+            ? 'theme-detail-morph'
+            : null
+        "
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="theme-drawer-title"
         (click)="$event.stopPropagation()"
       >
         <div class="drawer__header" [class.drawer__header--info]="true">
@@ -421,14 +486,19 @@
             >
               {{ selectedTheme()?.status }}
             </span>
+            @if (!selectedTheme()?.linkedWorkshop && isHotDemand(selectedTheme())) {
+              <span class="badge badge--hot" title="Beaucoup de membres intéressés">
+                🔥 Forte demande
+              </span>
+            }
           </div>
-          <button class="drawer__close" (click)="closeDrawer()">
-            <i class="fas fa-times"></i>
+          <button class="drawer__close" aria-label="Fermer le détail" (click)="closeDrawer()">
+            <i class="fas fa-times" aria-hidden="true"></i>
           </button>
         </div>
 
         <div class="drawer__content">
-          <h2 class="drawer__title">{{ selectedTheme()?.title }}</h2>
+          <h2 class="drawer__title" id="theme-drawer-title">{{ selectedTheme()?.title }}</h2>
 
           <!-- Meta badges inline -->
           <div class="flex flex-wrap gap-sm mb-4">
@@ -731,11 +801,14 @@
                   class="btn btn--full"
                   [class.btn--primary]="!isInterested(selectedTheme()!)"
                   [class.btn--outline]="isInterested(selectedTheme()!)"
+                  [attr.aria-pressed]="isInterested(selectedTheme()!)"
+                  aria-live="polite"
                   [disabled]="interestPending() === selectedTheme()?.id"
                   (click)="toggleInterest(selectedTheme()!, $event)"
                 >
                   @if (interestPending() === selectedTheme()?.id) {
-                    <div class="btn-loader"></div>
+                    <div class="btn-loader" aria-hidden="true"></div>
+                    <span class="visually-hidden">Mise à jour en cours</span>
                   } @else if (isInterested(selectedTheme()!)) {
                     <i class="fas fa-check"></i>
                     <span>

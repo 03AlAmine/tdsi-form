@@ -5,22 +5,38 @@ import {
   inject,
   signal,
   computed,
+  effect,
   OnInit,
   OnDestroy,
+  PLATFORM_ID,
+  HostListener,
+  ElementRef,
+  ApplicationRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { WorkshopService } from '../../core/services/workshop.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AiService } from '../../core/services/ai.service';
+import { EnrichmentService } from '../../core/services/enrichment.service';
 import { ToastService } from '../../core/services/toast.service';
+import { SeoService } from '../../core/services/seo.service';
 import { Workshop } from '../../core/model/models';
+import { buildSlug } from '../../core/utils/slug.util';
+import {
+  getWorkshopStatusClass as sharedWorkshopStatusClass,
+  getWorkshopStatusIcon as sharedWorkshopStatusIcon,
+  getLocationIcon as sharedLocationIcon,
+  formatDuration as sharedFormatDuration,
+} from '../../core/utils/workshop-display.util';
+import { TiltSpotlightDirective } from '../../core/directives/tilt-spotlight.directive';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-workshops',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TiltSpotlightDirective, RevealDirective],
   templateUrl: './workshops.component.html',
   styleUrls: ['./workshops.component.scss'],
 })
@@ -29,7 +45,44 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private aiService = inject(AiService);
   private toastService = inject(ToastService);
+  private seo = inject(SeoService);
+  private enrichmentService = inject(EnrichmentService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly appRef = inject(ApplicationRef);
+
+  // ── View Transitions : morph card → détail (voir ThematiquesComponent
+  // pour le détail du mécanisme, identique ici avec un nom dédié). ──
+  transitioningWorkshopId = signal<string | null>(null);
+
+  private supportsViewTransitions(): boolean {
+    return this.isBrowser && typeof (document as any).startViewTransition === 'function';
+  }
+
+  // ── Accessibilité : mémorise l'élément qui a ouvert le drawer pour lui
+  // rendre le focus à la fermeture.
+  private lastFocusedTrigger: HTMLElement | null = null;
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.drawerOpen()) this.closeDrawer();
+  }
+
+  private focusDrawer(): void {
+    if (!this.isBrowser) return;
+    this.lastFocusedTrigger = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      (this.host.nativeElement.querySelector('.drawer__close') as HTMLElement | null)?.focus();
+    });
+  }
+
+  private returnFocusToTrigger(): void {
+    if (!this.isBrowser) return;
+    this.lastFocusedTrigger?.focus();
+    this.lastFocusedTrigger = null;
+  }
 
   workshops = signal<Workshop[]>([]);
   loading = signal(true);
@@ -38,6 +91,127 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   drawerOpen = signal(false);
   loadingEnriched = signal(false);
   registeringId = signal<string | null>(null);
+
+  // ── Deep-linking de la recherche (?q=...) — même mécanisme que
+  // ThematiquesComponent, allégé (pas de filtre catégorie ici). ──
+  private filtersInitialized = false;
+  private syncingFromUrl = false;
+  private filtersRouteSub?: Subscription;
+
+  private readFiltersFromUrl(params: ParamMap): void {
+    this.syncingFromUrl = true;
+    const q = params.get('q') ?? '';
+    if (q !== this.searchTerm()) this.searchTerm.set(q);
+
+    const vue = params.get('vue');
+    const mode = vue === 'calendrier' ? 'calendar' : vue === 'liste' ? 'list' : null;
+    if (mode && mode !== this.viewMode()) this.viewMode.set(mode);
+
+    this.syncingFromUrl = false;
+  }
+
+  private writeFiltersToUrl(term: string, viewMode: 'list' | 'calendar'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        q: term || null,
+        // Pas de "vue" dans l'URL en mode liste (valeur par défaut) —
+        // évite d'alourdir tous les liens partagés pour le cas courant.
+        vue: viewMode === 'calendar' ? 'calendrier' : null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private readonly filtersUrlSync = effect(() => {
+    const term = this.searchTerm();
+    const mode = this.viewMode();
+    if (!this.filtersInitialized || this.syncingFromUrl) return;
+    this.writeFiltersToUrl(term, mode);
+  });
+
+  // ── Vue Liste / Calendrier ──────────────────────────────────────────
+  viewMode = signal<'list' | 'calendar'>('list');
+  calendarMonth = signal(startOfMonth(new Date()));
+  weekDayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
+  calendarMonthLabel = computed(() =>
+    capitalize(
+      this.calendarMonth().toLocaleDateString('fr-FR', {
+        month: 'long',
+        year: 'numeric',
+      }),
+    ),
+  );
+
+  isCurrentMonth = computed(() => {
+    const now = startOfMonth(new Date());
+    const shown = this.calendarMonth();
+    return now.getFullYear() === shown.getFullYear() && now.getMonth() === shown.getMonth();
+  });
+
+  calendarWeeks = computed<CalendarCell[][]>(() => {
+    const monthStart = this.calendarMonth();
+    const year = monthStart.getFullYear();
+    const month = monthStart.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Lundi = premier jour de semaine (convention FR). getDay() renvoie
+    // 0 (dimanche) à 6 (samedi) → on décale pour que lundi = 0.
+    const startOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+
+    const workshopsByDay = new Map<number, Workshop[]>();
+    for (const w of this.filteredWorkshops()) {
+      const d = new Date(w.date);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        const day = d.getDate();
+        if (!workshopsByDay.has(day)) workshopsByDay.set(day, []);
+        workshopsByDay.get(day)!.push(w);
+      }
+    }
+
+    const today = new Date();
+    const cells: CalendarCell[] = [];
+
+    for (let i = 0; i < startOffset; i++) {
+      cells.push({ date: null, workshops: [], isToday: false });
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayWorkshops = (workshopsByDay.get(day) || []).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
+      cells.push({
+        date: day,
+        workshops: dayWorkshops,
+        isToday:
+          today.getFullYear() === year &&
+          today.getMonth() === month &&
+          today.getDate() === day,
+      });
+    }
+    while (cells.length % 7 !== 0) {
+      cells.push({ date: null, workshops: [], isToday: false });
+    }
+
+    const weeks: CalendarCell[][] = [];
+    for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+    return weeks;
+  });
+
+  goToPreviousMonth(): void {
+    const d = this.calendarMonth();
+    this.calendarMonth.set(new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  }
+
+  goToNextMonth(): void {
+    const d = this.calendarMonth();
+    this.calendarMonth.set(new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  }
+
+  goToCurrentMonth(): void {
+    this.calendarMonth.set(startOfMonth(new Date()));
+  }
 
   private subscription: Subscription | null = null;
 
@@ -74,6 +248,32 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   } | null>(null);
 
   ngOnInit(): void {
+    // ── SEO du listing ──
+    this.seo.setPage({
+      title: 'Workshops cybersécurité, IA & réseaux',
+      description:
+        'Workshops gratuits du Club TDSI : cybersécurité, cryptographie, IA, ' +
+        'cloud. ESP – UCAD, Dakar. En ligne et en présentiel, inscription libre.',
+      path: '/workshops',
+    });
+
+    // ✅ SSR-safe : le listener Firestore temps réel (onSnapshot) ne
+    // s'ouvre qu'en navigateur — au prerender il empêcherait l'app de
+    // se stabiliser. Le HTML prérendu = shell + meta, les données
+    // arrivent à l'hydratation côté client.
+    if (!this.isBrowser) {
+      // loading reste à true : le HTML prérendu montre l'état de
+      // chargement (pas un faux "aucun workshop"), les données
+      // arrivent dès que le JS client démarre.
+      return;
+    }
+
+    this.readFiltersFromUrl(this.route.snapshot.queryParamMap);
+    this.filtersInitialized = true;
+    this.filtersRouteSub = this.route.queryParamMap.subscribe((params) => {
+      this.readFiltersFromUrl(params);
+    });
+
     this.subscription = this.workshopService
       .getWorkshops()
       .subscribe((workshops) => {
@@ -82,9 +282,15 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /** Segment d'URL de la page détail : {slug-du-titre}--{id}. */
+  slugOf(workshop: Workshop): string {
+    return buildSlug(workshop.themeTitle, workshop.id!);
+  }
+
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
-    document.body.style.overflow = '';
+    this.filtersRouteSub?.unsubscribe();
+    if (this.isBrowser) document.body.style.overflow = '';
   }
 
   // ============================================================
@@ -92,32 +298,67 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   // ============================================================
 
   openWorkshopDetail(workshop: Workshop): void {
-    this.selectedWorkshop.set(workshop);
-    this.enrichedWorkshopData.set(null);
-    this.drawerOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    const runOpen = () => {
+      this.selectedWorkshop.set(workshop);
+      this.enrichedWorkshopData.set(null);
+      this.drawerOpen.set(true);
+      document.body.style.overflow = 'hidden';
+      this.focusDrawer();
 
-    if (this.isLoggedIn()) {
-      this.enrichWorkshopWithAI(workshop);
+      if (this.isLoggedIn()) {
+        this.enrichWorkshopWithAI(workshop);
+      }
+    };
+
+    if (!this.supportsViewTransitions() || !workshop.id) {
+      runOpen();
+      return;
     }
+
+    this.transitioningWorkshopId.set(workshop.id);
+    this.appRef.tick();
+
+    (document as any).startViewTransition(() => {
+      runOpen();
+      this.appRef.tick();
+    });
   }
 
   closeDrawer(): void {
-    this.drawerOpen.set(false);
-    setTimeout(() => {
-      this.selectedWorkshop.set(null);
-      document.body.style.overflow = '';
-    }, 300);
+    const workshop = this.selectedWorkshop();
+
+    if (!this.supportsViewTransitions() || !workshop?.id) {
+      this.drawerOpen.set(false);
+      this.returnFocusToTrigger();
+      setTimeout(() => {
+        this.selectedWorkshop.set(null);
+        document.body.style.overflow = '';
+      }, 300);
+      return;
+    }
+
+    this.returnFocusToTrigger();
+    const transition = (document as any).startViewTransition(() => {
+      this.drawerOpen.set(false);
+      this.appRef.tick();
+    });
+
+    transition.finished
+      .catch(() => {})
+      .finally(() => {
+        this.transitioningWorkshopId.set(null);
+        this.selectedWorkshop.set(null);
+        document.body.style.overflow = '';
+      });
   }
 
   async enrichWorkshopWithAI(workshop: Workshop): Promise<void> {
+    // ⚡ Si l'enrichissement est déjà persisté en base (cas de loin le
+    // plus fréquent), forWorkshop retourne immédiatement — pas de
+    // spinner visible, zéro appel au backend IA.
     this.loadingEnriched.set(true);
     try {
-      const result = await this.aiService.enrichWorkshopContent(
-        workshop.themeTitle,
-        workshop.themeTitle,
-        '',
-      );
+      const result = await this.enrichmentService.forWorkshop(workshop);
       this.enrichedWorkshopData.set({
         objectives: result.objectives || [],
         prerequisites: result.prerequisites || [],
@@ -181,6 +422,58 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
       );
     } catch {
       this.toastService.error('❌ Erreur lors de la désinscription. Réessaie.');
+    } finally {
+      this.registeringId.set(null);
+    }
+  }
+
+  // ── File d'attente (workshop complet) ───────────────────────────────
+  isOnWaitlist(workshop: Workshop): boolean {
+    const userId = this.authService.currentUser?.uid;
+    return !!userId && !!workshop.waitlist?.includes(userId);
+  }
+
+  isFull(workshop: Workshop): boolean {
+    return (workshop.registrations?.length || 0) >= (workshop.maxParticipants || 30);
+  }
+
+  waitlistPosition(workshop: Workshop): number | null {
+    const userId = this.authService.currentUser?.uid;
+    if (!userId) return null;
+    return this.workshopService.getWaitlistPosition(workshop, userId);
+  }
+
+  async joinWaitlist(workshop: Workshop): Promise<void> {
+    if (!this.isLoggedIn()) return;
+    const userId = this.authService.currentUser?.uid;
+    if (!userId) return;
+
+    this.registeringId.set(workshop.id!);
+    try {
+      await this.workshopService.joinWaitlist(workshop.id!, userId);
+      this.toastService.success(
+        `🕒 Ajouté·e à la file d'attente pour "${workshop.themeTitle}".`,
+      );
+    } catch (error: any) {
+      this.toastService.error(
+        error?.message || "❌ Erreur lors de l'ajout à la file d'attente.",
+      );
+    } finally {
+      this.registeringId.set(null);
+    }
+  }
+
+  async leaveWaitlist(workshop: Workshop): Promise<void> {
+    if (!this.isLoggedIn()) return;
+    const userId = this.authService.currentUser?.uid;
+    if (!userId) return;
+
+    this.registeringId.set(workshop.id!);
+    try {
+      await this.workshopService.leaveWaitlist(workshop.id!, userId);
+      this.toastService.info("ℹ️ Retiré·e de la file d'attente.");
+    } catch {
+      this.toastService.error('❌ Erreur. Réessaie.');
     } finally {
       this.registeringId.set(null);
     }
@@ -251,28 +544,14 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
    * Classe CSS pour le badge
    */
   getWorkshopStatusClass(workshop: Workshop): string {
-    const status = this.getWorkshopDisplayStatus(workshop);
-    const map: Record<string, string> = {
-      planifié: 'info',
-      'en cours': 'success',
-      terminé: 'neutral',
-      annulé: 'danger',
-    };
-    return map[status] || 'neutral';
+    return sharedWorkshopStatusClass(this.getWorkshopDisplayStatus(workshop));
   }
 
   /**
    * Icône pour le badge
    */
   getWorkshopStatusIcon(workshop: Workshop): string {
-    const status = this.getWorkshopDisplayStatus(workshop);
-    const map: Record<string, string> = {
-      planifié: 'fa-clock',
-      'en cours': 'fa-play-circle',
-      terminé: 'fa-check-circle',
-      annulé: 'fa-ban',
-    };
-    return map[status] || 'fa-circle';
+    return sharedWorkshopStatusIcon(this.getWorkshopDisplayStatus(workshop));
   }
 
 
@@ -332,41 +611,19 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   // ============================================================
 
   getStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      planifié: 'info',
-      'en cours': 'success',
-      terminé: 'neutral',
-      annulé: 'danger',
-    };
-    return map[status] || 'neutral';
+    return sharedWorkshopStatusClass(status);
   }
 
   getStatusIcon(status: string): string {
-    const map: Record<string, string> = {
-      planifié: 'fa-clipboard-list',
-      'en cours': 'fa-circle-play',
-      terminé: 'fa-circle-check',
-      annulé: 'fa-circle-xmark',
-    };
-    return map[status] || 'fa-circle';
+    return sharedWorkshopStatusIcon(status);
   }
-  getLocationIcon(location: string): string {
-    const map: Record<string, string> = {
-      'en ligne': 'fa-laptop',
-      présentiel: 'fa-building-columns',
-      hybride: 'fa-arrows-rotate',
-    };
 
-    return map[location] || 'fa-location-dot';
+  getLocationIcon(location: string): string {
+    return sharedLocationIcon(location);
   }
 
   formatDuration(minutes: number): string {
-    if (minutes >= 60) {
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
-      return m > 0 ? `${h}h ${m}min` : `${h}h`;
-    }
-    return `${minutes}min`;
+    return sharedFormatDuration(minutes);
   }
 
   getRegistrationPercent(workshop: Workshop): number {
@@ -380,4 +637,18 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     const registrations = workshop.registrations?.length || 0;
     return Math.max(max - registrations, 0);
   }
+}
+
+interface CalendarCell {
+  date: number | null;
+  workshops: Workshop[];
+  isToday: boolean;
+}
+
+function startOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

@@ -14,6 +14,9 @@ import { Component, Input } from '@angular/core';
       <div class="logo__image-wrapper">
         <img [src]="logoPath" [alt]="alt" class="logo__image" />
         <div class="logo__pulse-ring"></div>
+        <span class="logo__grad-badge" aria-hidden="true">
+          <i class="fas fa-graduation-cap"></i>
+        </span>
       </div>
       <div class="logo__text-wrapper">
         <span class="logo__text">Club</span>
@@ -50,6 +53,26 @@ import { Component, Input } from '@angular/core';
           border: 1px solid rgba(0, 212, 255, 0.3);
           border-radius: 50%;
           animation: pulseRing 2s ease-in-out infinite;
+        }
+
+        &__grad-badge {
+          position: absolute;
+          bottom: -2px;
+          right: -4px;
+          width: 16px;
+          height: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+          border: 2px solid var(--tech-dark, #0a0e27);
+          box-shadow: 0 0 6px rgba(0, 212, 255, 0.5);
+
+          i {
+            font-size: 8px;
+            color: var(--white);
+          }
         }
 
         &__text-wrapper {
@@ -98,6 +121,12 @@ import { Component, Input } from '@angular/core';
             height: 56px;
           }
 
+          .logo__grad-badge {
+            width: 20px;
+            height: 20px;
+            i { font-size: 10px; }
+          }
+
           .logo__text {
             font-size: 1.75rem;
           }
@@ -109,6 +138,12 @@ import { Component, Input } from '@angular/core';
           .logo__image {
             width: 32px;
             height: 32px;
+          }
+
+          .logo__grad-badge {
+            width: 13px;
+            height: 13px;
+            i { font-size: 6px; }
           }
 
           .logo__text {

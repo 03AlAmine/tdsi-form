@@ -2,10 +2,29 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>Club TDSI Campus</title>
+    <title>Club TDSI Campus — communauté cybersécurité & IA, ESP Dakar</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!-- ── SEO par défaut (surchargé dynamiquement par SeoService) ── -->
+    <meta
+      name="description"
+      content="La communauté sénégalaise dédiée à la cybersécurité, l'IA et les technologies de l'information. Workshops gratuits, thématiques, réseau. ESP – UCAD, Dakar."
+    />
+    <link rel="canonical" href="https://campus.clubtdsi.sn/" />
+    <meta property="og:site_name" content="Club TDSI Campus" />
+    <meta property="og:title" content="Club TDSI Campus — communauté cybersécurité & IA, ESP Dakar" />
+    <meta
+      property="og:description"
+      content="Workshops gratuits en cybersécurité, IA et réseaux. ESP – UCAD, Dakar."
+    />
+    <meta property="og:url" content="https://campus.clubtdsi.sn/" />
+    <meta property="og:image" content="https://campus.clubtdsi.sn/assets/images/logo-campus.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_SN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0a0e27" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -338,6 +357,26 @@
         .boot-terminal__body { min-height: 130px; font-size: 0.62rem; }
       }
 
+      /* ── mode "quick" — rechargement dans la même session ──
+         On a déjà joué la séquence complète une fois (sessionStorage),
+         inutile de la rejouer à chaque F5. On garde juste le logo + une
+         barre de progression indéterminée, le temps qu'Angular confirme
+         que l'auth est résolue et la navigation stabilisée (voir script
+         plus bas + AppComponent.signalAppReadyOnceStable côté Angular). */
+      .boot-screen.quick .boot-badge,
+      .boot-screen.quick .boot-terminal,
+      .boot-screen.quick .boot-meta {
+        display: none;
+      }
+      .boot-screen.quick .boot-progress-fill {
+        width: 40%;
+        animation: bxIndeterminate 1.1s ease-in-out infinite;
+      }
+      @keyframes bxIndeterminate {
+        0%   { transform: translateX(-100%); }
+        100% { transform: translateX(250%); }
+      }
+
       /* ── shell de l'app masqué tant que le boot n'est pas terminé ──
          (empêche la navbar/le shell d'apparaître derrière ou au-dessus
          de l'écran de boot pendant le chargement) */
@@ -406,6 +445,29 @@
         var fillEl = document.getElementById('bootFill');
         var pctEl = document.getElementById('bootPct');
         var badgeEl = document.getElementById('bootBadgeText');
+
+        // ── Skip : le boot complet ne se joue qu'une fois par session ──
+        // Un membre qui recharge ne doit pas revoir toute la séquence à
+        // chaque fois — mais on ne révèle pas l'app instantanément pour
+        // autant : un rechargement sur une page protégée est d'abord
+        // rendu côté serveur comme "non connecté" (voir AuthService),
+        // donc le HTML envoyé au navigateur peut être celui de /connexion
+        // le temps qu'Angular hydrate et confirme la vraie session. On
+        // affiche à la place un loader minimal (logo + progression
+        // indéterminée) et on attend que l'app confirme qu'elle est
+        // stable (événement 'tdsi:app-ready', voir AppComponent) avant
+        // de révéler quoi que ce soit — ça évite le flash.
+        var alreadyBooted = false;
+        try { alreadyBooted = sessionStorage.getItem('tdsi-booted') === '1'; } catch (e) {}
+        if (alreadyBooted) {
+          screenEl.classList.add('quick');
+          statusEl.textContent = 'Chargement…';
+          window.addEventListener('tdsi:app-ready', finish, { once: true });
+          // Filet de sécurité : ne jamais bloquer plus de 2,5 s, même si
+          // l'événement n'arrive jamais pour une raison quelconque.
+          setTimeout(function () { if (!finished) finish(); }, 2500);
+          return;
+        }
 
         // ── tech-canvas (porté de tech-canvas.component.ts) ──
         var canvas = document.getElementById('bootCanvas');
@@ -505,21 +567,17 @@
         document.addEventListener('mousemove', onMouseMove);
 
         // ── séquence de boot ──
+        // Séquence courte (~1,3 s au total) : l'identité visuelle reste,
+        // le LCP ne souffre plus. 4 lignes, cadence rapide.
         var lines = [
           { type: 'cmd', text: 'init --secure-boot --module=clubtdsicampus', status: "Initialisation de l'environnement sécurisé…" },
-          { type: 'ok', text: 'Noyau système chargé' },
-          { type: 'ok', text: "Intégrité des fichiers vérifiée", status: "Vérification de l'intégrité…" },
-          { type: 'cmd', text: 'connect --protocol=tls1.3 --cipher=aes256', status: 'Établissement du canal chiffré…' },
-          { type: 'ok', text: 'Canal sécurisé (AES-256) établi' },
+          { type: 'ok', text: 'Canal sécurisé (AES-256) établi', status: 'Établissement du canal chiffré…' },
           { type: 'info', text: 'Analyse des menaces… 0 détectée', status: 'Analyse des menaces…' },
-          { type: 'cmd', text: 'mount /espace-membres', status: "Préparation de l'espace membre…" },
           { type: 'ok', text: 'Accès autorisé' }
         ];
 
         var tagFor = { cmd: 'root@clubtdsicampus:~$', ok: '[ OK ]', info: '[ .. ]' };
 
-        var linesDone = false;
-        var windowLoaded = false;
         var finished = false;
 
         function renderLine(line, isLast) {
@@ -551,12 +609,9 @@
         var prevRow = null;
         function revealNext(index) {
           if (index >= lines.length) {
-            linesDone = true;
-            if (windowLoaded) {
-              finish();
-            } else {
-              statusEl.textContent = 'En attente de la fin du chargement…';
-            }
+            // On ne conditionne PLUS la fin à window.load : Angular
+            // hydrate derrière l'écran, la page prérendue est déjà là.
+            finish();
             return;
           }
           if (prevRow) {
@@ -567,12 +622,13 @@
           prevRow = renderLine(line, true);
           var pct = Math.min(90, Math.round(((index + 1) / lines.length) * 90));
           setProgress(pct, line.status);
-          setTimeout(function () { revealNext(index + 1); }, 300 + Math.random() * 120);
+          setTimeout(function () { revealNext(index + 1); }, 150 + Math.random() * 60);
         }
 
         function finish() {
           if (finished) return;
           finished = true;
+          try { sessionStorage.setItem('tdsi-booted', '1'); } catch (e) {}
           screenEl.classList.add('success');
           badgeEl.textContent = 'Club TDSI Campus // Accès autorisé';
           setProgress(100, 'Accès autorisé — bienvenue');
@@ -583,22 +639,14 @@
               screenEl.style.display = 'none';
               document.body.classList.remove('boot-active');
               stopCanvas();
-            }, 650);
-          }, 600);
+            }, 450);
+          }, 350);
         }
 
-        window.addEventListener('load', function () {
-          windowLoaded = true;
-          // léger délai pour laisser Angular peindre l'écran
-          setTimeout(function () {
-            if (linesDone) finish();
-          }, 200);
-        });
-
-        // Filet de sécurité : ne jamais bloquer indéfiniment
+        // Filet de sécurité : ne jamais bloquer plus de 4 s
         setTimeout(function () {
           if (!finished) finish();
-        }, 12000);
+        }, 4000);
 
         revealNext(0);
       })();

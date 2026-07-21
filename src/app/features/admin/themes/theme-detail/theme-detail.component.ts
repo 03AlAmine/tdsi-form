@@ -1,5 +1,5 @@
 // theme-detail.component.ts - Version améliorée
-import { Component, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Output, EventEmitter, signal, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Theme } from '../../../../core/model/models';
 
@@ -15,8 +15,16 @@ export class ThemeDetailComponent {
   @Output() edit = new EventEmitter<Theme>();
   @Output() delete = new EventEmitter<Theme>();
 
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private lastFocusedTrigger: HTMLElement | null = null;
+
   theme: Theme | null = null;
   isOpen = signal(false);
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.isOpen()) this.closeModal();
+  }
 
   getDifficultyInfo(difficulty: string): { icon: string; color: string } {
     const map: Record<string, { icon: string; color: string }> = {
@@ -55,11 +63,17 @@ export class ThemeDetailComponent {
     this.theme = theme;
     this.isOpen.set(true);
     document.body.style.overflow = 'hidden';
+    this.lastFocusedTrigger = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      (this.host.nativeElement.querySelector('.modal-close') as HTMLElement | null)?.focus();
+    });
   }
 
   closeModal(): void {
     this.isOpen.set(false);
     document.body.style.overflow = '';
+    this.lastFocusedTrigger?.focus();
+    this.lastFocusedTrigger = null;
     this.close.emit();
   }
 

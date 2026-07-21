@@ -71,7 +71,10 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
                                  [class.scan-result--error]="!lastResult()!.success">
           <div class="scan-result__icon">
             @if (lastResult()!.success) {
-              <i class="fas fa-check"></i>
+              <svg class="scan-check" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <circle class="scan-check__ring" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" pathLength="1"/>
+                <path class="scan-check__mark" d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/>
+              </svg>
             } @else {
               <i class="fas fa-times"></i>
             }
@@ -137,9 +140,9 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid var(--border-default);
+      border: 1px solid var(--glass-border);
 
-      &.active { border-color: var(--accent-primary); }
+      &.active { border-color: var(--tech-cyan); }
 
       // Override les styles injectés par html5-qrcode
       ::ng-deep #qr-scanner-reader {
@@ -233,22 +236,49 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
       &--error   &__icon { background: rgba(239,68,68,.15); color: #f87171; }
 
       &__info { flex: 1; }
-      &__name { font-size: .9375rem; font-weight: 600; color: var(--text-primary); }
-      &__msg  { font-size: .8125rem; color: var(--text-secondary); margin-top: .125rem; }
-      &__time { font-size: .875rem; color: var(--text-secondary); font-family: var(--font-mono); flex-shrink: 0; }
+      &__name { font-size: .9375rem; font-weight: 600; color: var(--white); }
+      &__msg  { font-size: .8125rem; color: var(--gray-400); margin-top: .125rem; }
+      &__time { font-size: .875rem; color: var(--gray-400); font-family: var(--font-mono); flex-shrink: 0; }
+    }
+
+    // Checkmark dessiné au trait : le cercle se trace d'abord, puis la
+    // coche, pour un feedback de succès plus satisfaisant qu'une icône
+    // statique — cohérent avec le cadre de visée déjà animé au-dessus.
+    .scan-check {
+      overflow: visible;
+
+      &__ring {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: scan-check-draw 0.35s ease-out forwards;
+      }
+
+      &__mark {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: scan-check-draw 0.25s ease-out 0.3s forwards;
+      }
+    }
+
+    @keyframes scan-check-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scan-check__ring, .scan-check__mark { animation: none; stroke-dashoffset: 0; }
     }
 
     // ── Check-in manuel ───────────────────────────────────
     .manual-checkin {
       background: var(--bg-card);
-      border: 1px solid var(--border-default);
+      border: 1px solid var(--glass-border);
       border-radius: var(--radius-lg);
       padding: .875rem 1rem;
 
       &__header {
         display: flex; justify-content: space-between; align-items: center;
         margin-bottom: .625rem;
-        font-size: .875rem; font-weight: 500; color: var(--text-secondary);
+        font-size: .875rem; font-weight: 500; color: var(--gray-400);
       }
 
       &__body { display: flex; gap: .625rem; }
@@ -256,13 +286,13 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
 
     .form-input {
       flex: 1;
-      background: var(--bg-input);
-      border: 1px solid var(--border-default);
+      background: var(--bg-elevated);
+      border: 1px solid var(--glass-border);
       border-radius: var(--radius-md);
       padding: .4rem .75rem;
-      color: var(--text-primary);
+      color: var(--white);
       font-size: .875rem;
-      &:focus { outline: none; border-color: var(--accent-primary); }
+      &:focus { outline: none; border-color: var(--tech-cyan); }
     }
 
     .btn {
@@ -271,15 +301,15 @@ type QrcodeSuccessCallback = import('html5-qrcode').QrcodeSuccessCallback;
       border-radius: var(--radius-md); font-size: .875rem; font-weight: 500;
       cursor: pointer; transition: all .15s; border: none;
 
-      &--primary { background: var(--accent-primary); color: #fff; &:hover { filter: brightness(1.1); } }
-      &--ghost   { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); &:hover { border-color: var(--accent-primary); } }
+      &--primary { background: var(--tech-cyan); color: #fff; &:hover { filter: brightness(1.1); } }
+      &--ghost   { background: transparent; color: var(--gray-400); border: 1px solid var(--glass-border); &:hover { border-color: var(--tech-cyan); } }
       &--sm      { padding: .375rem .875rem; font-size: .8125rem; }
     }
 
     .btn-text {
-      background: transparent; border: none; color: var(--accent-primary);
+      background: transparent; border: none; color: var(--tech-cyan);
       font-size: .8125rem; cursor: pointer; text-decoration: underline;
-      &--muted { color: var(--text-tertiary); text-decoration: none; text-align: center; width: 100%; }
+      &--muted { color: var(--gray-500); text-decoration: none; text-align: center; width: 100%; }
     }
 
     @keyframes slide-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }

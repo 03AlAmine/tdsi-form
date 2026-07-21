@@ -1,11 +1,12 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   collection, addDoc, updateDoc, deleteDoc, doc,
   Timestamp, arrayUnion, arrayRemove, onSnapshot,
   query, where, orderBy, getDoc, getDocs, writeBatch,
   increment, WithFieldValue, DocumentData
 } from 'firebase/firestore';
-import { Observable } from 'rxjs';
+import { Observable, EMPTY } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { AuthService } from './auth.service';
 import {
@@ -14,6 +15,10 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
+  // ✅ SSR-safe : les listeners Firestore (onSnapshot) utilisent le
+  // bundle navigateur de Firebase (window) — jamais au prerender.
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private authService = inject(AuthService);
 
   // ── Helpers de conversion Firestore ↔ TypeScript ──────────
@@ -51,6 +56,8 @@ export class ActivityService {
 
   /** Toutes les activités publiées — pour les pages publiques */
   getPublishedActivities(): Observable<Activity[]> {
+    if (!this.isBrowser) return EMPTY;
+
     return new Observable(observer => {
       // where seul — tri côté client pour éviter l'index composite
       const q = query(
@@ -68,6 +75,8 @@ export class ActivityService {
 
   /** Toutes les activités — pour l'admin */
   getAllActivities(): Observable<Activity[]> {
+    if (!this.isBrowser) return EMPTY;
+
     return new Observable(observer => {
       // Pas de orderBy seul pour éviter l'exigence d'index composite
       // Le tri se fait côté client

@@ -1,11 +1,9 @@
 // dashboard.component.scss
 
-$cyan:   #00d4ff;
-$blue:   #3b82f6;
-$violet: #8b5cf6;
-$green:  #10b981;
-$card-bg: rgba(15, 18, 53, 0.9);
-$border:  rgba(0, 212, 255, 0.08);
+
+
+$card-bg: var(--bg-card-admin);
+$border:  rgba(var(--tech-cyan-rgb), 0.08);
 
 // ============================================================
 //  TOPBAR
@@ -37,11 +35,11 @@ $border:  rgba(0, 212, 255, 0.08);
     align-items: center;
     gap: 0.5rem;
     padding: 0.45rem 1rem;
-    background: rgba($cyan, 0.07);
-    border: 1px solid rgba($cyan, 0.18);
+    background: rgba(var(--tech-cyan-rgb), 0.07);
+    border: 1px solid rgba(var(--tech-cyan-rgb), 0.18);
     border-radius: 100px;
     font-size: 0.8125rem;
-    color: $cyan;
+    color: var(--tech-cyan);
     white-space: nowrap;
 
     i { font-size: 0.8125rem; }
@@ -68,7 +66,8 @@ $border:  rgba(0, 212, 255, 0.08);
   align-items: center;
   gap: 1rem;
   overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  transform: perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
 
   // accent top bar
   &::before {
@@ -79,15 +78,35 @@ $border:  rgba(0, 212, 255, 0.08);
     border-radius: 16px 16px 0 0;
   }
 
-  &:hover {
-    transform: translateY(-3px);
-    border-color: rgba($cyan, 0.2);
+  // Spotlight qui suit le curseur — posé par appTiltSpotlight
+  // (--mouse-x/--mouse-y/--tilt-x/--tilt-y), même pattern que .theme-card.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(var(--tech-cyan-rgb), 0.1),
+      transparent 55%
+    );
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
   }
 
-  &--themes::before   { background: $cyan; }
-  &--workshops::before { background: $blue; }
-  &--members::before  { background: $violet; }
-  &--registrations::before { background: $green; }
+  &:hover {
+    transform: translateY(-3px) perspective(800px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    border-color: rgba(var(--tech-cyan-rgb), 0.2);
+    box-shadow: var(--shadow-glow);
+
+    &::after { opacity: 1; }
+  }
+
+  &--themes::before   { background: var(--tech-cyan); }
+  &--workshops::before { background: var(--tech-blue); }
+  &--members::before  { background: var(--tech-purple); }
+  &--registrations::before { background: var(--tech-success); }
 
   &__icon {
     width: 48px; height: 48px;
@@ -97,10 +116,10 @@ $border:  rgba(0, 212, 255, 0.08);
     i { font-size: 1.25rem; }
   }
 
-  &--themes .stat-card__icon      { background: rgba($cyan, 0.12);   color: $cyan; }
-  &--workshops .stat-card__icon   { background: rgba($blue, 0.12);   color: $blue; }
-  &--members .stat-card__icon     { background: rgba($violet, 0.12); color: $violet; }
-  &--registrations .stat-card__icon { background: rgba($green, 0.12); color: $green; }
+  &--themes .stat-card__icon      { background: rgba(var(--tech-cyan-rgb), 0.12);   color: var(--tech-cyan); }
+  &--workshops .stat-card__icon   { background: rgba(var(--tech-blue-rgb), 0.12);   color: var(--tech-blue); }
+  &--members .stat-card__icon     { background: rgba(var(--tech-purple-rgb), 0.12); color: var(--tech-purple); }
+  &--registrations .stat-card__icon { background: rgba(var(--tech-success-rgb), 0.12); color: var(--tech-success); }
 
   &__content { flex: 1; }
 
@@ -126,7 +145,7 @@ $border:  rgba(0, 212, 255, 0.08);
     gap: 0.2rem;
     font-size: 0.6875rem;
     font-weight: 500;
-    color: $green;
+    color: var(--tech-success);
 
     i { font-size: 0.6rem; }
   }
@@ -212,14 +231,14 @@ $border:  rgba(0, 212, 255, 0.08);
   &__icon-wrap {
     width: 36px; height: 36px;
     border-radius: 9px;
-    background: rgba($cyan, 0.1);
+    background: rgba(var(--tech-cyan-rgb), 0.1);
     display: flex; align-items: center; justify-content: center;
-    color: $cyan;
+    color: var(--tech-cyan);
     flex-shrink: 0;
 
     &--green {
-      background: rgba($green, 0.1);
-      color: $green;
+      background: rgba(var(--tech-success-rgb), 0.1);
+      color: var(--tech-success);
     }
 
     i { font-size: 0.9rem; }
@@ -239,15 +258,15 @@ $border:  rgba(0, 212, 255, 0.08);
 
   &__badge {
     padding: 0.15rem 0.625rem;
-    background: rgba($cyan, 0.1);
+    background: rgba(var(--tech-cyan-rgb), 0.1);
     border-radius: 100px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: $cyan;
+    color: var(--tech-cyan);
 
     &--green {
-      background: rgba($green, 0.1);
-      color: $green;
+      background: rgba(var(--tech-success-rgb), 0.1);
+      color: var(--tech-success);
     }
   }
 
@@ -275,12 +294,12 @@ $border:  rgba(0, 212, 255, 0.08);
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, $cyan, $violet);
+  background: linear-gradient(90deg, var(--tech-cyan), var(--tech-purple));
   border-radius: 100px;
   transition: width 0.5s ease;
 
   &--green {
-    background: linear-gradient(90deg, $green, $cyan);
+    background: linear-gradient(90deg, var(--tech-success), var(--tech-cyan));
   }
 }
 
@@ -307,7 +326,7 @@ $border:  rgba(0, 212, 255, 0.08);
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid rgba($cyan, 0.06);
+    border-bottom: 1px solid rgba(var(--tech-cyan-rgb), 0.06);
 
     h3 {
       font-size: 0.9375rem;
@@ -321,7 +340,7 @@ $border:  rgba(0, 212, 255, 0.08);
     align-items: center;
     gap: 0.4rem;
     font-size: 0.8rem;
-    color: $cyan;
+    color: var(--tech-cyan);
     text-decoration: none;
     transition: gap 0.2s;
 
@@ -347,7 +366,7 @@ $border:  rgba(0, 212, 255, 0.08);
     color: #334155;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    border-bottom: 1px solid rgba($cyan, 0.06);
+    border-bottom: 1px solid rgba(var(--tech-cyan-rgb), 0.06);
   }
 
   td {
@@ -359,7 +378,7 @@ $border:  rgba(0, 212, 255, 0.08);
     &.actions { text-align: right; }
   }
 
-  tbody tr:hover td { background: rgba($cyan, 0.03); }
+  tbody tr:hover td { background: rgba(var(--tech-cyan-rgb), 0.03); }
   tbody tr:last-child td { border-bottom: none; }
 }
 
@@ -371,8 +390,8 @@ $border:  rgba(0, 212, 255, 0.08);
   font-size: 0.6875rem;
   font-weight: 500;
 
-  &--planifié    { background: rgba($cyan, 0.1);   color: $cyan; }
-  &--en-cours    { background: rgba($green, 0.1);  color: $green; }
+  &--planifié    { background: rgba(var(--tech-cyan-rgb), 0.1);   color: var(--tech-cyan); }
+  &--en-cours    { background: rgba(var(--tech-success-rgb), 0.1);  color: var(--tech-success); }
   &--terminé     { background: rgba(107, 114, 128, 0.12); color: #6b7280; }
 }
 
@@ -381,16 +400,16 @@ $border:  rgba(0, 212, 255, 0.08);
   align-items: center;
   justify-content: center;
   width: 26px; height: 26px;
-  background: rgba($cyan, 0.08);
+  background: rgba(var(--tech-cyan-rgb), 0.08);
   border-radius: 7px;
-  color: $cyan;
+  color: var(--tech-cyan);
   text-decoration: none;
   transition: all 0.2s;
 
   i { font-size: 0.7rem; }
 
   &:hover {
-    background: rgba($cyan, 0.16);
+    background: rgba(var(--tech-cyan-rgb), 0.16);
     transform: translateX(2px);
   }
 }
@@ -440,7 +459,7 @@ $border:  rgba(0, 212, 255, 0.08);
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba($cyan, 0.22);
+    border-color: rgba(var(--tech-cyan-rgb), 0.22);
     background: rgba(15, 18, 53, 0.95);
   }
 
@@ -451,9 +470,9 @@ $border:  rgba(0, 212, 255, 0.08);
     flex-shrink: 0;
     i { font-size: 1.1rem; }
 
-    &--cyan   { background: rgba($cyan, 0.12);   color: $cyan; }
-    &--blue   { background: rgba($blue, 0.12);   color: $blue; }
-    &--violet { background: rgba($violet, 0.12); color: $violet; }
+    &--cyan   { background: rgba(var(--tech-cyan-rgb), 0.12);   color: var(--tech-cyan); }
+    &--blue   { background: rgba(var(--tech-blue-rgb), 0.12);   color: var(--tech-blue); }
+    &--violet { background: rgba(var(--tech-purple-rgb), 0.12); color: var(--tech-purple); }
   }
 
   &__title {
@@ -489,16 +508,16 @@ $border:  rgba(0, 212, 255, 0.08);
 
   .spinner-ring {
     position: absolute; inset: 0;
-    border: 2px solid rgba($cyan, 0.1);
-    border-top-color: $cyan;
+    border: 2px solid rgba(var(--tech-cyan-rgb), 0.1);
+    border-top-color: var(--tech-cyan);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
 
   .spinner-ring-inner {
     position: absolute; inset: 10px;
-    border: 2px solid rgba($cyan, 0.1);
-    border-bottom-color: $violet;
+    border: 2px solid rgba(var(--tech-cyan-rgb), 0.1);
+    border-bottom-color: var(--tech-purple);
     border-radius: 50%;
     animation: spin-reverse 0.6s linear infinite;
   }

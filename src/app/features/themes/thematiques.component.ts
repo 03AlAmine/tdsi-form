@@ -5,17 +5,36 @@ import {
   inject,
   signal,
   computed,
+  effect,
   OnInit,
   OnDestroy,
+  PLATFORM_ID,
+  HostListener,
+  ElementRef,
+  ApplicationRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription, firstValueFrom } from 'rxjs';
 import { ThemeService } from '../../core/services/theme.service';
 import { WorkshopService } from '../../core/services/workshop.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AiService, ThemeRecommendation } from '../../core/services/ai.service';
+import { EnrichmentService } from '../../core/services/enrichment.service';
+import { SeoService } from '../../core/services/seo.service';
+import { AppSettingsService } from '../../core/services/app-settings.service';
+import { TiltSpotlightDirective } from '../../core/directives/tilt-spotlight.directive';
+import { RevealDirective } from '../../core/directives/reveal.directive';
 import { Theme, ThemeCategory, Workshop } from '../../core/model/models';
+import { buildSlug } from '../../core/utils/slug.util';
+import {
+  getWorkshopStatusClass as sharedWorkshopStatusClass,
+  getWorkshopStatusIcon as sharedWorkshopStatusIcon,
+  getLocationIcon as sharedLocationIcon,
+  getLocationText as sharedLocationText,
+  formatDuration as sharedFormatDuration,
+  getEndTime as sharedGetEndTime,
+} from '../../core/utils/workshop-display.util';
 
 interface ThemeWithWorkshop extends Theme {
   linkedWorkshop?: Workshop;
@@ -39,7 +58,7 @@ const CATEGORIES: ThemeCategory[] = [
 @Component({
   selector: 'app-thematiques',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TiltSpotlightDirective, RevealDirective],
   templateUrl: './thematiques.component.html',
   styleUrls: ['./thematiques.component.scss'],
 })
@@ -48,8 +67,59 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   private workshopService = inject(WorkshopService);
   private authService = inject(AuthService);
   private aiService = inject(AiService);
+  private seo = inject(SeoService);
+  private enrichmentService = inject(EnrichmentService);
+  private settingsService = inject(AppSettingsService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly appRef = inject(ApplicationRef);
 
   private sub!: Subscription;
+
+  // ── View Transitions : morph card → détail ──────────────────────────
+  // Id de la thématique en cours de transition. Tant qu'il correspond à
+  // une card ET que le drawer est fermé, la card porte le nom de transition ;
+  // dès que le drawer s'ouvre, c'est lui qui le porte à la place (voir les
+  // bindings [style.view-transition-name] dans le template). Le navigateur
+  // anime alors automatiquement position/taille entre les deux snapshots —
+  // pas besoin de lib d'animation, la techno est déjà branchée via
+  // withViewTransitions() dans app.config.ts.
+  transitioningThemeId = signal<string | null>(null);
+
+  private supportsViewTransitions(): boolean {
+    return this.isBrowser && typeof (document as any).startViewTransition === 'function';
+  }
+
+  // ── Accessibilité : mémorise l'élément qui a ouvert un drawer pour lui
+  // rendre le focus à la fermeture (sinon le focus clavier "tombe" sur le body).
+  private lastFocusedTrigger: HTMLElement | null = null;
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.drawerOpen()) {
+      this.closeDrawer();
+    } else if (this.recommendationsDrawerOpen()) {
+      this.closeRecommendationsDrawer();
+    }
+  }
+
+  // Déplace le focus clavier sur le premier élément focusable du drawer
+  // (ici le bouton de fermeture) une fois le rendu terminé.
+  private focusDrawer(selector: string): void {
+    if (!this.isBrowser) return;
+    this.lastFocusedTrigger = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      (this.host.nativeElement.querySelector(selector) as HTMLElement | null)?.focus();
+    });
+  }
+
+  private returnFocusToTrigger(): void {
+    if (!this.isBrowser) return;
+    this.lastFocusedTrigger?.focus();
+    this.lastFocusedTrigger = null;
+  }
 
   // ── État principal ──
   themes = signal<ThemeWithWorkshop[]>([]);
@@ -61,6 +131,44 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   categories = CATEGORIES;
 
   initComplete = signal(false);
+
+  // ── Deep-linking des filtres (?categorie=...&q=...) ─────────────────
+  // Permet de partager un lien déjà filtré et de revenir en arrière au
+  // clavier/souris sans perdre le filtre en cours. Synchro à double
+  // sens, gardée par `syncingFromUrl` pour éviter la boucle
+  // URL → signal → URL → signal...
+  private filtersInitialized = false;
+  private syncingFromUrl = false;
+  private filtersRouteSub?: Subscription;
+
+  private readFiltersFromUrl(params: ParamMap): void {
+    this.syncingFromUrl = true;
+    const cat = params.get('categorie') as ThemeCategory | null;
+    const q = params.get('q') ?? '';
+    const validCat = cat && this.categories.includes(cat) ? cat : null;
+
+    if (validCat !== this.activeCategory()) this.activeCategory.set(validCat);
+    if (q !== this.searchTerm()) this.searchTerm.set(q);
+    this.syncingFromUrl = false;
+  }
+
+  private writeFiltersToUrl(category: ThemeCategory | null, term: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { categorie: category || null, q: term || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  // Effect en initialiseur de champ : tourne automatiquement dans le
+  // contexte d'injection du composant, pas besoin d'Injector explicite.
+  private readonly filtersUrlSync = effect(() => {
+    const category = this.activeCategory();
+    const term = this.searchTerm();
+    if (!this.filtersInitialized || this.syncingFromUrl) return;
+    this.writeFiltersToUrl(category, term);
+  });
 
   // ── Recommandations IA (membres uniquement) ──
   recommendations = signal<RecommendedTheme[]>([]);
@@ -98,6 +206,18 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
 
   showsInterestCount(theme: ThemeWithWorkshop): boolean {
     return (theme.interested?.length ?? 0) >= ThematiquesComponent.INTEREST_DISPLAY_THRESHOLD;
+  }
+
+  // ✅ Badge "🔥 forte demande" — réutilise le même seuil que la
+  // notification admin (settings/app.interestNotificationThreshold,
+  // configurable depuis /admin/configuration), pour rester cohérent :
+  // dès qu'un admin est notifié qu'une thématique cartonne, les
+  // visiteurs voient le même signal sur la card.
+  private hotDemandThreshold = signal(10);
+  private settingsSub?: Subscription;
+
+  isHotDemand(theme: ThemeWithWorkshop | null | undefined): boolean {
+    return !!theme && (theme.interested?.length ?? 0) >= this.hotDemandThreshold();
   }
 
   async toggleInterest(theme: ThemeWithWorkshop, event: Event): Promise<void> {
@@ -174,7 +294,41 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
     });
   });
 
+  /** Segment d'URL de la page détail : {slug-du-titre}--{id}. */
+  slugOf(theme: ThemeWithWorkshop): string {
+    return buildSlug(theme.title, theme.id!);
+  }
+
   ngOnInit(): void {
+    // ── SEO du listing ──
+    this.seo.setPage({
+      title: 'Thématiques — propose et vote pour les prochains workshops',
+      description:
+        'Sécurité réseau, cryptographie, IA, DevOps… Découvre les thématiques ' +
+        'du Club TDSI et manifeste ton intérêt pour les prochains workshops.',
+      path: '/thematiques',
+    });
+
+    // ✅ SSR-safe : listeners Firestore temps réel uniquement en
+    // navigateur (voir workshops.component.ts pour le détail).
+    if (!this.isBrowser) {
+      // loading reste à true (voir workshops.component.ts).
+      return;
+    }
+
+    this.settingsSub = this.settingsService.getSettings().subscribe((settings) => {
+      this.hotDemandThreshold.set(settings.interestNotificationThreshold);
+    });
+
+    // Lit le filtre initial depuis l'URL (lien partagé, retour arrière au
+    // premier chargement) puis reste synchronisé sur les changements
+    // ultérieurs (navigation avec Précédent/Suivant du navigateur).
+    this.readFiltersFromUrl(this.route.snapshot.queryParamMap);
+    this.filtersInitialized = true;
+    this.filtersRouteSub = this.route.queryParamMap.subscribe((params) => {
+      this.readFiltersFromUrl(params);
+    });
+
     if (this.isLoggedIn()) {
       this.initMember();
     } else {
@@ -184,7 +338,9 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
-    document.body.style.overflow = '';
+    this.settingsSub?.unsubscribe();
+    this.filtersRouteSub?.unsubscribe();
+    if (this.isBrowser) document.body.style.overflow = '';
   }
 
   // ── Chargement public (visiteurs) ──
@@ -332,6 +488,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   openRecommendationsDrawer(): void {
     this.recommendationsDrawerOpen.set(true);
     document.body.style.overflow = 'hidden';
+    this.focusDrawer('.drawer--recommendations .drawer__close');
 
     // Charger les recommandations si pas déjà fait
     if (this.recommendations().length === 0 && !this.recoLoading()) {
@@ -342,6 +499,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   // ✅ Fermer le drawer des recommandations
   closeRecommendationsDrawer(): void {
     this.recommendationsDrawerOpen.set(false);
+    this.returnFocusToTrigger();
     setTimeout(() => {
       document.body.style.overflow = '';
     }, 300);
@@ -378,32 +536,68 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
 
   // ── Drawer ──
   openThemeDetail(theme: ThemeWithWorkshop): void {
-    this.selectedTheme.set(theme);
-    this.enrichedThemeData.set(null);
-    this.drawerOpen.set(true);
-    document.body.style.overflow = 'hidden';
+    const runOpen = () => {
+      this.selectedTheme.set(theme);
+      this.enrichedThemeData.set(null);
+      this.drawerOpen.set(true);
+      document.body.style.overflow = 'hidden';
+      this.focusDrawer('.drawer__close');
 
-    if (this.isLoggedIn() && !theme.objectives && !theme.prerequisites) {
-      this.enrichThemeWithAI(theme);
+      if (this.isLoggedIn() && !theme.objectives && !theme.prerequisites) {
+        this.enrichThemeWithAI(theme);
+      }
+    };
+
+    if (!this.supportsViewTransitions() || !theme.id) {
+      runOpen();
+      return;
     }
+
+    this.transitioningThemeId.set(theme.id);
+    this.appRef.tick(); // rend la card "avant" avec son nom de transition
+
+    (document as any).startViewTransition(() => {
+      runOpen();
+      this.appRef.tick(); // rend le drawer "après" avec le même nom
+    });
   }
 
   closeDrawer(): void {
-    this.drawerOpen.set(false);
-    setTimeout(() => {
-      this.selectedTheme.set(null);
-      document.body.style.overflow = '';
-    }, 300);
+    const theme = this.selectedTheme();
+
+    if (!this.supportsViewTransitions() || !theme?.id) {
+      this.drawerOpen.set(false);
+      this.returnFocusToTrigger();
+      setTimeout(() => {
+        this.selectedTheme.set(null);
+        document.body.style.overflow = '';
+      }, 300);
+      return;
+    }
+
+    this.returnFocusToTrigger();
+    const transition = (document as any).startViewTransition(() => {
+      this.drawerOpen.set(false);
+      this.appRef.tick(); // la card "après" reprend le nom de transition
+    });
+
+    // On ne démonte la thématique sélectionnée qu'une fois l'animation
+    // terminée — sinon le drawer disparaît du DOM avant que le navigateur
+    // ait fini de l'animer.
+    transition.finished
+      .catch(() => {})
+      .finally(() => {
+        this.transitioningThemeId.set(null);
+        this.selectedTheme.set(null);
+        document.body.style.overflow = '';
+      });
   }
 
   async enrichThemeWithAI(theme: ThemeWithWorkshop): Promise<void> {
     this.loadingEnriched.set(true);
     try {
-      const result = await this.aiService.enrichThemeContent(
-        theme.title,
-        theme.description,
-        theme.category,
-      );
+      // ⚡ Version persistée servie instantanément si à jour
+      const result = await this.enrichmentService.forTheme(theme);
       this.enrichedThemeData.set({
         objectives: result.objectives || [],
         prerequisites: result.prerequisites || [],
@@ -463,57 +657,26 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   }
 
   getWorkshopStatusClass(status: string): string {
-    const map: Record<string, string> = {
-      planifié: 'info',
-      'en cours': 'success',
-      terminé: 'neutral',
-      annulé: 'danger',
-    };
-    return map[status] || 'neutral';
+    return sharedWorkshopStatusClass(status);
   }
 
   getWorkshopStatusIcon(status: string): string {
-    const map: Record<string, string> = {
-      planifié: 'fa-clipboard-list',
-      'en cours': 'fa-circle-play',
-      terminé: 'fa-circle-check',
-      annulé: 'fa-circle-xmark',
-    };
-    return map[status] || 'fa-circle';
+    return sharedWorkshopStatusIcon(status);
   }
 
 getLocationIcon(location: string): string {
-  const map: Record<string, string> = {
-    'en ligne': 'fa-laptop',
-    présentiel: 'fa-building-columns',
-    hybride: 'fa-arrows-rotate',
-  };
-
-  return map[location] || 'fa-location-dot';
+  return sharedLocationIcon(location);
 }
 
 
 getLocationText(location: string): string {
-  const map: Record<string, string> = {
-    'en ligne': 'En ligne',
-    présentiel: 'Présentiel',
-    hybride: 'Hybride',
-  };
-
-  return map[location] || location;
+  return sharedLocationText(location);
 }
   getEndTime(
     date: Date | string | null | undefined,
     duration: number | null | undefined,
   ): string {
-    if (!date || !duration) return '';
-    const startDate = typeof date === 'string' ? new Date(date) : date;
-    if (isNaN(startDate.getTime())) return '';
-    const endDate = new Date(startDate.getTime() + (duration || 0) * 60000);
-    return endDate.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return sharedGetEndTime(date, duration);
   }
 
   getScoreColor(score: number): string {
@@ -523,12 +686,7 @@ getLocationText(location: string): string {
   }
 
   formatDuration(minutes: number): string {
-    if (minutes >= 60) {
-      const h = Math.floor(minutes / 60);
-      const m = minutes % 60;
-      return m > 0 ? `${h}h ${m}min` : `${h}h`;
-    }
-    return `${minutes}min`;
+    return sharedFormatDuration(minutes);
   }
 
   totalThemesCount(): number {

@@ -282,10 +282,12 @@
     </div>
   } @else {
     <!-- Activities Grid -->
-    <div class="activities-grid">
+    <div class="activities-grid stagger-children">
       @for (activity of filteredActivities(); track activity.id) {
         <div
           class="activity-card"
+          appTiltSpotlight
+          [tiltMax]="4"
           [class]="'activity-card--' + activity.status"
         >
           <div class="activity-card__header">

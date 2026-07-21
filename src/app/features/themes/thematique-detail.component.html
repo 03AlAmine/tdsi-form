@@ -1,0 +1,162 @@
+<div class="td">
+  <!-- ── Chargement ── -->
+  @if (loading()) {
+    <div class="td__state">
+      <div class="td__spinner"></div>
+      <p>Chargement de la thématique…</p>
+    </div>
+  }
+
+  <!-- ── Introuvable ── -->
+  @if (notFound()) {
+    <div class="td__state">
+      <div class="td__state-icon"><i class="fas fa-folder-open"></i></div>
+      <h1>Thématique introuvable</h1>
+      <p>Cette thématique n'existe pas ou a été supprimée.</p>
+      <a routerLink="/thematiques" class="btn btn--primary">
+        <i class="fas fa-arrow-left"></i>
+        Voir toutes les thématiques
+      </a>
+    </div>
+  }
+
+  <!-- ── Contenu ── -->
+  @if (theme(); as t) {
+    <div class="container td__container">
+      <!-- Fil d'Ariane -->
+      <nav class="td__breadcrumb" aria-label="Fil d'Ariane">
+        <a routerLink="/thematiques">Thématiques</a>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+        <span aria-current="page">{{ t.title }}</span>
+      </nav>
+
+      <!-- En-tête -->
+      <header class="td__header">
+        <div class="td__badges">
+          <span class="td__badge td__badge--category">{{ t.category }}</span>
+          <span
+            class="td__badge"
+            [class.td__badge--beginner]="t.difficulty === 'débutant'"
+            [class.td__badge--intermediate]="t.difficulty === 'intermédiaire'"
+            [class.td__badge--advanced]="t.difficulty === 'avancé'"
+          >
+            {{ t.difficulty }}
+          </span>
+        </div>
+
+        <h1 class="td__title">{{ t.title }}</h1>
+        <p class="td__description">{{ t.description }}</p>
+
+        @if (t.tags.length) {
+          <ul class="td__tags" aria-label="Mots-clés">
+            @for (tag of t.tags; track tag) {
+              <li class="td__tag">#{{ tag }}</li>
+            }
+          </ul>
+        }
+      </header>
+
+      <div class="td__layout">
+        <!-- ── Colonne principale ── -->
+        <div class="td__main">
+          @if (t.objectives) {
+            <section class="td__section">
+              <h2 class="td__section-title">
+                <i class="fas fa-bullseye" aria-hidden="true"></i>
+                Objectifs
+              </h2>
+              <p class="td__section-text">{{ t.objectives }}</p>
+            </section>
+          }
+
+          @if (t.prerequisites) {
+            <section class="td__section">
+              <h2 class="td__section-title">
+                <i class="fas fa-list-check" aria-hidden="true"></i>
+                Prérequis
+              </h2>
+              <p class="td__section-text">{{ t.prerequisites }}</p>
+            </section>
+          }
+
+          @if (t.materialsNeeded) {
+            <section class="td__section">
+              <h2 class="td__section-title">
+                <i class="fas fa-laptop-code" aria-hidden="true"></i>
+                Matériel nécessaire
+              </h2>
+              <p class="td__section-text">{{ t.materialsNeeded }}</p>
+            </section>
+          }
+
+          <!-- Actions -->
+          <div class="td__actions">
+            @if (!linkedWorkshop()) {
+              <button
+                class="btn btn--primary btn--lg"
+                (click)="toggleInterest()"
+                [disabled]="interestPending()"
+                [attr.aria-pressed]="isInterested()"
+              >
+                <i class="fas" [class.fa-heart]="isInterested()" [class.fa-hand-point-up]="!isInterested()"></i>
+                {{ isInterested() ? 'Je ne suis plus intéressé·e' : 'Ça m’intéresse !' }}
+              </button>
+            } @else {
+              @if (linkedWorkshopLink(); as link) {
+                <a [routerLink]="link" class="btn btn--primary btn--lg">
+                  <i class="fas fa-calendar-check"></i>
+                  Voir le workshop programmé
+                </a>
+              }
+            }
+
+            <button class="btn btn--outline btn--lg" (click)="share()">
+              <i class="fas fa-share-nodes"></i>
+              Partager
+            </button>
+          </div>
+
+          @if (!linkedWorkshop() && showsInterestCount()) {
+            <p class="td__interest-count">
+              <i class="fas fa-users" aria-hidden="true"></i>
+              {{ t.interested?.length }} membres intéressés — un workshop
+              pourrait bientôt être programmé.
+            </p>
+          }
+        </div>
+
+        <!-- ── Colonne latérale ── -->
+        <aside class="td__aside">
+          <div class="td__card">
+            <h2 class="td__card-title">
+              <i class="fas fa-circle-info" aria-hidden="true"></i>
+              En bref
+            </h2>
+            <dl class="td__meta">
+              @if (t.estimatedDuration) {
+                <div class="td__meta-row">
+                  <dt>Durée estimée</dt>
+                  <dd>{{ t.estimatedDuration }} min</dd>
+                </div>
+              }
+              <div class="td__meta-row">
+                <dt>Niveau</dt>
+                <dd>{{ t.difficulty }}</dd>
+              </div>
+              <div class="td__meta-row">
+                <dt>Statut</dt>
+                <dd>{{ t.status }}</dd>
+              </div>
+              @if (t.fromStudentName) {
+                <div class="td__meta-row">
+                  <dt>Proposée par</dt>
+                  <dd>{{ t.fromStudentName }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+        </aside>
+      </div>
+    </div>
+  }
+</div>

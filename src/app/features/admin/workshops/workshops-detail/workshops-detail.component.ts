@@ -1,5 +1,5 @@
 // workshops-detail.component.ts - Version améliorée
-import { Component, Output, EventEmitter, signal, inject } from '@angular/core';
+import { Component, Output, EventEmitter, signal, inject, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Workshop } from '../../../../core/model/models';
@@ -7,6 +7,10 @@ import { GuestRegistration } from '../../../../core/model/guest-registration.mod
 import { db } from '../../../../../firebase.config';
 import { doc, getDoc } from 'firebase/firestore';
 import { PublicRegistrationService } from '../../../../core/services/public-registration.service';
+import {
+  getAdminLocationIcon as sharedAdminLocationIcon,
+  formatDuration as sharedFormatDuration,
+} from '../../../../core/utils/workshop-display.util';
 
 interface ParticipantInfo {
   uid: string;
@@ -28,6 +32,8 @@ export class WorkshopDetailComponent {
   @Output() delete = new EventEmitter<Workshop>();
 
   private publicRegistrationService = inject(PublicRegistrationService);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private lastFocusedTrigger: HTMLElement | null = null;
 
   workshop: Workshop | null = null;
   isOpen = signal(false);
@@ -40,10 +46,27 @@ export class WorkshopDetailComponent {
   showParticipantModal = signal(false);
   showGuestModal = signal(false);
 
+  // Ferme le modal le plus "au-dessus" en premier (invité > participant >
+  // détail principal), comme un empilement de calques standard.
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.showGuestModal()) {
+      this.closeGuestModal();
+    } else if (this.showParticipantModal()) {
+      this.closeParticipantModal();
+    } else if (this.isOpen()) {
+      this.closeModal();
+    }
+  }
+
   async open(workshop: Workshop): Promise<void> {
     this.workshop = workshop;
     this.isOpen.set(true);
     document.body.style.overflow = 'hidden';
+    this.lastFocusedTrigger = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      (this.host.nativeElement.querySelector('.modal-close') as HTMLElement | null)?.focus();
+    });
 
     await Promise.all([
       this.loadParticipantsInfo(),
@@ -54,6 +77,8 @@ export class WorkshopDetailComponent {
   closeModal(): void {
     this.isOpen.set(false);
     document.body.style.overflow = '';
+    this.lastFocusedTrigger?.focus();
+    this.lastFocusedTrigger = null;
     this.close.emit();
   }
 
@@ -204,12 +229,15 @@ export class WorkshopDetailComponent {
   }
 
   getLocationInfo(location: string): { icon: string; label: string } {
-    const map: Record<string, { icon: string; label: string }> = {
-      'en ligne': { icon: 'fa-wifi', label: 'En ligne' },
-      présentiel: { icon: 'fa-building', label: 'Présentiel' },
-      hybride: { icon: 'fa-sync-alt', label: 'Hybride' },
+    const labels: Record<string, string> = {
+      'en ligne': 'En ligne',
+      présentiel: 'Présentiel',
+      hybride: 'Hybride',
     };
-    return map[location] || { icon: 'fa-map-marker-alt', label: location };
+    return {
+      icon: sharedAdminLocationIcon(location),
+      label: labels[location] || location,
+    };
   }
 
   getLocationIconClass(location: string): string {
@@ -217,11 +245,6 @@ export class WorkshopDetailComponent {
   }
 
   formatDuration(minutes: number): string {
-    if (minutes >= 60) {
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-    }
-    return `${minutes}min`;
+    return sharedFormatDuration(minutes);
   }
 }

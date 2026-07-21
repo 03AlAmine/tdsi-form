@@ -12,6 +12,7 @@ import { ThemeDetailComponent } from './theme-detail/theme-detail.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { AiService } from '../../../core/services/ai.service';
+import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 
 const CATEGORIES: ThemeCategory[] = [
   'Sécurité Réseau', 'Cryptographie', 'Transmission de Données',
@@ -25,7 +26,7 @@ interface ThemeWithWorkshop extends Omit<Theme, 'linkedWorkshop'> {
 @Component({
   selector: 'app-admin-themes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ThemeDetailComponent],
+  imports: [CommonModule, ReactiveFormsModule, ThemeDetailComponent, TiltSpotlightDirective],
   templateUrl: './admin-themes.component.html',
   styleUrls: ['./admin-themes.component.scss'],
 })

@@ -90,9 +90,9 @@
 
     } @else {
       <!-- User Cards Grid -->
-      <div class="users-grid">
+      <div class="users-grid stagger-children">
         @for (user of paginatedUsers(); track user.uid) {
-          <div class="user-card" [class.active]="selectedUser()?.uid === user.uid"
+          <div class="user-card" appTiltSpotlight [tiltMax]="3" [class.active]="selectedUser()?.uid === user.uid"
                (click)="openUserDetail(user)">
             <div class="user-card__avatar" [attr.data-role]="user.role">
               {{ getInitials(user.displayName) }}

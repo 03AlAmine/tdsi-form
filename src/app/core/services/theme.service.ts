@@ -1,19 +1,28 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   collection, addDoc, updateDoc, deleteDoc,
   doc, getDoc, query, where, orderBy, Timestamp, getDocs,
   onSnapshot, arrayUnion, arrayRemove
 } from 'firebase/firestore';
-import { Observable, shareReplay, finalize } from 'rxjs';
+import { Observable, shareReplay, finalize, EMPTY } from 'rxjs';
 import { db } from '../../../firebase.config';
 import { Theme, ThemeSubmission } from '../model/models';
 import { AppSettingsService } from './app-settings.service';
 import { NotificationService } from './notification.service';
+import { EmailService } from './email.service';
+import { UserService } from './user.service';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
+  // ✅ SSR-safe : les listeners Firestore (onSnapshot) utilisent le
+  // bundle navigateur de Firebase (window) — jamais au prerender.
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   private settingsService = inject(AppSettingsService);
   private notificationService = inject(NotificationService);
+  private emailService = inject(EmailService);
+  private userService = inject(UserService);
 
   // ─────────────────────────────────────────────────────────────
   // Cache partagé — un seul listener Firestore actif pour themes
@@ -26,6 +35,8 @@ export class ThemeService {
   // ===== THEMES =====
 
   getThemes(): Observable<Theme[]> {
+    if (!this.isBrowser) return EMPTY;
+
     if (!this.themes$) {
       this.themes$ = new Observable<Theme[]>((observer) => {
         const ref = collection(db, 'themes');
@@ -71,6 +82,30 @@ export class ThemeService {
         ? Timestamp.fromDate(theme.workshopDate)
         : null,
     });
+
+    // ✅ Annonce aux membres — best-effort, ne doit jamais faire échouer
+    // la création de la thématique. Ne concerne que la création directe
+    // par un admin : une thématique issue d'une soumission approuvée
+    // (approveSubmission) écrit directement dans Firestore sans passer
+    // par ici, pour éviter une double annonce.
+    try {
+      await this.notificationService.notifyAllStudents(
+        'theme_created',
+        'Nouvelle thématique disponible 📚',
+        `« ${theme.title} » vient d'être publiée.`,
+        '/themes',
+      );
+    } catch (e) {
+      console.error('Erreur notification theme_created:', e);
+    }
+
+    try {
+      const emails = await this.userService.getStudentEmails();
+      await this.emailService.sendThemeCreated(emails, theme.title);
+    } catch (e) {
+      console.error('Erreur email theme_created:', e);
+    }
+
     return ref.id;
   }
 
@@ -114,6 +149,8 @@ export class ThemeService {
   }
 
   getMySubmissions(userId: string): Observable<ThemeSubmission[]> {
+    if (!this.isBrowser) return EMPTY;
+
     if (!this.mySubmissions$.has(userId)) {
       const obs = new Observable<ThemeSubmission[]>((observer) => {
         const q = query(
@@ -162,6 +199,29 @@ export class ThemeService {
       );
     } catch (e) {
       console.error('Erreur notification submission_received:', e);
+    }
+
+    // ✅ Emails — admins prévenus de la nouvelle demande, étudiant
+    // rassuré que sa soumission a bien été enregistrée. Best-effort,
+    // en parallèle, chacun indépendant de l'autre.
+    try {
+      const adminEmails = await this.userService.getAdminEmails();
+      await this.emailService.sendSubmissionReceivedAdmin(
+        adminEmails,
+        submission.studentName,
+        submission.proposedTitle,
+      );
+    } catch (e) {
+      console.error('Erreur email submission_received_admin:', e);
+    }
+
+    try {
+      await this.emailService.sendSubmissionReceivedStudent(
+        submission.studentEmail,
+        submission.proposedTitle,
+      );
+    } catch (e) {
+      console.error('Erreur email submission_received_student:', e);
     }
 
     return ref.id;
@@ -213,6 +273,12 @@ export class ThemeService {
     } catch (e) {
       console.error('Erreur notification submission_approved:', e);
     }
+
+    try {
+      await this.emailService.sendSubmissionApproved(sub.studentEmail, sub.proposedTitle);
+    } catch (e) {
+      console.error('Erreur email submission_approved:', e);
+    }
   }
 
   async refuseSubmission(sub: ThemeSubmission, comment?: string): Promise<void> {
@@ -233,6 +299,12 @@ export class ThemeService {
       );
     } catch (e) {
       console.error('Erreur notification submission_refused:', e);
+    }
+
+    try {
+      await this.emailService.sendSubmissionRefused(sub.studentEmail, sub.proposedTitle, comment);
+    } catch (e) {
+      console.error('Erreur email submission_refused:', e);
     }
   }
 
@@ -283,6 +355,13 @@ export class ThemeService {
           `« ${theme.title} » a atteint ${newCount} membres intéressés — envisagez de programmer un workshop.`,
           '/admin/themes',
         );
+
+        try {
+          const adminEmails = await this.userService.getAdminEmails();
+          await this.emailService.sendThemeInterestThreshold(adminEmails, theme.title, newCount);
+        } catch (e) {
+          console.error('Erreur email theme_interest_threshold:', e);
+        }
       }
     } catch (e) {
       console.error('Erreur notification theme_interest_threshold:', e);

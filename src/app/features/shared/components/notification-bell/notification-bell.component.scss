@@ -21,7 +21,7 @@
   &:hover {
     background: rgba(0, 212, 255, 0.1);
     border-color: rgba(0, 212, 255, 0.3);
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 }
 
@@ -33,7 +33,7 @@
   height: 18px;
   padding: 0 4px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: linear-gradient(135deg, var(--tech-danger), #f97316);
   color: white;
   font-size: 0.625rem;
   font-weight: 700;
@@ -50,7 +50,7 @@
   right: 0;
   width: 360px;
   max-height: 480px;
-  background: linear-gradient(160deg, #11152e, #0a0e27);
+  background: linear-gradient(160deg, #11152e, var(--tech-deep));
   border: 1px solid rgba(0, 212, 255, 0.18);
   border-radius: 16px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -128,7 +128,7 @@
 .notification-bell__mark-all {
   background: none;
   border: none;
-  color: #00d4ff;
+  color: var(--tech-cyan);
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
@@ -199,7 +199,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #00d4ff;
+      background: var(--tech-cyan);
       margin-left: 0.4rem;
       vertical-align: middle;
     }
@@ -222,7 +222,7 @@
   }
   &.icon--danger {
     background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
+    color: var(--tech-danger);
   }
   &.icon--warning {
     background: rgba(249, 115, 22, 0.15);
@@ -230,7 +230,7 @@
   }
   &.icon--info {
     background: rgba(0, 212, 255, 0.15);
-    color: #00d4ff;
+    color: var(--tech-cyan);
   }
 }
 
@@ -280,7 +280,7 @@
 
   &:hover {
     background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    color: var(--tech-danger);
   }
 }
 

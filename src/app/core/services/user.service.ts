@@ -56,13 +56,57 @@ export class UserService {
   async updateRole(uid: string, role: 'student' | 'admin'): Promise<void> {
     await updateDoc(doc(db, 'users', uid), { role });
     if (role === 'admin') {
+      // ✅ On mire aussi l'email dans admins/{uid} : c'est ce qui permet
+      // à EmailService de notifier tous les admins sans avoir besoin de
+      // lire toute la collection `users` (verrouillée côté règles pour
+      // les non-admins — voir commentaire au-dessus de cette méthode).
+      const userSnap = await getDoc(doc(db, 'users', uid));
+      const email = (userSnap.data()?.['email'] as string) ?? '';
       await setDoc(doc(db, 'admins', uid), {
         uid,
+        email,
         createdAt: Timestamp.fromDate(new Date()),
       });
     } else {
       await deleteDoc(doc(db, 'admins', uid));
     }
+  }
+
+  // ✅ Emails de tous les admins, pour EmailService.sendSubmissionReceivedAdmin
+  // etc. Lit le miroir `admins/{uid}` (voir updateRole) au lieu de `users` :
+  // accessible à tout utilisateur authentifié, contrairement à `users`.
+  // Les admins promus avant l'ajout du champ `email` (migration) n'ont pas
+  // encore cette valeur — ils sont simplement ignorés, sans planter l'appel.
+  async getAdminEmails(): Promise<string[]> {
+    const snap = await getDocs(collection(db, 'admins'));
+    return snap.docs
+      .map((d) => d.data()['email'] as string | undefined)
+      .filter((e): e is string => !!e);
+  }
+
+  // ✅ Emails de tous les étudiants — pour les annonces (nouveau thème,
+  // nouveau workshop). Réutilise getAllUsers(), déjà réservé aux appels
+  // faits depuis un contexte autorisé à lire toute la collection `users`.
+  async getStudentEmails(): Promise<string[]> {
+    const users = await this.getAllUsers();
+    return users.filter((u) => u.role === 'student' && !!u.email).map((u) => u.email);
+  }
+
+  // ✅ Emails d'une liste précise d'uids (ex: inscrits à un workshop
+  // annulé). Lectures individuelles — best-effort, on ignore les
+  // uids introuvables plutôt que de faire échouer tout l'envoi.
+  async getEmailsByUids(uids: string[]): Promise<string[]> {
+    const results = await Promise.all(
+      uids.map(async (uid) => {
+        try {
+          const snap = await getDoc(doc(db, 'users', uid));
+          return (snap.data()?.['email'] as string) ?? null;
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return results.filter((e): e is string => !!e);
   }
 
   // ✅ suspendUser ne notifie plus — c'est à l'appelant de le faire

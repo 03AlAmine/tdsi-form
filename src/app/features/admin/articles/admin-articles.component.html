@@ -42,9 +42,9 @@
   }
 
   <!-- List -->
-  <div class="articles-list">
+  <div class="articles-list stagger-children">
     @for (article of filtered(); track article.id) {
-      <div class="article-item" [attr.data-status]="article.status">
+      <div class="article-item" appTiltSpotlight [tiltMax]="3" [attr.data-status]="article.status">
 
         <!-- Header row -->
         <div class="article-item__header" (click)="toggleExpand(article.id!)">

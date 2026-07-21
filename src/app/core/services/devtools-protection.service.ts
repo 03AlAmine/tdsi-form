@@ -28,13 +28,15 @@
 // est exposé publiquement pour être appelé si besoin.
 // ─────────────────────────────────────────────────────────────────────
 
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class DevtoolsProtectionService {
 
   private readonly isProd = environment.production;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   // Seuil en pixels. Volontairement plus large que 160 pour absorber
   // les barres d'outils / extensions qui réduisent innerWidth.
@@ -53,6 +55,8 @@ export class DevtoolsProtectionService {
 
   // ── Point d'entrée (appelé depuis AppComponent.ngOnInit) ─────────
   init(): void {
+    // ✅ SSR-safe : jamais exécuté pendant le prerender (pas de window).
+    if (!this.isBrowser) return;
     if (!this.isProd) return;
 
     this.silenceConsole();
