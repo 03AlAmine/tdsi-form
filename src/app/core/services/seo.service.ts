@@ -56,7 +56,7 @@ export class SeoService {
     (environment as { siteUrl?: string }).siteUrl ??
     'https://campus.clubtdsi.sn';
 
-  private readonly defaultImage = `${this.siteUrl}/assets/images/logo-campus.png`;
+  private readonly defaultImage = `${this.siteUrl}/assets/images/logo.png`;
 
   // ── Page complète ────────────────────────────────────────────────
 

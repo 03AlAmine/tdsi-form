@@ -65,7 +65,11 @@ import { Component, Input } from '@angular/core';
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: linear-gradient(135deg, var(--tech-cyan), var(--tech-blue));
+          background: linear-gradient(
+            135deg,
+            var(--tech-cyan),
+            var(--tech-blue)
+          );
           border: 2px solid var(--tech-dark, #0a0e27);
           box-shadow: 0 0 6px rgba(0, 212, 255, 0.5);
 
@@ -124,7 +128,9 @@ import { Component, Input } from '@angular/core';
           .logo__grad-badge {
             width: 20px;
             height: 20px;
-            i { font-size: 10px; }
+            i {
+              font-size: 10px;
+            }
           }
 
           .logo__text {
@@ -143,7 +149,9 @@ import { Component, Input } from '@angular/core';
           .logo__grad-badge {
             width: 13px;
             height: 13px;
-            i { font-size: 6px; }
+            i {
+              font-size: 6px;
+            }
           }
 
           .logo__text {
@@ -179,5 +187,5 @@ export class LogoComponent {
   @Input() glow = false;
   @Input() showBadge = false;
 
-  logoPath = '/assets/images/logo-campus.png';
+  logoPath = '/assets/images/logo.png';
 }

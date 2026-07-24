@@ -8,9 +8,9 @@
     >
       <div class="navbar__brand-glow"></div>
       <div class="navbar__brand-logo">
-        <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
+        <img src="/assets/images/logo.png" alt="Club TDSI" />
         <div class="logo-pulse"></div>
-        <span class="logo-campus-badge" aria-hidden="true">
+        <span class="logo-badge" aria-hidden="true">
           <i class="fas fa-graduation-cap"></i>
         </span>
       </div>
@@ -90,7 +90,9 @@
           <span class="link-icon"><i class="fas fa-lightbulb"></i></span>
           <span class="link-text">Proposer</span>
           @if (pendingMySubmissionsCount() > 0) {
-            <span class="link-badge link-badge--count">{{ pendingMySubmissionsCount() }}</span>
+            <span class="link-badge link-badge--count">{{
+              pendingMySubmissionsCount()
+            }}</span>
           } @else {
             <span class="link-badge">Nouveau</span>
           }
@@ -109,14 +111,14 @@
           (click)="openCommandPalette()"
         >
           <i class="fas fa-search" aria-hidden="true"></i>
-          <span class="navbar__cmdk-hint">
-            <kbd>⌘</kbd><kbd>K</kbd>
-          </span>
+          <span class="navbar__cmdk-hint"> <kbd>⌘</kbd><kbd>K</kbd> </span>
         </button>
 
         @if (showCmdkHint()) {
           <div class="cmdk-hint-bubble" role="status">
-            <span>Essayez <kbd>⌘</kbd><kbd>K</kbd> pour chercher rapidement</span>
+            <span
+              >Essayez <kbd>⌘</kbd><kbd>K</kbd> pour chercher rapidement</span
+            >
             <button
               type="button"
               class="cmdk-hint-bubble__close"
@@ -213,7 +215,9 @@
                 <i class="fas fa-file-alt"></i>
                 <span>Mes dépôts</span>
                 @if (pendingMySubmissionsCount() > 0) {
-                  <span class="user-menu__item-badge">{{ pendingMySubmissionsCount() }}</span>
+                  <span class="user-menu__item-badge">{{
+                    pendingMySubmissionsCount()
+                  }}</span>
                 }
                 <i class="fas fa-arrow-right item-arrow"></i>
               </a>
@@ -348,7 +352,9 @@
             <i class="fas fa-file-alt"></i>
             <span>Mes dépôts</span>
             @if (pendingMySubmissionsCount() > 0) {
-              <span class="mobile-nav__badge">{{ pendingMySubmissionsCount() }}</span>
+              <span class="mobile-nav__badge">{{
+                pendingMySubmissionsCount()
+              }}</span>
             }
           </a>
           <a
@@ -432,7 +438,9 @@
       <span class="bottom-nav__icon-wrap">
         <i class="fas fa-lightbulb"></i>
         @if (pendingMySubmissionsCount() > 0) {
-          <span class="bottom-nav__badge">{{ pendingMySubmissionsCount() }}</span>
+          <span class="bottom-nav__badge">{{
+            pendingMySubmissionsCount()
+          }}</span>
         }
       </span>
       <span>Proposer</span>
@@ -446,7 +454,11 @@
       <span>Profil</span>
     </a>
   } @else {
-    <a routerLink="/inscription" routerLinkActive="active" class="bottom-nav__item bottom-nav__item--cta">
+    <a
+      routerLink="/inscription"
+      routerLinkActive="active"
+      class="bottom-nav__item bottom-nav__item--cta"
+    >
       <i class="fas fa-user-plus"></i>
       <span>Rejoindre</span>
     </a>

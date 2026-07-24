@@ -1,19 +1,28 @@
 <!-- admin-layout.component.html -->
 <div class="admin-layout">
-
   <!-- Desktop Sidebar -->
   <aside class="sidebar" [class.sidebar--collapsed]="sidebarCollapsed()">
     <div class="sidebar__header">
       <a routerLink="/admin/dashboard" class="sidebar__brand">
         <div class="sidebar__logo">
-          <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
+          <img src="/assets/images/logo.png" alt="Club TDSI" />
         </div>
         @if (!sidebarCollapsed()) {
           <div class="sidebar__brand-text">C·T·C <span>Admin</span></div>
         }
       </a>
-      <button class="sidebar__toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarCollapsed() ? 'Ouvrir le menu' : 'Réduire le menu'">
-        <i class="fas" [class.fa-chevron-left]="!sidebarCollapsed()" [class.fa-chevron-right]="sidebarCollapsed()"></i>
+      <button
+        class="sidebar__toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="
+          sidebarCollapsed() ? 'Ouvrir le menu' : 'Réduire le menu'
+        "
+      >
+        <i
+          class="fas"
+          [class.fa-chevron-left]="!sidebarCollapsed()"
+          [class.fa-chevron-right]="sidebarCollapsed()"
+        ></i>
       </button>
     </div>
 
@@ -43,7 +52,12 @@
     @if (!sidebarCollapsed()) {
       <div class="sidebar__section-label">Système</div>
     }
-    <a routerLink="/admin/configuration" routerLinkActive="active" class="sidebar__item" [routerLinkActiveOptions]="{ exact: false }">
+    <a
+      routerLink="/admin/configuration"
+      routerLinkActive="active"
+      class="sidebar__item"
+      [routerLinkActiveOptions]="{ exact: false }"
+    >
       <i class="fas fa-sliders-h"></i>
       @if (!sidebarCollapsed()) {
         <span>Configuration</span>
@@ -51,7 +65,10 @@
     </a>
 
     <div class="sidebar__footer">
-      <div class="sidebar__notif-row" [class.sidebar__notif-row--collapsed]="sidebarCollapsed()">
+      <div
+        class="sidebar__notif-row"
+        [class.sidebar__notif-row--collapsed]="sidebarCollapsed()"
+      >
         <app-notification-bell openDirection="up" />
         @if (!sidebarCollapsed()) {
           <span class="sidebar__notif-label">Notifications</span>
@@ -66,7 +83,11 @@
         <div class="sidebar__user-avatar">
           <span>{{ userInitial }}</span>
           @if (hasUnreadNotifs()) {
-            <span class="sidebar__user-badge" [attr.aria-label]="notifBadgeLabel() + ' notifications non lues'">{{ notifBadgeLabel() }}</span>
+            <span
+              class="sidebar__user-badge"
+              [attr.aria-label]="notifBadgeLabel() + ' notifications non lues'"
+              >{{ notifBadgeLabel() }}</span
+            >
           }
         </div>
         @if (!sidebarCollapsed()) {
@@ -74,7 +95,10 @@
             <div class="sidebar__user-name">{{ adminName }}</div>
             <div class="sidebar__user-role">Administrateur</div>
           </div>
-          <i class="fas fa-chevron-right sidebar__user-chevron" aria-hidden="true"></i>
+          <i
+            class="fas fa-chevron-right sidebar__user-chevron"
+            aria-hidden="true"
+          ></i>
         }
       </button>
       @if (!sidebarCollapsed()) {
@@ -89,11 +113,15 @@
   <!-- Mobile Header -->
   <header class="mobile-header">
     <div class="mobile-header__container">
-      <button class="mobile-header__menu-btn" (click)="mobileOpen.set(true)" aria-label="Ouvrir le menu">
+      <button
+        class="mobile-header__menu-btn"
+        (click)="mobileOpen.set(true)"
+        aria-label="Ouvrir le menu"
+      >
         <i class="fas fa-bars"></i>
       </button>
       <a routerLink="/admin/dashboard" class="mobile-header__brand">
-        <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
+        <img src="/assets/images/logo.png" alt="Club TDSI" />
         <span>Club TDSI <span>Admin</span></span>
       </a>
       <div class="mobile-header__user">
@@ -113,10 +141,14 @@
       <div class="mobile-menu__container" (click)="$event.stopPropagation()">
         <div class="mobile-menu__header">
           <div class="mobile-menu__brand">
-            <img src="/assets/images/logo-campus.png" alt="Club TDSI" />
+            <img src="/assets/images/logo.png" alt="Club TDSI" />
             <span>Club TDSI <span>Admin</span></span>
           </div>
-          <button class="mobile-menu__close" (click)="closeMobileMenu()" aria-label="Fermer le menu">
+          <button
+            class="mobile-menu__close"
+            (click)="closeMobileMenu()"
+            aria-label="Fermer le menu"
+          >
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -130,14 +162,23 @@
           <div class="mobile-menu__avatar">
             {{ userInitial }}
             @if (hasUnreadNotifs()) {
-              <span class="mobile-menu__avatar-badge" [attr.aria-label]="notifBadgeLabel() + ' notifications non lues'">{{ notifBadgeLabel() }}</span>
+              <span
+                class="mobile-menu__avatar-badge"
+                [attr.aria-label]="
+                  notifBadgeLabel() + ' notifications non lues'
+                "
+                >{{ notifBadgeLabel() }}</span
+              >
             }
           </div>
           <div>
             <div class="mobile-menu__name">{{ adminName }}</div>
             <div class="mobile-menu__role">Administrateur</div>
           </div>
-          <i class="fas fa-chevron-right mobile-menu__user-chevron" aria-hidden="true"></i>
+          <i
+            class="fas fa-chevron-right mobile-menu__user-chevron"
+            aria-hidden="true"
+          ></i>
         </button>
 
         <div class="mobile-menu__section-label">Navigation</div>
@@ -152,7 +193,9 @@
               <i class="fas {{ item.icon }}"></i>
               <span>{{ item.label }}</span>
               @if (item.badge) {
-                <span class="sidebar__badge sidebar__badge--mobile">{{ item.badge }}</span>
+                <span class="sidebar__badge sidebar__badge--mobile">{{
+                  item.badge
+                }}</span>
               }
             </a>
           }

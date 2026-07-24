@@ -34,7 +34,8 @@
         --bx-border: rgba(0, 212, 255, 0.18);
         --bx-text: #cbd5e1;
         --bx-muted: #5b6b8c;
-        --bx-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
+        --bx-mono:
+          "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
       }
 
       .boot-screen {
@@ -45,7 +46,12 @@
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        background: radial-gradient(circle at 30% 20%, rgba(0, 212, 255, 0.06), transparent 55%),
+        background:
+          radial-gradient(
+            circle at 30% 20%,
+            rgba(0, 212, 255, 0.06),
+            transparent 55%
+          ),
           linear-gradient(150deg, var(--bx-bg1), var(--bx-bg2));
         transition: opacity 0.6s ease-out;
       }
@@ -59,10 +65,15 @@
       .boot-grid {
         position: absolute;
         inset: -2px;
-        background-image: linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+        background-image:
+          linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
           linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
         background-size: 42px 42px;
-        mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+        mask-image: radial-gradient(
+          circle at center,
+          black 40%,
+          transparent 85%
+        );
       }
 
       /* ── glows ambiants ── */
@@ -77,7 +88,11 @@
         height: 600px;
         top: -200px;
         left: -150px;
-        background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 70%);
+        background: radial-gradient(
+          circle,
+          rgba(0, 212, 255, 0.1),
+          transparent 70%
+        );
         animation: bxFloat 14s ease-in-out infinite alternate;
       }
       .boot-glow--b {
@@ -85,12 +100,20 @@
         height: 500px;
         bottom: -180px;
         right: -120px;
-        background: radial-gradient(circle, rgba(59, 130, 246, 0.09), transparent 70%);
+        background: radial-gradient(
+          circle,
+          rgba(59, 130, 246, 0.09),
+          transparent 70%
+        );
         animation: bxFloat 18s ease-in-out infinite alternate-reverse;
       }
       @keyframes bxFloat {
-        from { transform: translate(0, 0) scale(1); }
-        to   { transform: translate(30px, 20px) scale(1.07); }
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(30px, 20px) scale(1.07);
+        }
       }
 
       /* ── ligne de scan ── */
@@ -99,17 +122,34 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: linear-gradient(90deg, transparent, var(--bx-cyan), transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--bx-cyan),
+          transparent
+        );
         opacity: 0.45;
         filter: blur(0.5px);
         animation: bxScan 3.6s linear infinite;
       }
       @keyframes bxScan {
-        0%   { top: -2%; opacity: 0; }
-        8%   { opacity: 0.55; }
-        50%  { opacity: 0.35; }
-        92%  { opacity: 0.55; }
-        100% { top: 102%; opacity: 0; }
+        0% {
+          top: -2%;
+          opacity: 0;
+        }
+        8% {
+          opacity: 0.55;
+        }
+        50% {
+          opacity: 0.35;
+        }
+        92% {
+          opacity: 0.55;
+        }
+        100% {
+          top: 102%;
+          opacity: 0;
+        }
       }
 
       /* ── particules ── */
@@ -167,8 +207,13 @@
         background: rgba(40, 200, 64, 0.06);
       }
       @keyframes bxPulseDot {
-        0%, 100% { opacity: 1; }
-        50%      { opacity: 0.35; }
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
       }
 
       /* ── logo + anneaux ── */
@@ -207,11 +252,24 @@
         animation: bxSpinRev 1.1s linear infinite;
         opacity: 0.6;
       }
-      @keyframes bxSpin { to { transform: rotate(360deg); } }
-      @keyframes bxSpinRev { to { transform: rotate(-360deg); } }
+      @keyframes bxSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes bxSpinRev {
+        to {
+          transform: rotate(-360deg);
+        }
+      }
       @keyframes bxLogoPulse {
-        0%, 100% { transform: scale(1); }
-        50%      { transform: scale(1.1); }
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
       }
 
       /* ── fenêtre terminal ── */
@@ -222,7 +280,9 @@
         background: rgba(8, 12, 30, 0.65);
         backdrop-filter: blur(16px);
         overflow: hidden;
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        box-shadow:
+          0 12px 40px rgba(0, 0, 0, 0.35),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
         transition: border-color 0.4s ease;
       }
       .boot-screen.success .boot-terminal {
@@ -236,10 +296,20 @@
         background: var(--bx-dark);
         border-bottom: 1px solid var(--bx-border);
       }
-      .boot-dot { width: 8px; height: 8px; border-radius: 50%; }
-      .boot-dot--r { background: #ff5f57; }
-      .boot-dot--y { background: var(--bx-amber); }
-      .boot-dot--g { background: var(--bx-green); }
+      .boot-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .boot-dot--r {
+        background: #ff5f57;
+      }
+      .boot-dot--y {
+        background: var(--bx-amber);
+      }
+      .boot-dot--g {
+        background: var(--bx-green);
+      }
       .boot-terminal__title {
         flex: 1;
         text-align: center;
@@ -261,18 +331,38 @@
       .boot-line {
         opacity: 0;
         transform: translateY(3px);
-        transition: opacity 0.25s ease, transform 0.25s ease;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
         white-space: pre-wrap;
         word-break: break-word;
       }
-      .boot-line.show { opacity: 1; transform: translateY(0); }
-      .boot-line .tag { opacity: 0.85; margin-right: 0.4em; }
-      .boot-line--cmd { color: #e2e8f0; }
-      .boot-line--cmd .tag { color: var(--bx-cyan); }
-      .boot-line--ok { color: var(--bx-muted); }
-      .boot-line--ok .tag { color: var(--bx-green); }
-      .boot-line--info { color: var(--bx-muted); }
-      .boot-line--info .tag { color: var(--bx-blue); }
+      .boot-line.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .boot-line .tag {
+        opacity: 0.85;
+        margin-right: 0.4em;
+      }
+      .boot-line--cmd {
+        color: #e2e8f0;
+      }
+      .boot-line--cmd .tag {
+        color: var(--bx-cyan);
+      }
+      .boot-line--ok {
+        color: var(--bx-muted);
+      }
+      .boot-line--ok .tag {
+        color: var(--bx-green);
+      }
+      .boot-line--info {
+        color: var(--bx-muted);
+      }
+      .boot-line--info .tag {
+        color: var(--bx-blue);
+      }
       .boot-cursor {
         display: inline-block;
         width: 6px;
@@ -282,7 +372,11 @@
         vertical-align: -1px;
         animation: bxBlink 0.9s steps(1) infinite;
       }
-      @keyframes bxBlink { 50% { opacity: 0; } }
+      @keyframes bxBlink {
+        50% {
+          opacity: 0;
+        }
+      }
 
       /* ── statut + progression ── */
       .boot-status {
@@ -294,7 +388,9 @@
         min-height: 1em;
         transition: color 0.3s ease;
       }
-      .boot-screen.success .boot-status { color: var(--bx-green); }
+      .boot-screen.success .boot-status {
+        color: var(--bx-green);
+      }
 
       .boot-progress-track {
         width: 100%;
@@ -307,7 +403,12 @@
         height: 100%;
         width: 0%;
         border-radius: 999px;
-        background: linear-gradient(90deg, var(--bx-cyan), var(--bx-blue), var(--bx-purple));
+        background: linear-gradient(
+          90deg,
+          var(--bx-cyan),
+          var(--bx-blue),
+          var(--bx-purple)
+        );
         box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
         transition: width 0.35s ease;
       }
@@ -324,8 +425,12 @@
         color: var(--bx-muted);
         letter-spacing: 0.03em;
       }
-      .boot-meta__pct { color: var(--bx-cyan); }
-      .boot-screen.success .boot-meta__pct { color: var(--bx-green); }
+      .boot-meta__pct {
+        color: var(--bx-cyan);
+      }
+      .boot-screen.success .boot-meta__pct {
+        color: var(--bx-green);
+      }
 
       @media (prefers-reduced-motion: reduce) {
         .boot-screen * {
@@ -335,7 +440,10 @@
       }
 
       @media (max-width: 480px) {
-        .boot-terminal__body { min-height: 130px; font-size: 0.62rem; }
+        .boot-terminal__body {
+          min-height: 130px;
+          font-size: 0.62rem;
+        }
       }
 
       /* ── shell de l'app masqué tant que le boot n'est pas terminé ──
@@ -371,7 +479,7 @@
         <div class="boot-logo">
           <div class="boot-ring boot-ring--1"></div>
           <div class="boot-ring boot-ring--2"></div>
-          <img src="/assets/images/logo-campus.png" alt="Campus TDSI Club" />
+          <img src="/assets/images/logo.png" alt="Campus TDSI Club" />
         </div>
 
         <div class="boot-terminal">
@@ -379,12 +487,16 @@
             <span class="boot-dot boot-dot--r"></span>
             <span class="boot-dot boot-dot--y"></span>
             <span class="boot-dot boot-dot--g"></span>
-            <span class="boot-terminal__title">ClubTdsiCampus_boot — initializing</span>
+            <span class="boot-terminal__title"
+              >ClubTdsiCampus_boot — initializing</span
+            >
           </div>
           <div class="boot-terminal__body" id="bootLines"></div>
         </div>
 
-        <div class="boot-status" id="bootStatus">Initialisation de l'environnement sécurisé…</div>
+        <div class="boot-status" id="bootStatus">
+          Initialisation de l'environnement sécurisé…
+        </div>
 
         <div class="boot-progress-track">
           <div class="boot-progress-fill" id="bootFill"></div>
@@ -400,18 +512,19 @@
 
     <script>
       (function () {
-        var screenEl = document.getElementById('bootScreen');
-        var linesEl = document.getElementById('bootLines');
-        var statusEl = document.getElementById('bootStatus');
-        var fillEl = document.getElementById('bootFill');
-        var pctEl = document.getElementById('bootPct');
-        var badgeEl = document.getElementById('bootBadgeText');
+        var screenEl = document.getElementById("bootScreen");
+        var linesEl = document.getElementById("bootLines");
+        var statusEl = document.getElementById("bootStatus");
+        var fillEl = document.getElementById("bootFill");
+        var pctEl = document.getElementById("bootPct");
+        var badgeEl = document.getElementById("bootBadgeText");
 
         // ── tech-canvas (porté de tech-canvas.component.ts) ──
-        var canvas = document.getElementById('bootCanvas');
-        var ctx = canvas.getContext('2d');
+        var canvas = document.getElementById("bootCanvas");
+        var ctx = canvas.getContext("2d");
         var particles = [];
-        var mouseX = 0, mouseY = 0;
+        var mouseX = 0,
+          mouseY = 0;
         var rafId = null;
         var PARTICLE_COUNT = 60;
 
@@ -425,7 +538,7 @@
               speedX: (Math.random() - 0.5) * 0.8,
               speedY: (Math.random() - 0.5) * 0.8,
               alpha: Math.random() * 0.4 + 0.1,
-              baseAlpha: Math.random() * 0.4 + 0.1
+              baseAlpha: Math.random() * 0.4 + 0.1,
             });
           }
         }
@@ -437,7 +550,7 @@
         }
 
         function drawCanvas() {
-          ctx.fillStyle = 'rgba(10, 14, 39, 0.08)';
+          ctx.fillStyle = "rgba(10, 14, 39, 0.08)";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           particles.forEach(function (p) {
@@ -464,7 +577,7 @@
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 212, 255, ' + p.alpha + ')';
+            ctx.fillStyle = "rgba(0, 212, 255, " + p.alpha + ")";
             ctx.fill();
           });
 
@@ -479,7 +592,7 @@
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = 'rgba(0, 212, 255, ' + opacity + ')';
+                ctx.strokeStyle = "rgba(0, 212, 255, " + opacity + ")";
                 ctx.stroke();
               }
             });
@@ -490,8 +603,8 @@
 
         function stopCanvas() {
           if (rafId) cancelAnimationFrame(rafId);
-          window.removeEventListener('resize', resizeCanvas);
-          document.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener("resize", resizeCanvas);
+          document.removeEventListener("mousemove", onMouseMove);
         }
 
         function onMouseMove(e) {
@@ -501,50 +614,74 @@
 
         resizeCanvas();
         drawCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        document.addEventListener('mousemove', onMouseMove);
+        window.addEventListener("resize", resizeCanvas);
+        document.addEventListener("mousemove", onMouseMove);
 
         // ── séquence de boot ──
         var lines = [
-          { type: 'cmd', text: 'init --secure-boot --module=clubtdsicampus', status: "Initialisation de l'environnement sécurisé…" },
-          { type: 'ok', text: 'Noyau système chargé' },
-          { type: 'ok', text: "Intégrité des fichiers vérifiée", status: "Vérification de l'intégrité…" },
-          { type: 'cmd', text: 'connect --protocol=tls1.3 --cipher=aes256', status: 'Établissement du canal chiffré…' },
-          { type: 'ok', text: 'Canal sécurisé (AES-256) établi' },
-          { type: 'info', text: 'Analyse des menaces… 0 détectée', status: 'Analyse des menaces…' },
-          { type: 'cmd', text: 'mount /espace-membres', status: "Préparation de l'espace membre…" },
-          { type: 'ok', text: 'Accès autorisé' }
+          {
+            type: "cmd",
+            text: "init --secure-boot --module=clubtdsicampus",
+            status: "Initialisation de l'environnement sécurisé…",
+          },
+          { type: "ok", text: "Noyau système chargé" },
+          {
+            type: "ok",
+            text: "Intégrité des fichiers vérifiée",
+            status: "Vérification de l'intégrité…",
+          },
+          {
+            type: "cmd",
+            text: "connect --protocol=tls1.3 --cipher=aes256",
+            status: "Établissement du canal chiffré…",
+          },
+          { type: "ok", text: "Canal sécurisé (AES-256) établi" },
+          {
+            type: "info",
+            text: "Analyse des menaces… 0 détectée",
+            status: "Analyse des menaces…",
+          },
+          {
+            type: "cmd",
+            text: "mount /espace-membres",
+            status: "Préparation de l'espace membre…",
+          },
+          { type: "ok", text: "Accès autorisé" },
         ];
 
-        var tagFor = { cmd: 'root@clubtdsicampus:~$', ok: '[ OK ]', info: '[ .. ]' };
+        var tagFor = {
+          cmd: "root@clubtdsicampus:~$",
+          ok: "[ OK ]",
+          info: "[ .. ]",
+        };
 
         var linesDone = false;
         var windowLoaded = false;
         var finished = false;
 
         function renderLine(line, isLast) {
-          var row = document.createElement('div');
-          row.className = 'boot-line boot-line--' + line.type;
-          var tag = document.createElement('span');
-          tag.className = 'tag';
+          var row = document.createElement("div");
+          row.className = "boot-line boot-line--" + line.type;
+          var tag = document.createElement("span");
+          tag.className = "tag";
           tag.textContent = tagFor[line.type];
           row.appendChild(tag);
           row.appendChild(document.createTextNode(line.text));
           if (isLast) {
-            var cur = document.createElement('span');
-            cur.className = 'boot-cursor';
+            var cur = document.createElement("span");
+            cur.className = "boot-cursor";
             row.appendChild(cur);
           }
           linesEl.appendChild(row);
           requestAnimationFrame(function () {
-            row.classList.add('show');
+            row.classList.add("show");
           });
           return row;
         }
 
         function setProgress(pct, label) {
-          fillEl.style.width = pct + '%';
-          pctEl.textContent = pct + '%';
+          fillEl.style.width = pct + "%";
+          pctEl.textContent = pct + "%";
           if (label) statusEl.textContent = label;
         }
 
@@ -555,39 +692,44 @@
             if (windowLoaded) {
               finish();
             } else {
-              statusEl.textContent = 'En attente de la fin du chargement…';
+              statusEl.textContent = "En attente de la fin du chargement…";
             }
             return;
           }
           if (prevRow) {
-            var oldCursor = prevRow.querySelector('.boot-cursor');
+            var oldCursor = prevRow.querySelector(".boot-cursor");
             if (oldCursor) oldCursor.remove();
           }
           var line = lines[index];
           prevRow = renderLine(line, true);
           var pct = Math.min(90, Math.round(((index + 1) / lines.length) * 90));
           setProgress(pct, line.status);
-          setTimeout(function () { revealNext(index + 1); }, 300 + Math.random() * 120);
+          setTimeout(
+            function () {
+              revealNext(index + 1);
+            },
+            300 + Math.random() * 120,
+          );
         }
 
         function finish() {
           if (finished) return;
           finished = true;
-          screenEl.classList.add('success');
-          badgeEl.textContent = 'Club TDSI Campus // Accès autorisé';
-          setProgress(100, 'Accès autorisé — bienvenue');
+          screenEl.classList.add("success");
+          badgeEl.textContent = "Club TDSI Campus // Accès autorisé";
+          setProgress(100, "Accès autorisé — bienvenue");
           setTimeout(function () {
-            screenEl.classList.add('hide');
-            document.body.classList.add('app-ready');
+            screenEl.classList.add("hide");
+            document.body.classList.add("app-ready");
             setTimeout(function () {
-              screenEl.style.display = 'none';
-              document.body.classList.remove('boot-active');
+              screenEl.style.display = "none";
+              document.body.classList.remove("boot-active");
               stopCanvas();
             }, 650);
           }, 600);
         }
 
-        window.addEventListener('load', function () {
+        window.addEventListener("load", function () {
           windowLoaded = true;
           // léger délai pour laisser Angular peindre l'écran
           setTimeout(function () {

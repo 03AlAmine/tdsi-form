@@ -49,12 +49,22 @@
 
         <!-- CTA Buttons -->
         <div class="hero__buttons">
-          <a routerLink="/workshops" class="btn btn--primary btn--lg" appMagnetic [magneticStrength]="0.25">
+          <a
+            routerLink="/workshops"
+            class="btn btn--primary btn--lg"
+            appMagnetic
+            [magneticStrength]="0.25"
+          >
             <i class="fas fa-calendar-alt"></i>
             Explorer les workshops
             <i class="fas fa-arrow-right btn-arrow"></i>
           </a>
-          <a routerLink="/thematiques" class="btn btn--outline btn--lg" appMagnetic [magneticStrength]="0.25">
+          <a
+            routerLink="/thematiques"
+            class="btn btn--outline btn--lg"
+            appMagnetic
+            [magneticStrength]="0.25"
+          >
             <i class="fas fa-th-large"></i>
             Découvrir les thématiques
           </a>
@@ -71,7 +81,9 @@
           aria-label="Visitez notre site officiel"
         >
           <i class="fas fa-globe"></i>
-          <span class="hero__website-link-text">Visitez notre site officiel</span>
+          <span class="hero__website-link-text"
+            >Visitez notre site officiel</span
+          >
           <span class="hero__website-link-short" aria-hidden="true">Club</span>
           <i class="fas fa-external-link-alt"></i>
         </a>
@@ -86,7 +98,7 @@
           <div class="logo-3d-wrapper">
             <div class="logo-shine"></div>
             <img
-              src="/assets/images/logo-campus.png"
+              src="/assets/images/logo.png"
               alt="Club TDSI"
               class="hero__logo-img"
             />
@@ -124,7 +136,9 @@
           </div>
           <div class="stat-card__content">
             <div class="stat-card__value">
-              <span class="counter" [attr.data-target]="totalThemesCount()">0</span>
+              <span class="counter" [attr.data-target]="totalThemesCount()"
+                >0</span
+              >
               <span class="stat-card__plus">+</span>
             </div>
             <div class="stat-card__label">Thématiques</div>
@@ -154,7 +168,9 @@
           </div>
           <div class="stat-card__content">
             <div class="stat-card__value">
-              <span class="counter" [attr.data-target]="totalWorkshopsCount()">0</span>
+              <span class="counter" [attr.data-target]="totalWorkshopsCount()"
+                >0</span
+              >
               <span class="stat-card__plus">+</span>
             </div>
             <div class="stat-card__label">Workshops</div>
@@ -200,32 +216,51 @@
             Prochains <span class="gradient-text">événements</span>
           </h2>
           <p class="section-subtitle">
-            Réservez votre place aux prochaines sessions organisées par la communauté
+            Réservez votre place aux prochaines sessions organisées par la
+            communauté
           </p>
         </div>
 
         <div class="events-grid">
           @for (workshop of upcomingEvents(); track workshop.id) {
-            <a [routerLink]="['/workshops', workshopSlug(workshop)]" class="event-card">
+            <a
+              [routerLink]="['/workshops', workshopSlug(workshop)]"
+              class="event-card"
+            >
               <div class="event-card__date">
-                <span class="event-card__day">{{ workshop.date | date: "dd" }}</span>
-                <span class="event-card__month">{{ workshop.date | date: "MMM" }}</span>
+                <span class="event-card__day">{{
+                  workshop.date | date: "dd"
+                }}</span>
+                <span class="event-card__month">{{
+                  workshop.date | date: "MMM"
+                }}</span>
               </div>
               <div class="event-card__body">
                 <h3 class="event-card__title">{{ workshop.themeTitle }}</h3>
                 <div class="event-card__meta">
-                  <span><i class="fas fa-chalkboard-user"></i> {{ workshop.presenter }}</span>
-                  <span><i class="fas fa-clock"></i> {{ workshop.date | date: "HH:mm" }}</span>
+                  <span
+                    ><i class="fas fa-chalkboard-user"></i>
+                    {{ workshop.presenter }}</span
+                  >
+                  <span
+                    ><i class="fas fa-clock"></i>
+                    {{ workshop.date | date: "HH:mm" }}</span
+                  >
                 </div>
                 <span
                   class="event-card__spots"
-                  [class.event-card__spots--full]="availableSpots(workshop) === 0"
+                  [class.event-card__spots--full]="
+                    availableSpots(workshop) === 0
+                  "
                 >
                   <i class="fas fa-users"></i>
                   @if (availableSpots(workshop) === 0) {
                     Complet
                   } @else {
-                    {{ availableSpots(workshop) }} place{{ availableSpots(workshop) > 1 ? 's' : '' }} restante{{ availableSpots(workshop) > 1 ? 's' : '' }}
+                    {{ availableSpots(workshop) }} place{{
+                      availableSpots(workshop) > 1 ? "s" : ""
+                    }}
+                    restante{{ availableSpots(workshop) > 1 ? "s" : "" }}
                   }
                 </span>
               </div>
@@ -513,21 +548,30 @@
         </span>
         <h2 class="section-title">De la découverte au mentorat</h2>
         <p class="section-subtitle">
-          Chaque membre suit le même fil, à son rythme. Clique une étape pour voir ce qu'elle représente —
-          tu retrouveras exactement ce parcours dans ton espace membre une fois inscrit.
+          Chaque membre suit le même fil, à son rythme. Clique une étape pour
+          voir ce qu'elle représente — tu retrouveras exactement ce parcours
+          dans ton espace membre une fois inscrit.
         </p>
       </div>
 
-      <div class="journey-stepper" role="tablist" aria-label="Étapes du parcours membre">
+      <div
+        class="journey-stepper"
+        role="tablist"
+        aria-label="Étapes du parcours membre"
+      >
         <div class="journey-stepper__line">
           <div
             class="journey-stepper__line-fill"
-            [style.width.%]="(activeJourneyIndex() / (journeySteps.length - 1)) * 100"
+            [style.width.%]="
+              (activeJourneyIndex() / (journeySteps.length - 1)) * 100
+            "
           ></div>
           @if (activeJourneyIndex() < journeySteps.length - 1) {
             <div
               class="journey-stepper__line-next"
-              [style.left.%]="(activeJourneyIndex() / (journeySteps.length - 1)) * 100"
+              [style.left.%]="
+                (activeJourneyIndex() / (journeySteps.length - 1)) * 100
+              "
               [style.width.%]="(1 / (journeySteps.length - 1)) * 100"
             ></div>
           }
@@ -764,7 +808,9 @@
               </div>
 
               <div class="code-line code-line-4 code-indent">
-                <span class="comment">// Rejoignez l'aventure Campus Tdsi Club !</span>
+                <span class="comment"
+                  >// Rejoignez l'aventure Campus Tdsi Club !</span
+                >
               </div>
 
               <div class="code-line code-line-5">&#125;;</div>
@@ -795,12 +841,22 @@
             exclusifs
           </p>
           <div class="cta-buttons">
-            <a routerLink="/inscription" class="btn btn--primary btn--lg" appMagnetic [magneticStrength]="0.3">
+            <a
+              routerLink="/inscription"
+              class="btn btn--primary btn--lg"
+              appMagnetic
+              [magneticStrength]="0.3"
+            >
               <i class="fas fa-user-plus"></i>
               Créer mon compte
               <i class="fas fa-arrow-right"></i>
             </a>
-            <a routerLink="/workshops" class="btn btn--outline btn--lg" appMagnetic [magneticStrength]="0.3">
+            <a
+              routerLink="/workshops"
+              class="btn btn--outline btn--lg"
+              appMagnetic
+              [magneticStrength]="0.3"
+            >
               <i class="fas fa-calendar-alt"></i>
               Voir les workshops
             </a>

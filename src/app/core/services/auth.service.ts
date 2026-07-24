@@ -199,7 +199,6 @@ export class AuthService {
     this.manualAuth = true;
     try {
       const cred = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      await updateProfile(cred.user, { displayName: data.displayName });
 
       const user: User = {
         uid: cred.user.uid,
@@ -210,7 +209,13 @@ export class AuthService {
         createdAt: new Date(),
       };
 
-      await setDoc(doc(db, 'users', cred.user.uid), user);
+      // ✅ Ces deux écritures sont indépendantes (Auth vs Firestore) — les
+      // paralléliser au lieu de les enchaîner coupe déjà un aller-retour
+      // réseau complet sur le temps total d'inscription.
+      await Promise.all([
+        updateProfile(cred.user, { displayName: data.displayName }),
+        setDoc(doc(db, 'users', cred.user.uid), user),
+      ]);
 
       // ✅ Pose le ticket AVANT de publier currentUser (juste en dessous) —
       // n'importe quel code qui réagit au changement d'utilisateur connecté
@@ -222,24 +227,21 @@ export class AuthService {
 
       this.currentUserSubject.next(user);
 
-      // ✅ Vérification d'email — best-effort, ne doit jamais bloquer
-      // l'inscription. Centralisé ici (et non dans le composant appelant)
-      // pour que ça marche quel que soit l'écran d'où register() est
-      // déclenché, sans dépendre d'un ordre d'exécution fragile avant
-      // la navigation ci-dessous.
-      try {
-        await sendEmailVerification(cred.user);
-      } catch (e) {
-        console.error('Erreur envoi email de vérification:', e);
-      }
-
-      // ✅ Email de bienvenue — best-effort, ne doit jamais bloquer
-      // ni faire échouer l'inscription si l'envoi échoue.
-      try {
-        await this.emailService.sendWelcome(data.email, data.displayName);
-      } catch (e) {
-        console.error('Erreur email de bienvenue:', e);
-      }
+      // ✅ Email de vérification + email de bienvenue — best-effort (voir
+      // les .catch ci-dessous, jamais bloquants), donc plus aucune raison
+      // de les ATTENDRE avant de naviguer. C'était le vrai goulot
+      // d'étranglement de l'inscription : le second passe par notre propre
+      // backend SMTP (OVH), potentiellement plusieurs secondes, et
+      // l'utilisateur restait bloqué sur l'écran d'inscription en
+      // attendant deux emails qu'il n'a même pas besoin d'avoir reçus pour
+      // accéder à son espace. On les lance en arrière-plan (fire-and-forget)
+      // et on navigue immédiatement.
+      sendEmailVerification(cred.user).catch((e) =>
+        console.error('Erreur envoi email de vérification:', e)
+      );
+      this.emailService.sendWelcome(data.email, data.displayName).catch((e) =>
+        console.error('Erreur email de bienvenue:', e)
+      );
 
       // Navigation explicite — c'est elle (et elle seule, désormais que
       // manualAuth est vérifié dans onAuthStateChanged) qui amène

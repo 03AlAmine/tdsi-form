@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const FROM = process.env.MAIL_FROM || `"Club TDSI" <${process.env.SMTP_USER}>`;
+const FROM = process.env.MAIL_FROM || `"Campus Club TDSI" <${process.env.SMTP_USER}>`;
 const SITE_URL = process.env.FRONTEND_URL || 'https://campus.clubtdsi.sn';
 
 // ── Palette ──────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ function layout({ title, preheader = '', eyebrow, badge, bodyHtml, meta, ctaText
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="font-family:${SANS}; font-size:19px; font-weight:800; color:#ffffff; letter-spacing:0.3px;">
-                    🛡️&nbsp; Club TDSI
+                    🛡️&nbsp; Campus Club TDSI
                   </td>
                   <td align="right" style="font-family:${FONT}; font-size:10px; color:rgba(255,255,255,0.85); letter-spacing:0.08em;">
                     CAMPUS&nbsp;·&nbsp;UCAD&nbsp;DAKAR
@@ -212,7 +212,7 @@ function layout({ title, preheader = '', eyebrow, badge, bodyHtml, meta, ctaText
         </table>
 
         <p style="margin:18px 0 0; font-family:${FONT}; font-size:10px; letter-spacing:0.05em; color:${C.textFaint};">
-          © ${new Date().getFullYear()} Club TDSI — généré automatiquement, merci de ne pas répondre à cet email.
+          © ${new Date().getFullYear()} Campus Club TDSI — généré automatiquement, merci de ne pas répondre à cet email.
         </p>
       </td>
     </tr>
@@ -240,15 +240,15 @@ function fmtDate(iso) {
 // le HTML lui-même.
 const TEMPLATES = {
   welcome: (d) => ({
-    subject: 'Bienvenue au Club TDSI 🎉',
+    subject: 'Bienvenue au Campus du Club TDSI 🎉',
     html: layout({
       title: `Bienvenue, ${d.displayName} !`,
-      preheader: 'Ton compte Club TDSI est prêt.',
+      preheader: 'Ton compte Campus  Club TDSI est prêt.',
       eyebrow: 'ACCOUNT_CREATED',
       chromeLabel: 'tdsi@campus:~$ welcome --new-member',
       badge: statusBadge({ label: 'Actif', color: C.success, bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)' }),
       bodyHtml: `
-        <p style="margin:0 0 12px;">Ton inscription au <strong style="color:#fff;">Club TDSI</strong> (Transmission de Données et Sécurité de l'Information) est confirmée.</p>
+        <p style="margin:0 0 12px;">Ton inscription au <strong style="color:#fff;">Campus Club TDSI</strong> (Transmission de Données et Sécurité de l'Information) est confirmée.</p>
         <p style="margin:0;">Tu peux dès maintenant explorer les thématiques proposées, t'inscrire aux workshops et proposer tes propres sujets.</p>`,
       ctaText: 'Accéder à mon espace',
       ctaLink: `${SITE_URL}/espace-membre`,
