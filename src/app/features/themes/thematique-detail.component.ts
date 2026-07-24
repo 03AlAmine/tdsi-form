@@ -97,7 +97,7 @@ export class ThematiqueDetailComponent implements OnInit, OnDestroy {
         : 'Thématique — Club TDSI Campus',
       description:
         `Thématique « ${provisionalTitle || '…'} » du Club TDSI — ` +
-        'cybersécurité, IA & réseaux. ESP – UCAD, Dakar.',
+        'cybersécurité, IA & réseaux. TDSI – UCAD, Dakar.',
       path: `/thematiques/${slugParam}`,
       type: 'article',
     });
@@ -160,7 +160,7 @@ export class ThematiqueDetailComponent implements OnInit, OnDestroy {
 
     this.seo.setPage({
       title: `${t.title} — Thématique ${t.category}`,
-      description: `${desc} Niveau ${t.difficulty} · Club TDSI, ESP – UCAD, Dakar.`,
+      description: `${desc} Niveau ${t.difficulty} · Club TDSI, TDSI – UCAD, Dakar.`,
       path,
       type: 'article',
       image: t.imageUrl,

@@ -1,4 +1,8 @@
 <div class="td">
+  <!-- ── Décor tech (grille + glow) ── -->
+  <div class="td__bg-grid" aria-hidden="true"></div>
+  <div class="td__bg-glow" aria-hidden="true"></div>
+
   <!-- ── Chargement ── -->
   @if (loading()) {
     <div class="td__state">
@@ -25,6 +29,7 @@
     <div class="container td__container">
       <!-- Fil d'Ariane -->
       <nav class="td__breadcrumb" aria-label="Fil d'Ariane">
+        <span class="td__breadcrumb-prompt">&gt;</span>
         <a routerLink="/thematiques">Thématiques</a>
         <i class="fas fa-chevron-right" aria-hidden="true"></i>
         <span aria-current="page">{{ t.title }}</span>
@@ -32,20 +37,34 @@
 
       <!-- En-tête -->
       <header class="td__header">
-        <div class="td__badges">
-          <span class="td__badge td__badge--category">{{ t.category }}</span>
-          <span
-            class="td__badge"
-            [class.td__badge--beginner]="t.difficulty === 'débutant'"
-            [class.td__badge--intermediate]="t.difficulty === 'intermédiaire'"
-            [class.td__badge--advanced]="t.difficulty === 'avancé'"
-          >
-            {{ t.difficulty }}
-          </span>
-        </div>
+        <div class="td__header-glow" aria-hidden="true"></div>
 
-        <h1 class="td__title">{{ t.title }}</h1>
-        <p class="td__description">{{ t.description }}</p>
+        <div class="td__header-top">
+          <div class="td__header-icon" aria-hidden="true">
+            <i class="fas fa-microchip"></i>
+          </div>
+
+          <div class="td__header-text">
+            <div class="td__badges">
+              <span class="td__badge td__badge--category">
+                <span class="td__badge-dot"></span>
+                {{ t.category }}
+              </span>
+              <span
+                class="td__badge"
+                [class.td__badge--beginner]="t.difficulty === 'débutant'"
+                [class.td__badge--intermediate]="t.difficulty === 'intermédiaire'"
+                [class.td__badge--advanced]="t.difficulty === 'avancé'"
+              >
+                <span class="td__badge-dot"></span>
+                {{ t.difficulty }}
+              </span>
+            </div>
+
+            <h1 class="td__title">{{ t.title }}</h1>
+            <p class="td__description">{{ t.description }}</p>
+          </div>
+        </div>
 
         @if (t.tags.length) {
           <ul class="td__tags" aria-label="Mots-clés">
@@ -62,7 +81,7 @@
           @if (t.objectives) {
             <section class="td__section">
               <h2 class="td__section-title">
-                <i class="fas fa-bullseye" aria-hidden="true"></i>
+                <span class="td__section-icon"><i class="fas fa-bullseye" aria-hidden="true"></i></span>
                 Objectifs
               </h2>
               <p class="td__section-text">{{ t.objectives }}</p>
@@ -72,7 +91,7 @@
           @if (t.prerequisites) {
             <section class="td__section">
               <h2 class="td__section-title">
-                <i class="fas fa-list-check" aria-hidden="true"></i>
+                <span class="td__section-icon"><i class="fas fa-list-check" aria-hidden="true"></i></span>
                 Prérequis
               </h2>
               <p class="td__section-text">{{ t.prerequisites }}</p>
@@ -82,7 +101,7 @@
           @if (t.materialsNeeded) {
             <section class="td__section">
               <h2 class="td__section-title">
-                <i class="fas fa-laptop-code" aria-hidden="true"></i>
+                <span class="td__section-icon"><i class="fas fa-laptop-code" aria-hidden="true"></i></span>
                 Matériel nécessaire
               </h2>
               <p class="td__section-text">{{ t.materialsNeeded }}</p>
@@ -117,19 +136,28 @@
           </div>
 
           @if (!linkedWorkshop() && showsInterestCount()) {
-            <p class="td__interest-count">
-              <i class="fas fa-users" aria-hidden="true"></i>
-              {{ t.interested?.length }} membres intéressés — un workshop
-              pourrait bientôt être programmé.
-            </p>
+            <div class="td__interest-count">
+              <span class="td__interest-count-icon"><i class="fas fa-users" aria-hidden="true"></i></span>
+              <span>
+                <strong>{{ t.interested?.length }}</strong> membres intéressés — un workshop
+                pourrait bientôt être programmé.
+              </span>
+            </div>
           }
         </div>
 
         <!-- ── Colonne latérale ── -->
         <aside class="td__aside">
           <div class="td__card">
+            <div class="td__card-chrome">
+              <span class="td__card-dot td__card-dot--a"></span>
+              <span class="td__card-dot td__card-dot--b"></span>
+              <span class="td__card-dot td__card-dot--c"></span>
+              <span class="td__card-chrome-label">spec.json</span>
+            </div>
+
             <h2 class="td__card-title">
-              <i class="fas fa-circle-info" aria-hidden="true"></i>
+              <span class="td__section-icon td__section-icon--sm"><i class="fas fa-circle-info" aria-hidden="true"></i></span>
               En bref
             </h2>
             <dl class="td__meta">

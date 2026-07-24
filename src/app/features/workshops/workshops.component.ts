@@ -27,16 +27,19 @@ import {
   getWorkshopStatusClass as sharedWorkshopStatusClass,
   getWorkshopStatusIcon as sharedWorkshopStatusIcon,
   getLocationIcon as sharedLocationIcon,
+  getLocationText as sharedLocationText,
   formatDuration as sharedFormatDuration,
 } from '../../core/utils/workshop-display.util';
 import { TiltSpotlightDirective } from '../../core/directives/tilt-spotlight.directive';
 import { RevealDirective } from '../../core/directives/reveal.directive';
+import { GlowTimelineComponent } from '../shared/components/glow-timeline/glow-timeline.component';
+import { TimelineItem } from '../shared/components/glow-timeline/timeline-item.model';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-workshops',
   standalone: true,
-  imports: [CommonModule, RouterLink, TiltSpotlightDirective, RevealDirective],
+  imports: [CommonModule, RouterLink, TiltSpotlightDirective, RevealDirective, GlowTimelineComponent],
   templateUrl: './workshops.component.html',
   styleUrls: ['./workshops.component.scss'],
 })
@@ -104,20 +107,21 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     if (q !== this.searchTerm()) this.searchTerm.set(q);
 
     const vue = params.get('vue');
-    const mode = vue === 'calendrier' ? 'calendar' : vue === 'liste' ? 'list' : null;
+    const mode =
+      vue === 'calendrier' ? 'calendar' : vue === 'chronologie' ? 'timeline' : vue === 'liste' ? 'list' : null;
     if (mode && mode !== this.viewMode()) this.viewMode.set(mode);
 
     this.syncingFromUrl = false;
   }
 
-  private writeFiltersToUrl(term: string, viewMode: 'list' | 'calendar'): void {
+  private writeFiltersToUrl(term: string, viewMode: 'list' | 'calendar' | 'timeline'): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
         q: term || null,
         // Pas de "vue" dans l'URL en mode liste (valeur par défaut) —
         // évite d'alourdir tous les liens partagés pour le cas courant.
-        vue: viewMode === 'calendar' ? 'calendrier' : null,
+        vue: viewMode === 'calendar' ? 'calendrier' : viewMode === 'timeline' ? 'chronologie' : null,
       },
       queryParamsHandling: 'merge',
       replaceUrl: true,
@@ -131,8 +135,8 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     this.writeFiltersToUrl(term, mode);
   });
 
-  // ── Vue Liste / Calendrier ──────────────────────────────────────────
-  viewMode = signal<'list' | 'calendar'>('list');
+  // ── Vue Liste / Calendrier / Timeline ────────────────────────────────
+  viewMode = signal<'list' | 'calendar' | 'timeline'>('list');
   calendarMonth = signal(startOfMonth(new Date()));
   weekDayLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -240,6 +244,36 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     );
   });
 
+  // ── Vue Timeline — chronologique du plus ancien au plus récent, sur
+  // le même jeu filtré (recherche + visibilité) que la grille. ──
+  timelineItems = computed<TimelineItem[]>(() => {
+    const sorted = [...this.filteredWorkshops()].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+
+    return sorted.map((w) => ({
+      id: w.id ?? w.themeTitle,
+      icon: sharedWorkshopStatusIcon(w.status),
+      title: w.themeTitle,
+      dateLabel: new Date(w.date).toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+      status: sharedWorkshopStatusClass(w.status) as TimelineItem['status'],
+      statusLabel: w.status,
+      pulse: w.status === 'en cours',
+      meta: [
+        { icon: sharedLocationIcon(w.location), text: sharedLocationText(w.location) },
+        { icon: 'fa-user', text: w.presenter },
+        { icon: 'fa-clock', text: sharedFormatDuration(w.duration) },
+      ],
+      ctaLabel: 'Voir le détail',
+      disabled: false,
+      data: w,
+    }));
+  });
+
   enrichedWorkshopData = signal<{
     objectives: string[];
     prerequisites: string[];
@@ -253,7 +287,7 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
       title: 'Workshops cybersécurité, IA & réseaux',
       description:
         'Workshops gratuits du Club TDSI : cybersécurité, cryptographie, IA, ' +
-        'cloud. ESP – UCAD, Dakar. En ligne et en présentiel, inscription libre.',
+        'cloud. Club TDSI – UCAD, Dakar. En ligne et en présentiel, inscription libre.',
       path: '/workshops',
     });
 
@@ -287,6 +321,11 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
     return buildSlug(workshop.themeTitle, workshop.id!);
   }
 
+  /** Slug de la thématique liée à ce workshop (page /thematiques/:slug). */
+  themeSlugOf(workshop: Workshop): string {
+    return buildSlug(workshop.themeTitle, workshop.themeId);
+  }
+
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.filtersRouteSub?.unsubscribe();
@@ -296,6 +335,11 @@ export class WorkshopsComponent implements OnInit, OnDestroy {
   // ============================================================
   // WORKSHOP DETAIL DRAWER
   // ============================================================
+
+  onTimelineItemClick(item: TimelineItem): void {
+    const workshop = item.data as Workshop | undefined;
+    if (workshop) this.openWorkshopDetail(workshop);
+  }
 
   openWorkshopDetail(workshop: Workshop): void {
     const runOpen = () => {

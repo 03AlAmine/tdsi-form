@@ -7,6 +7,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ThemeSubmission } from '../../../core/model/models';
+import { buildSlug } from '../../../core/utils/slug.util';
 
 @Component({
   selector: 'app-my-submissions',
@@ -27,6 +28,7 @@ export class MySubmissionsComponent implements OnInit, OnDestroy {
   selectedSubmission = signal<ThemeSubmission | null>(null);
   drawerOpen = signal(false);
   cancellingId = signal<string | null>(null);
+  linkedThemeSlug = signal<string | null>(null);
 
   private subscription: Subscription | null = null;
 
@@ -62,6 +64,21 @@ export class MySubmissionsComponent implements OnInit, OnDestroy {
     this.selectedSubmission.set(submission);
     this.drawerOpen.set(true);
     document.body.style.overflow = 'hidden';
+
+    // ✅ Si la proposition a été approuvée, on résout en tâche de fond
+    // la thématique publiée correspondante pour proposer un lien direct
+    // "Voir la fiche" dans le tiroir de détail.
+    this.linkedThemeSlug.set(null);
+    if (submission.status === 'approuvé' && submission.id) {
+      this.themeService
+        .getThemeBySubmissionId(submission.id)
+        .then((theme) => {
+          if (theme?.id) {
+            this.linkedThemeSlug.set(buildSlug(theme.title, theme.id));
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   closeDrawer(): void {

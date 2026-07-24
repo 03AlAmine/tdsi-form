@@ -23,6 +23,7 @@ import { AiService, ThemeRecommendation } from '../../core/services/ai.service';
 import { EnrichmentService } from '../../core/services/enrichment.service';
 import { SeoService } from '../../core/services/seo.service';
 import { AppSettingsService } from '../../core/services/app-settings.service';
+import { PersonInfoService } from '../../core/services/person-info.service';
 import { TiltSpotlightDirective } from '../../core/directives/tilt-spotlight.directive';
 import { RevealDirective } from '../../core/directives/reveal.directive';
 import { Theme, ThemeCategory, Workshop } from '../../core/model/models';
@@ -70,6 +71,7 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
   private seo = inject(SeoService);
   private enrichmentService = inject(EnrichmentService);
   private settingsService = inject(AppSettingsService);
+  private personInfoService = inject(PersonInfoService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -559,6 +561,20 @@ export class ThematiquesComponent implements OnInit, OnDestroy {
     (document as any).startViewTransition(() => {
       runOpen();
       this.appRef.tick(); // rend le drawer "après" avec le même nom
+    });
+  }
+
+  // ✅ Ouvre la fiche de l'étudiant à l'origine de la thématique (uniquement
+  // pour les thématiques nées d'une soumission — fromStudentName absent
+  // sinon). createdBy porte l'uid de l'étudiant dans ce cas précis (voir
+  // ThemeService.approveSubmission).
+  showProposer(theme: Theme | null | undefined): void {
+    if (!theme?.fromStudentName) return;
+    this.personInfoService.show({
+      uid: theme.createdBy,
+      name: theme.fromStudentName,
+      promo: theme.fromStudentPromo,
+      context: theme.title,
     });
   }
 

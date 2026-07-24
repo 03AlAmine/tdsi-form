@@ -1,0 +1,82 @@
+<div class="glow-timeline">
+  @if (items.length === 0) {
+    <div class="glow-timeline__empty">
+      <i class="fas fa-timeline" aria-hidden="true"></i>
+      <p>{{ emptyLabel }}</p>
+    </div>
+  } @else {
+    <div class="glow-timeline__rail" #rail>
+      <div class="glow-timeline__track"></div>
+      <div class="glow-timeline__fill" #fill></div>
+
+      <ol class="glow-timeline__list">
+        @for (item of items; track item.id; let i = $index) {
+          <li
+            class="glow-timeline__row"
+            [class.glow-timeline__row--right]="i % 2 === 1"
+            [attr.data-timeline-id]="item.id"
+            [class.is-revealed]="revealedIds().has(item.id)"
+          >
+            <button
+              type="button"
+              class="glow-timeline__dot"
+              [class]="'status--' + (item.status || 'default')"
+              [class.is-pulsing]="item.pulse"
+              [disabled]="item.disabled"
+              [attr.aria-label]="item.title"
+              (click)="onItemClick(item)"
+            >
+              <i [class]="'fas ' + item.icon" aria-hidden="true"></i>
+            </button>
+
+            <div class="glow-timeline__connector" aria-hidden="true"></div>
+
+            <div
+              class="glow-timeline__card"
+              [class.is-disabled]="item.disabled"
+              role="button"
+              tabindex="0"
+              (click)="onItemClick(item)"
+              (keydown.enter)="onItemClick(item)"
+            >
+              <div class="glow-timeline__card-header">
+                @if (item.dateLabel) {
+                  <span class="glow-timeline__date">{{ item.dateLabel }}</span>
+                }
+                @if (item.statusLabel) {
+                  <span class="glow-timeline__badge" [class]="'status--' + (item.status || 'default')">
+                    {{ item.statusLabel }}
+                  </span>
+                }
+              </div>
+
+              <h3 class="glow-timeline__title">{{ item.title }}</h3>
+
+              @if (item.description) {
+                <p class="glow-timeline__description">{{ item.description }}</p>
+              }
+
+              @if (item.meta?.length) {
+                <div class="glow-timeline__meta">
+                  @for (m of item.meta; track m.text) {
+                    <span class="glow-timeline__meta-item">
+                      <i [class]="'fas ' + m.icon" aria-hidden="true"></i>
+                      {{ m.text }}
+                    </span>
+                  }
+                </div>
+              }
+
+              @if (item.ctaLabel) {
+                <span class="glow-timeline__cta">
+                  {{ item.ctaLabel }}
+                  <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </span>
+              }
+            </div>
+          </li>
+        }
+      </ol>
+    </div>
+  }
+</div>

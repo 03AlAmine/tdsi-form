@@ -9,7 +9,9 @@
 .shell-main {
   flex: 1;
   margin-top: 80px;
-  padding-bottom: 2rem;
+  // Sous 768px, une bottom nav fixe occupe le bas de l'écran — sans ce
+  // padding, ses items masqueraient la fin du contenu (boutons, footer).
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 1rem);
   position: relative;
   z-index: 10;
 

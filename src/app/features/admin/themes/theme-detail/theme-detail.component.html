@@ -67,7 +67,12 @@
             </div>
           </div>
           @if (theme.fromStudentName) {
-            <div class="meta-card">
+            <button
+              type="button"
+              class="meta-card meta-card--btn"
+              title="Voir la fiche de l'étudiant"
+              (click)="showProposer()"
+            >
               <div class="meta-card__icon">
                 <i class="fas fa-user-graduate"></i>
               </div>
@@ -76,7 +81,8 @@
                 <span class="meta-value">{{ theme.fromStudentName }}</span>
                 <span class="meta-sub">{{ theme.fromStudentPromo }}</span>
               </div>
-            </div>
+              <i class="fas fa-id-card meta-card__hint" aria-hidden="true"></i>
+            </button>
           }
         </div>
 

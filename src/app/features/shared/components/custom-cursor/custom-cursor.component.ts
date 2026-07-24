@@ -33,7 +33,7 @@ import { isPlatformBrowser } from '@angular/common';
       background: var(--tech-cyan, #00d4ff);
       box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
       pointer-events: none;
-      z-index: 9999;
+      z-index: 99999;
       opacity: 0;
       transition: opacity 0.2s ease, width 0.18s ease, height 0.18s ease, margin 0.18s ease, background 0.18s ease;
       will-change: transform;
@@ -41,8 +41,8 @@ import { isPlatformBrowser } from '@angular/common';
       &.is-visible { opacity: 1; }
 
       &.is-hover {
-        width: 34px;
-        height: 34px;
+        width: 22px;
+        height: 22px;
         margin: -17px 0 0 -17px;
         background: rgba(0, 212, 255, 0.15);
         box-shadow: 0 0 0 1.5px var(--tech-cyan, #00d4ff);
@@ -112,8 +112,8 @@ export class CustomCursorComponent implements AfterViewInit, OnDestroy {
   private tick = (): void => {
     // Lerp léger : le point "rattrape" la position réelle avec un peu
     // d'inertie plutôt que de la suivre au pixel près, plus organique.
-    this.currentX += (this.targetX - this.currentX) * 0.2;
-    this.currentY += (this.targetY - this.currentY) * 0.2;
+    this.currentX += (this.targetX - this.currentX) * 0.8;
+    this.currentY += (this.targetY - this.currentY) * 0.8;
     this.dotRef.nativeElement.style.transform =
       `translate3d(${this.currentX}px, ${this.currentY}px, 0)`;
     this.rafId = requestAnimationFrame(this.tick);

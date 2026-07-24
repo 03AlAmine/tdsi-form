@@ -31,11 +31,13 @@
 
       <!-- Logo -->
       <a routerLink="/" class="panel-logo panel-logo--link" aria-label="Retour à l'accueil">
+        <span class="panel-logo__ring" aria-hidden="true"></span>
         <app-logo size="md" [glow]="true" [showBadge]="true" />
       </a>
 
       <!-- Fenêtre terminal -->
       <div class="terminal-window">
+        <span class="terminal-window__scanline" aria-hidden="true"></span>
         <div class="terminal-titlebar">
           <div class="term-dots">
             <span class="term-dot term-dot--red"></span>

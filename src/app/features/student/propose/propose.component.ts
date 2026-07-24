@@ -66,6 +66,7 @@ export class ProposeComponent implements OnInit, OnDestroy {
   loading = signal(false);
   success = signal(false);
   error = signal('');
+  mySubmissionsCount = signal(0);
 
   aiLoading = signal(false);
   aiError = signal('');
@@ -99,6 +100,16 @@ export class ProposeComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe((val) => this.fetchSuggestions(val));
+
+    // ✅ Badge "Mes dépôts" affiché en haut de la page — donne un accès
+    // rapide à l'historique des propositions sans passer par la navbar.
+    const uid = this.authService.currentUser?.uid;
+    if (uid) {
+      this.themeService
+        .getMySubmissions(uid)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((subs) => this.mySubmissionsCount.set(subs.length));
+    }
   }
 
   ngOnDestroy(): void {

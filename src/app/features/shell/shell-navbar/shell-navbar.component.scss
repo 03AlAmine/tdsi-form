@@ -99,6 +99,13 @@
       align-items: baseline;
       gap: 0.25rem;
 
+      // ── En mobile, on garde uniquement le logo : le nom du site
+      // prend de la place inutilement sur un écran étroit où le
+      // logo seul suffit à identifier la marque.
+      @media (max-width: 576px) {
+        display: none;
+      }
+
       .brand-main {
         font-family: var(--font-display);
         font-weight: 700;
@@ -222,8 +229,39 @@
         border-radius: var(--radius-full);
         color: white;
         font-weight: 600;
+
+        &--count {
+          background: var(--tech-danger, #ef4444);
+          min-width: 16px;
+          text-align: center;
+        }
       }
     }
+  }
+
+  .user-menu__item-badge {
+    margin-left: auto;
+    margin-right: 0.35rem;
+    padding: 0.1rem 0.4rem;
+    min-width: 18px;
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--tech-danger, #ef4444);
+    border-radius: var(--radius-full);
+  }
+
+  .mobile-nav__badge {
+    margin-left: auto;
+    padding: 0.1rem 0.45rem;
+    min-width: 18px;
+    text-align: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--tech-danger, #ef4444);
+    border-radius: var(--radius-full);
   }
 
   // Actions
@@ -999,4 +1037,99 @@ app-tech-background {
       color: var(--white);
     }
   }
+}
+
+/* ============================================================
+   BOTTOM NAV — mobile uniquement
+   ============================================================ */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .bottom-nav {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--bottom-nav-height);
+    // Compense la zone d'encoche basse (iPhone à barre d'accueil) sans
+    // agrandir la barre elle-même — le padding pousse juste le contenu
+    // vers le haut à l'intérieur de la hauteur réservée.
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    background: rgba(10, 14, 39, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 212, 255, 0.1);
+    z-index: var(--z-bottom-nav);
+
+    &__item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15rem;
+      color: var(--gray-500);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.02em;
+      transition: color var(--transition-fast);
+
+      i {
+        font-size: 1.05rem;
+      }
+
+      &.active {
+        color: var(--tech-cyan);
+      }
+
+      &--cta {
+        color: var(--tech-cyan);
+      }
+    }
+  }
+}
+
+.bottom-nav__icon-wrap {
+  position: relative;
+  display: flex;
+}
+
+.bottom-nav__badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--tech-danger);
+  color: var(--white);
+  font-size: 0.5625rem;
+  font-weight: 700;
+}
+
+.bottom-nav__avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-primary);
+  color: var(--white);
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.bottom-nav__item.active .bottom-nav__avatar {
+  box-shadow: 0 0 0 2px var(--tech-cyan);
 }

@@ -23,6 +23,12 @@ export class UserService {
       promo:       (d['promo']       as string) ?? undefined,
       disabled:    (d['disabled']    as boolean) ?? false,
       createdAt:   (d['createdAt'] as Timestamp)?.toDate?.() ?? new Date(),
+      etablissement: (d['etablissement'] as string) ?? undefined,
+      filiere:       (d['filiere']       as string) ?? undefined,
+      phone:         (d['phone']         as string) ?? undefined,
+      linkedin:      (d['linkedin']      as string) ?? undefined,
+      github:        (d['github']        as string) ?? undefined,
+      bio:           (d['bio']           as string) ?? undefined,
     } as User & { disabled?: boolean };
   }
 
@@ -39,11 +45,34 @@ export class UserService {
       .filter((u): u is User => u !== null);
   }
 
-  async updateProfile(uid: string, data: { displayName: string; promo: string }): Promise<void> {
-    await updateDoc(doc(db, 'users', uid), {
+  async updateProfile(uid: string, data: {
+    displayName: string;
+    promo: string;
+    etablissement?: string;
+    filiere?: string;
+    phone?: string;
+    linkedin?: string;
+    github?: string;
+    bio?: string;
+  }): Promise<void> {
+    // ✅ Firestore rejette `undefined` dans updateDoc — on ne pousse que les
+    // champs optionnels réellement renseignés (chaîne non vide après trim).
+    const payload: Record<string, string> = {
       displayName: data.displayName,
       promo:       data.promo,
-    });
+    };
+    const optional: Array<[string, string | undefined]> = [
+      ['etablissement', data.etablissement],
+      ['filiere',       data.filiere],
+      ['phone',         data.phone],
+      ['linkedin',      data.linkedin],
+      ['github',        data.github],
+      ['bio',           data.bio],
+    ];
+    for (const [key, value] of optional) {
+      if (value !== undefined) payload[key] = value.trim();
+    }
+    await updateDoc(doc(db, 'users', uid), payload);
   }
 
   // ✅ La collection `admins/{uid}` est un miroir léger (juste l'uid) de
@@ -116,6 +145,23 @@ export class UserService {
 
   async reinstateUser(uid: string): Promise<void> {
     await updateDoc(doc(db, 'users', uid), { disabled: false });
+  }
+
+  // ⚠️ Spark plan : pas d'Admin SDK / Cloud Function côté client, donc on ne
+  // peut pas supprimer le compte Firebase Auth d'un AUTRE utilisateur — seul
+  // un compte peut se supprimer lui-même côté client. Cette méthode supprime
+  // uniquement les données applicatives : le document `users/{uid}` et son
+  // miroir `admins/{uid}` s'il existe. Le compte Auth reste utilisable ;
+  // l'app le traitera comme un profil manquant (à revalider) ou, si besoin
+  // d'une suppression complète, il faudra retirer le compte depuis la
+  // console Firebase Auth.
+  async deleteUser(uid: string): Promise<void> {
+    await deleteDoc(doc(db, 'users', uid));
+    try {
+      await deleteDoc(doc(db, 'admins', uid));
+    } catch {
+      // pas grave si le miroir n'existait pas (utilisateur non-admin)
+    }
   }
 
   async getUserCount(): Promise<number> {

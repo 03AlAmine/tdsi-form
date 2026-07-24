@@ -22,7 +22,7 @@
     }
 
     <nav class="sidebar__nav">
-      @for (item of navItems; track item.path) {
+      @for (item of navItems(); track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
@@ -57,17 +57,26 @@
           <span class="sidebar__notif-label">Notifications</span>
         }
       </div>
-      <div class="sidebar__user">
+      <button
+        type="button"
+        class="sidebar__user sidebar__user--clickable"
+        (click)="showProfile()"
+        [attr.aria-label]="'Voir le profil de ' + adminName"
+      >
         <div class="sidebar__user-avatar">
           <span>{{ userInitial }}</span>
+          @if (hasUnreadNotifs()) {
+            <span class="sidebar__user-badge" [attr.aria-label]="notifBadgeLabel() + ' notifications non lues'">{{ notifBadgeLabel() }}</span>
+          }
         </div>
         @if (!sidebarCollapsed()) {
           <div class="sidebar__user-info">
             <div class="sidebar__user-name">{{ adminName }}</div>
             <div class="sidebar__user-role">Administrateur</div>
           </div>
+          <i class="fas fa-chevron-right sidebar__user-chevron" aria-hidden="true"></i>
         }
-      </div>
+      </button>
       @if (!sidebarCollapsed()) {
         <button class="sidebar__logout" (click)="logout()">
           <i class="fas fa-sign-out-alt"></i>
@@ -88,7 +97,12 @@
         <span>Club TDSI <span>Admin</span></span>
       </a>
       <div class="mobile-header__user">
-        <div class="mobile-header__avatar">{{ userInitial }}</div>
+        <div class="mobile-header__avatar">
+          {{ userInitial }}
+          @if (hasUnreadNotifs()) {
+            <span class="mobile-header__avatar-badge"></span>
+          }
+        </div>
       </div>
     </div>
   </header>
@@ -107,17 +121,28 @@
           </button>
         </div>
 
-        <div class="mobile-menu__user">
-          <div class="mobile-menu__avatar">{{ userInitial }}</div>
+        <button
+          type="button"
+          class="mobile-menu__user mobile-menu__user--clickable"
+          (click)="showProfile(); closeMobileMenu()"
+          [attr.aria-label]="'Voir le profil de ' + adminName"
+        >
+          <div class="mobile-menu__avatar">
+            {{ userInitial }}
+            @if (hasUnreadNotifs()) {
+              <span class="mobile-menu__avatar-badge" [attr.aria-label]="notifBadgeLabel() + ' notifications non lues'">{{ notifBadgeLabel() }}</span>
+            }
+          </div>
           <div>
             <div class="mobile-menu__name">{{ adminName }}</div>
             <div class="mobile-menu__role">Administrateur</div>
           </div>
-        </div>
+          <i class="fas fa-chevron-right mobile-menu__user-chevron" aria-hidden="true"></i>
+        </button>
 
         <div class="mobile-menu__section-label">Navigation</div>
         <nav class="mobile-menu__nav">
-          @for (item of navItems; track item.path) {
+          @for (item of navItems(); track item.path) {
             <a
               [routerLink]="item.path"
               routerLinkActive="active"
@@ -126,6 +151,9 @@
             >
               <i class="fas {{ item.icon }}"></i>
               <span>{{ item.label }}</span>
+              @if (item.badge) {
+                <span class="sidebar__badge sidebar__badge--mobile">{{ item.badge }}</span>
+              }
             </a>
           }
         </nav>
@@ -150,4 +178,5 @@
 
   <app-toast />
   <app-confirm-modal />
+  <app-person-info-modal />
 </div>

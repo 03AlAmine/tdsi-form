@@ -75,24 +75,45 @@
           [class.status-pending]="sub.status === 'en attente'"
           [class.status-approved]="sub.status === 'approuvé'"
           [class.status-refused]="sub.status === 'refusé'"
+          [class.expanded]="isCardExpanded(sub.id!)"
         >
           <!-- Status Bar -->
           <div class="submission-card__status-bar"></div>
 
           <div class="submission-card__content">
-            <!-- Header -->
-            <div class="submission-card__header">
+            <!-- Summary row — always visible, click to expand full detail -->
+            <button
+              type="button"
+              class="submission-card__summary"
+              (click)="toggleCard(sub.id!)"
+              [attr.aria-expanded]="isCardExpanded(sub.id!)"
+            >
               <div class="submission-card__info">
-                <h3 class="submission-card__title">{{ sub.proposedTitle }}</h3>
+                <div class="submission-card__title-row">
+                  <h3 class="submission-card__title">{{ sub.proposedTitle }}</h3>
+                  <span
+                    class="status-badge"
+                    [class]="'status-badge--' + getStatusClass(sub.status)"
+                  >
+                    <i class="fas {{ getStatusIcon(sub.status) }}"></i>
+                    {{ sub.status }}
+                  </span>
+                </div>
                 <div class="submission-card__meta">
                   <span class="badge badge--primary">
                     <i class="fas fa-tag"></i>
                     {{ sub.category }}
                   </span>
-                  <span class="meta-author">
+                  <button
+                    type="button"
+                    class="meta-author meta-author--btn"
+                    title="Voir la fiche de l'étudiant"
+                    (click)="showProposer(sub, $event)"
+                  >
                     <i class="fas fa-user-graduate"></i>
                     {{ sub.studentName }} · {{ sub.promo }}
-                  </span>
+                    <i class="fas fa-id-card meta-author__icon"></i>
+                  </button>
                   @if (sub.aiAssisted) {
                     <span class="ai-badge ai-badge--sm" title="L'étudiant a utilisé la complétion IA pour pré-remplir ce formulaire">
                       <i class="fas fa-robot"></i>
@@ -105,17 +126,17 @@
                   </span>
                 </div>
               </div>
-              <div class="submission-card__status-badge">
-                <span
-                  class="status-badge"
-                  [class]="'status-badge--' + getStatusClass(sub.status)"
-                >
-                  <i class="fas {{ getStatusIcon(sub.status) }}"></i>
-                  {{ sub.status }}
-                </span>
-              </div>
-            </div>
+              <i class="fas fa-chevron-down submission-card__chevron"></i>
+            </button>
 
+            @if (!isCardExpanded(sub.id!)) {
+              <p class="submission-card__excerpt">
+                {{ sub.description | slice: 0 : 140 }}{{ sub.description.length > 140 ? "…" : "" }}
+              </p>
+            }
+
+            @if (isCardExpanded(sub.id!)) {
+            <div class="submission-card__body animate-fade-in">
             <!-- Description -->
             <p class="submission-card__description">{{ sub.description }}</p>
 
@@ -311,6 +332,8 @@
                   </div>
                 }
               </div>
+            }
+            </div>
             }
 
             <!-- Actions (Pending only) -->

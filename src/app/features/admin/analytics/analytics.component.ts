@@ -31,6 +31,7 @@ function parseNiveau(promo: string): string {
 
 function parseEtablissement(promo: string): string {
   const p = (promo ?? '').toUpperCase();
+  if (p.includes('TDSI'))   return 'TDSI';
   if (p.includes('ESP'))   return 'ESP';
   if (p.includes('UCAD') || p.includes('FST')) return 'UCAD/FST';
   if (p.includes('ISM'))   return 'ISM';

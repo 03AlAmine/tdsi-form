@@ -25,6 +25,9 @@ import { MemberNotesComponent } from '../notes/notes.component';
 import { Subscription } from 'rxjs';
 import { TiltSpotlightDirective } from '../../core/directives/tilt-spotlight.directive';
 import { MagneticDirective } from '../../core/directives/magnetic.directive';
+import { PageSpineComponent } from '../shared/components/page-spine/page-spine.component';
+import { SpineAnchor } from '../shared/components/page-spine/spine-anchor.model';
+import { ClubInsightsComponent } from '../shared/components/club-insights/club-insights.component';
 
 interface FeatureDetail {
   icon: string;
@@ -46,6 +49,8 @@ interface FeatureDetail {
     MemberNotesComponent,
     TiltSpotlightDirective,
     MagneticDirective,
+    PageSpineComponent,
+    ClubInsightsComponent,
   ],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
@@ -60,6 +65,20 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   userMenuOpen = signal(false);
+
+  // ── Fil conducteur latéral (voir PageSpineComponent) — ordre = ordre
+  // réel des sections dans le template ci-dessous. ──
+  readonly spineAnchors: SpineAnchor[] = [
+    { id: 'hero', label: 'Accueil', icon: 'fa-house' },
+    { id: 'stats-section', label: 'Notre impact', icon: 'fa-chart-line' },
+    { id: 'insights-section', label: 'En chiffres', icon: 'fa-chart-pie' },
+    { id: 'upcoming-events', label: 'Ça arrive bientôt', icon: 'fa-calendar-alt' },
+    { id: 'features', label: 'Pourquoi nous rejoindre', icon: 'fa-question-circle' },
+    { id: 'parcours-section', label: 'Ton parcours', icon: 'fa-route' },
+    { id: 'workspace-section', label: 'Agenda & Notes', icon: 'fa-calendar-check' },
+    { id: 'showcase', label: 'Live Experience', icon: 'fa-video' },
+    { id: 'cta-section', label: 'Rejoindre le club', icon: 'fa-user-plus' },
+  ];
 
   // ── Modal "En savoir plus" (features) ───────────────────────────────────
   activeFeature = signal<FeatureDetail | null>(null);
@@ -159,6 +178,68 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.activeFeature.set(null);
   }
 
+  // ── Ton parcours (section publique) ──────────────────────────────────────
+  // Mêmes 6 étapes que la roadmap affichée dans l'espace membre (voir
+  // ProfileComponent.memberRoadmap / MemberDashboardComponent.memberRoadmap)
+  // — un visiteur reconnaît ainsi le même fil une fois inscrit. Ici pas de
+  // progression réelle (personne n'est encore membre) : cliquer une étape
+  // active simplement son explication dans le panneau ci-dessous.
+  activeJourneyIndex = signal(0);
+
+  readonly journeySteps: Array<{
+    icon: string;
+    title: string;
+    tagline: string;
+    description: string;
+  }> = [
+    {
+      icon: 'fa-compass',
+      title: 'Découvre',
+      tagline: 'Crée ton compte',
+      description:
+        "Tu crées ton compte en quelques secondes et tu accèdes immédiatement à ton espace membre : catalogue de thématiques, agenda des workshops, et ton propre tableau de bord.",
+    },
+    {
+      icon: 'fa-calendar-check',
+      title: 'Participe',
+      tagline: 'Ton premier workshop',
+      description:
+        "Tu t'inscris à une première session en direct, animée par un membre ou un intervenant du club — en présentiel, à distance ou en hybride selon le format.",
+    },
+    {
+      icon: 'fa-graduation-cap',
+      title: 'Apprends',
+      tagline: '3 workshops suivis',
+      description:
+        "À force de suivre les sessions — cybersécurité, IA, cloud, développement — tu montes en compétence et tu commences à te repérer dans l'écosystème du club.",
+    },
+    {
+      icon: 'fa-lightbulb',
+      title: 'Contribue',
+      tagline: 'Ta première thématique',
+      description:
+        "Tu proposes toi-même un sujet qui te passionne. L'équipe l'examine, et si elle correspond aux objectifs du club, elle est programmée comme un vrai workshop.",
+    },
+    {
+      icon: 'fa-pen-nib',
+      title: 'Devient référence',
+      tagline: '3 thématiques proposées',
+      description:
+        'Tu deviens une voix reconnue sur tes sujets de prédilection, sollicitée par la communauté pour partager ton expertise et animer de nouvelles sessions.',
+    },
+    {
+      icon: 'fa-user-graduate',
+      title: 'Mentor',
+      tagline: 'Membre fidèle & contributeur',
+      description:
+        "Membre depuis longtemps et contributeur régulier, tu accompagnes les nouveaux arrivants et fais vivre la communauté au quotidien.",
+    },
+  ];
+
+  setActiveJourneyStep(index: number): void {
+    this.activeJourneyIndex.set(index);
+  }
+
   // ── Articles preview ─────────────────────────────────────────────────────
   latestArticles = signal<Article[]>([]);
   private articleSub: Subscription | null = null;
@@ -238,11 +319,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     // ── SEO de la page d'accueil ──
     this.seo.setPage({
-      title: 'Club TDSI Campus — communauté cybersécurité & IA, ESP Dakar',
+      title: 'Club TDSI Campus — communauté cybersécurité & IA, Club TDSI Dakar',
       description:
         'La communauté sénégalaise dédiée à la cybersécurité, l’IA et les ' +
         'technologies de l’information. Workshops gratuits, thématiques, ' +
-        'réseau. ESP – UCAD, Dakar.',
+        'réseau. Club TDSI – UCAD, Dakar.',
       path: '/',
     });
 
@@ -466,7 +547,10 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
                 if (current < target) {
                   counter.textContent = Math.floor(current).toString();
                   requestAnimationFrame(update);
-                } else counter.textContent = target.toString();
+                } else {
+                  counter.textContent = target.toString();
+                  counter.closest('.stat-card')?.classList.add('stat-card--counted');
+                }
               };
               update();
             });

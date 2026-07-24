@@ -122,6 +122,7 @@
 /* ── Logo en lien ── */
 .panel-logo {
   display: inline-block;
+  position: relative;
   text-decoration: none;
   transition: transform var(--transition-fast);
 
@@ -134,12 +135,38 @@
       .logo__image {
         filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
       }
+
+      .panel-logo__ring { opacity: 1; }
     }
 
     &:active {
       transform: scale(0.98);
     }
   }
+}
+
+// Anneau conique tournant derrière le logo — même effet que
+// .icon-orb__ring sur "Le campus en chiffres", révélé au survol.
+.panel-logo__ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--tech-cyan),
+    transparent 30%,
+    transparent 70%,
+    var(--tech-cyan)
+  );
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  animation: icon-orb-spin 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes icon-orb-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 // ── Barre mobile ──
 .mobile-bar {
@@ -177,6 +204,7 @@
 .terminal-window {
   flex: 1;
   min-height: 0;
+  position: relative;
   border: 1px solid var(--_border-mid);
   border-radius: var(--_r);
   background: var(--glass-bg);
@@ -186,6 +214,29 @@
     0 0 0 1px rgba(0, 212, 255, 0.04),
     var(--shadow-lg),
     inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+// Balayage lumineux façon radar, en boucle lente — renforce
+// l'ambiance "console" sans nécessiter de nouveau JS.
+.terminal-window__scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40%;
+  top: -40%;
+  background: linear-gradient(180deg, transparent, rgba(0, 212, 255, 0.07), transparent);
+  animation: terminal-scanline 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes terminal-scanline {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(350%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-window__scanline { animation: none; opacity: 0.3; }
 }
 
 .terminal-titlebar {

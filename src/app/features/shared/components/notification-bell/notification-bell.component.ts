@@ -56,14 +56,47 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.cancelReadOnView();
   }
 
+  // ✅ Consultation = lecture. Le badge ne doit pas rester bloqué tant que
+  // l'utilisateur n'a pas cliqué sur chaque notification individuellement :
+  // dès que le panneau reste ouvert un court instant (le temps de le
+  // parcourir des yeux), on marque tout comme lu. Le délai évite qu'un
+  // simple clic accidentel sur la cloche ne fasse disparaître le badge
+  // avant même que la personne ait pu voir ce qu'il y avait dedans.
+  private readOnViewTimeout: ReturnType<typeof setTimeout> | null = null;
+
   toggle(): void {
-    this.isOpen.update((v) => !v);
+    const next = !this.isOpen();
+    this.isOpen.set(next);
+
+    if (next) {
+      this.scheduleReadOnView();
+    } else {
+      this.cancelReadOnView();
+    }
+  }
+
+  private scheduleReadOnView(): void {
+    this.cancelReadOnView();
+    this.readOnViewTimeout = setTimeout(() => {
+      if (this.isOpen() && this.unreadCount() > 0) {
+        this.markAllAsRead();
+      }
+    }, 1500);
+  }
+
+  private cancelReadOnView(): void {
+    if (this.readOnViewTimeout) {
+      clearTimeout(this.readOnViewTimeout);
+      this.readOnViewTimeout = null;
+    }
   }
 
   close(): void {
     this.isOpen.set(false);
+    this.cancelReadOnView();
   }
 
   @HostListener('document:click', ['$event'])

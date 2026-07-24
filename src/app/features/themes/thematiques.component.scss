@@ -1,9 +1,262 @@
 // thematiques.component.scss
+
+/* ============================================================
+   DÉCOR HERO — grille tech en filigrane, cohérente avec les pages
+   de détail (thematique-detail / workshop-detail).
+   ============================================================ */
+.page-hero__bg-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--gradient-mesh);
+  opacity: 0.5;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 85%);
+  pointer-events: none;
+}
+
+.page-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+// ── En-tête compact : on resserre le hero (badge / titre / sous-titre)
+// et on regroupe le statut sync + la recherche sur une seule ligne pour
+// réduire la hauteur totale occupée par l'en-tête.
+.page-hero {
+  padding-top: 1.5rem;
+  padding-bottom: 1.75rem;
+}
+.page-hero__badge    { margin-bottom: 0.875rem; }
+.page-hero__title    { margin-bottom: 0.5rem; }
+.page-hero__subtitle { margin-bottom: 0.25rem; }
+
+// ── Barre d'outils : statut sync + recherche, côte à côte plutôt
+// qu'empilés — c'est ce qui économise le plus de hauteur.
+.hero-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+
+  .page-hero__search {
+    margin: 0;
+    max-width: 320px;
+    flex: 1 1 240px;
+  }
+}
+
+// ── Ligne de statut système sous le sous-titre du hero — même langage
+// HUD (point clignotant + monospace) que sur le reste du site.
+.hero-hud {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  flex: none;
+  padding: 0.375rem 0.875rem;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: var(--radius-full);
+  background: rgba(0, 212, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--gray-400);
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tech-cyan);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.9);
+    animation: pulse 2s infinite;
+  }
+
+  &__sep {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  &__blink {
+    color: var(--tech-cyan);
+    font-weight: 600;
+    animation: hero-hud-blink 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-hud-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-hud__dot,
+  .hero-hud__blink { animation: none; }
+}
+
+/* ============================================================
+   BOUTON FLOTTANT — PROPOSER UNE THÉMATIQUE
+   ============================================================ */
+.thematiques-fab {
+  position: fixed;
+  // Sous la navbar fixe (~80-88px de haut), collé en haut à droite.
+  top: 96px;
+  right: var(--space-lg);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-glow), var(--shadow-lg);
+  color: var(--white);
+  text-decoration: none;
+  transition: transform var(--transition-bounce), box-shadow var(--transition-base);
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: var(--shadow-glow-strong), var(--shadow-lg);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  &__ring {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid var(--tech-cyan);
+    opacity: 0.6;
+    animation: fab-pulse 2.4s ease-out infinite;
+    pointer-events: none;
+  }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i { font-size: 1.05rem; color: var(--white); }
+  }
+
+  // ── Info-bulle révélée au survol/focus — même patron visuel que le
+  // reco-fab (bouton recommandations) et le fab de l'assistant, pour
+  // une cohérence entre tous les boutons flottants ronds du site.
+  &__tooltip {
+    position: absolute;
+    right: calc(100% + 14px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, var(--tech-dark), var(--tech-deep));
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+
+    .tooltip-text {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--tech-cyan);
+      letter-spacing: 0.5px;
+    }
+
+    .tooltip-arrow {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 6px 0 6px 8px;
+      border-color: transparent transparent transparent rgba(0, 212, 255, 0.3);
+    }
+  }
+
+  &:hover &__tooltip,
+  &:focus-visible &__tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(-4px);
+  }
+
+  @media (max-width: 767px) {
+    // Sur mobile, ce bouton fixe collé en haut à droite entre en collision
+    // visuelle avec la barre de recherche / le badge du hero (position trop
+    // proche de la navbar, contenu qui défile en dessous). On le déplace
+    // en bas à droite, empilé au-dessus du reco-fab et du fab assistant
+    // (eux-mêmes remontés au-dessus de la bottom nav), et on le réduit —
+    // trois boutons ronds à 52-56px les uns sur les autres prenaient trop
+    // de place à l'écran une fois la bottom nav ajoutée.
+    top: auto;
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 8.25rem);
+    right: 1rem;
+    width: 44px;
+    height: 44px;
+
+    &__icon i { font-size: 0.95rem; }
+    &__tooltip { display: none; }
+  }
+}
+
+@keyframes fab-pulse {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thematiques-fab__ring { animation: none; opacity: 0.35; }
+}
+
 /* ============================================================
    FILTERS SECTION
    ============================================================ */
 .filters-section {
   margin-bottom: 2rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-card);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+
+  &__chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &--r { background: #ff5f57; }
+    &--y { background: #febc2e; }
+    &--g { background: #28c840; }
+  }
+
+  &__chrome-label {
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--gray-500);
+  }
 }
 
 .filters-header {
@@ -20,6 +273,17 @@
   align-items: baseline;
   gap: 0.5rem;
   flex-wrap: wrap;
+
+  &::before {
+    content: '';
+    align-self: center;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--tech-cyan);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+    animation: pulse 2s infinite;
+  }
 
   .stats-value {
     font-size: 1.5rem;
@@ -123,13 +387,40 @@
     position: absolute;
     top: 1rem;
     right: 1rem;
-    font-size: 2rem;
-    opacity: 0.1;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.375rem;
+    opacity: 0.12;
     pointer-events: none;
+    transition: opacity var(--transition-base), transform var(--transition-base);
 
     i {
+      position: relative;
+      z-index: 1;
       color: var(--tech-cyan);
     }
+  }
+
+  // Anneau conique tournant en arrière-plan de l'icône watermark — même
+  // langage visuel que le reste du site (landing, dashboard, campus en
+  // chiffres) : toujours en rotation, révélé au survol de la carte.
+  &__icon-ring {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      rgba(0, 212, 255, 0.9),
+      transparent 30%,
+      transparent 70%,
+      rgba(0, 212, 255, 0.9)
+    );
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    animation: theme-icon-ring-spin 4s linear infinite;
   }
 
   &__content {
@@ -148,6 +439,7 @@
     font-weight: 600;
     margin-bottom: 0.75rem;
     line-height: 1.4;
+    transition: color var(--transition-base);
   }
 
   &__description {
@@ -219,18 +511,116 @@
     .theme-card__overlay span i {
       transform: translateX(4px);
     }
+
+    .theme-card__icon {
+      opacity: 0.3;
+      transform: scale(1.08);
+    }
+
+    .theme-card__icon-ring {
+      opacity: 1;
+    }
+
+    .theme-card__title {
+      color: var(--tech-cyan);
+    }
+
+    .theme-card__hud-corner {
+      opacity: 1;
+    }
+
+    .theme-card__scanline {
+      animation: theme-card-scan-sweep 1.1s ease-in-out;
+    }
+
+    .theme-card__tag {
+      opacity: 0.7;
+    }
   }
+}
+
+// ── Coins de visée façon HUD — invisibles au repos, apparaissent
+// pile aux quatre coins de la carte au survol, comme un système qui
+// "verrouille" la cible.
+.theme-card__hud-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 212, 255, 0.75);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+  z-index: 2;
+
+  &--tl { top: 8px;    left: 8px;  border-right: none; border-bottom: none; }
+  &--tr { top: 8px;    right: 8px; border-left: none;  border-bottom: none; }
+  &--bl { bottom: 8px; left: 8px;  border-right: none; border-top: none; }
+  &--br { bottom: 8px; right: 8px; border-left: none;  border-top: none; }
+}
+
+// ── Balayage lumineux qui traverse la carte une fois au survol — un
+// "scan" qui rappelle une lecture de données.
+.theme-card__scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.95), transparent);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.8);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes theme-card-scan-sweep {
+  0%   { top: -8%;  opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 106%; opacity: 0; }
+}
+
+// ── Tag "REC_XXX" façon identifiant de base de données — discret,
+// se révèle légèrement au survol pour renforcer l'ambiance "console".
+.theme-card__tag {
+  position: absolute;
+  top: 10px;
+  left: 30px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.06em;
+  color: rgba(0, 212, 255, 0.55);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-card__scanline { animation: none !important; }
+}
+
+@keyframes theme-icon-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-card__icon-ring { animation: none; }
 }
 
 /* ============================================================
    DIFFICULTY & META BADGES
    ============================================================ */
 .difficulty {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
   font-size: 0.6875rem;
   font-family: var(--font-mono);
+  font-weight: 600;
+  border: 1px solid transparent;
 
   i {
     font-size: 0.625rem;
@@ -238,15 +628,23 @@
 
   &--green {
     color: var(--tech-success);
+    background: rgba(var(--tech-success-rgb), 0.1);
+    border-color: rgba(var(--tech-success-rgb), 0.25);
   }
   &--amber {
     color: var(--tech-warning);
+    background: rgba(var(--tech-warning-rgb), 0.1);
+    border-color: rgba(var(--tech-warning-rgb), 0.25);
   }
   &--red {
     color: var(--tech-danger);
+    background: rgba(var(--tech-danger-rgb), 0.1);
+    border-color: rgba(var(--tech-danger-rgb), 0.25);
   }
   &--neutral {
     color: var(--gray-500);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -268,9 +666,16 @@
   gap: 0.375rem;
   padding: 0.25rem 0.625rem;
   background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.25);
   border-radius: var(--radius-full);
   font-size: 0.625rem;
+  font-weight: 600;
   color: var(--tech-cyan);
+  transition: box-shadow var(--transition-base);
+}
+
+.theme-card:hover .workshop-badge {
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
 }
 
 /* ============================================================
@@ -320,14 +725,73 @@
 }
 
 /* ============================================================
+   EMPTY STATE — icône en anneau, cohérente avec le reste du site
+   ============================================================ */
+.empty-state__icon {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--tech-cyan);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 50%;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -9px;
+    border-radius: 50%;
+    border: 1px dashed rgba(0, 212, 255, 0.28);
+    animation: empty-state-icon-spin 18s linear infinite;
+  }
+}
+
+@keyframes empty-state-icon-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state__icon::before { animation: none; }
+}
+
+.empty-state__readout {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: rgba(0, 212, 255, 0.5);
+  margin-bottom: 0.5rem;
+
+  span {
+    color: var(--tech-cyan);
+    margin-right: 0.25rem;
+  }
+}
+
+/* ============================================================
    FLOATING RECOMMENDATIONS BUTTON
    ============================================================ */
 .reco-fab {
   position: fixed;
-  bottom: 2rem;
+  // ✅ Le chatbot d'assistance (app-ai-assistant, monté globalement) est
+  // aussi un rond de 56px ancré en bas à droite (bottom/right: 1.5rem).
+  // On empile ce bouton juste au-dessus plutôt que de le superposer.
+  bottom: 6.25rem;
   right: 2rem;
-  z-index: 100;
+  z-index: 91;
   cursor: pointer;
+
+  @media (max-width: 767px) {
+    right: 1rem;
+    // Décalé au-dessus du fab assistant (lui-même remonté au-dessus de
+    // la bottom nav, voir ai-assistant.component.scss) — l'écart tient
+    // compte du fab assistant réduit à 46px sur mobile.
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 4.5rem);
+  }
 
   &__inner {
     position: relative;
@@ -342,6 +806,11 @@
     box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     animation: gradientShift 3s ease infinite, float 2s ease-in-out infinite;
+
+    @media (max-width: 767px) {
+      width: 46px;
+      height: 46px;
+    }
 
     &::before {
       content: '';
@@ -377,6 +846,10 @@
     i {
       filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
     }
+
+    @media (max-width: 767px) {
+      font-size: 1.2rem;
+    }
   }
 
   &__badge {
@@ -396,6 +869,12 @@
     padding: 0 0.375rem;
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
     animation: badgePulse 1.5s ease-in-out infinite;
+
+    @media (max-width: 767px) {
+      min-width: 18px;
+      height: 18px;
+      font-size: 0.5625rem;
+    }
   }
 
   &__pulse {
@@ -409,6 +888,11 @@
     border-radius: 50%;
     animation: pulseRing 1.5s ease-out infinite;
     pointer-events: none;
+
+    @media (max-width: 767px) {
+      width: 46px;
+      height: 46px;
+    }
   }
 
   &__ring {
@@ -422,6 +906,11 @@
     border-radius: 50%;
     animation: ringExpand 2s ease-out infinite;
     pointer-events: none;
+
+    @media (max-width: 767px) {
+      width: 46px;
+      height: 46px;
+    }
   }
 
   &__tooltip {
@@ -698,6 +1187,11 @@
 /* ============================================================
    AUTHOR CARD
    ============================================================ */
+.drawer__full-page-link {
+  margin: 0.5rem 0 1rem;
+  gap: 0.5rem;
+}
+
 .author-card {
   display: flex;
   align-items: center;
@@ -706,6 +1200,31 @@
   background: rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-lg);
   margin: 1rem 0;
+
+  &--btn {
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: all 0.18s ease;
+
+    .author-card__hint {
+      margin-left: auto;
+      color: var(--tech-cyan);
+      opacity: 0.5;
+      transition: opacity 0.18s ease;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      background: rgba(0, 212, 255, 0.06);
+      border-color: rgba(0, 212, 255, 0.2);
+
+      .author-card__hint { opacity: 1; }
+    }
+  }
 
   .author-avatar {
     width: 40px;
@@ -1020,11 +1539,6 @@
 
   .themes-grid {
     grid-template-columns: 1fr;
-  }
-
-  .reco-fab {
-    bottom: 1rem;
-    right: 1rem;
   }
 }
 

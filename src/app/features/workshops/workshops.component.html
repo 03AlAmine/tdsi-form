@@ -3,6 +3,7 @@
 <div class="app-page">
   <!-- Hero Section -->
   <section class="page-hero">
+    <div class="page-hero__bg-grid" aria-hidden="true"></div>
     <div class="container">
       <div class="page-hero__content">
         <div class="page-hero__badge">
@@ -19,6 +20,38 @@
           compétences tech
         </p>
 
+        <!-- Barre d'outils compacte : statut sync + recherche (ou CTA) côte à côte -->
+        <div class="hero-toolbar">
+          <div class="hero-hud" aria-hidden="true">
+            <span class="hero-hud__dot"></span>
+            <span>SESSIONS_INDEX</span>
+            <span class="hero-hud__sep">·</span>
+            <span>{{ upcomingCount() }} à venir</span>
+            <span class="hero-hud__sep">·</span>
+            <span class="hero-hud__blink">SYNC</span>
+          </div>
+
+          @if (isLoggedIn()) {
+            <div class="page-hero__search">
+              <div class="search-wrapper">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input
+                  type="text"
+                  placeholder="Rechercher un workshop..."
+                  aria-label="Rechercher un workshop"
+                  (input)="searchTerm.set($any($event.target).value)"
+                  [value]="searchTerm()"
+                />
+                @if (searchTerm()) {
+                  <button class="search-clear" aria-label="Effacer la recherche" (click)="searchTerm.set('')">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
         @if (!isLoggedIn()) {
           <div class="page-hero__cta">
             <a routerLink="/inscription" class="btn btn--primary btn--lg">
@@ -32,26 +65,6 @@
             </a>
           </div>
         }
-
-        @if (isLoggedIn()) {
-          <div class="page-hero__search">
-            <div class="search-wrapper">
-              <i class="fas fa-search" aria-hidden="true"></i>
-              <input
-                type="text"
-                placeholder="Rechercher un workshop..."
-                aria-label="Rechercher un workshop"
-                (input)="searchTerm.set($any($event.target).value)"
-                [value]="searchTerm()"
-              />
-              @if (searchTerm()) {
-                <button class="search-clear" aria-label="Effacer la recherche" (click)="searchTerm.set('')">
-                  <i class="fas fa-times" aria-hidden="true"></i>
-                </button>
-              }
-            </div>
-          </div>
-        }
       </div>
     </div>
   </section>
@@ -61,23 +74,35 @@
     @if (workshops().length > 0) {
       <div class="stats-dashboard" aria-live="polite">
         <div class="stat-card">
-          <div class="stat-card__icon" aria-hidden="true"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-card__icon" aria-hidden="true">
+            <span class="stat-card__icon-ring"></span>
+            <i class="fas fa-calendar-alt"></i>
+          </div>
           <div class="stat-card__value">{{ upcomingCount() }}</div>
           <div class="stat-card__label">À venir</div>
         </div>
         <div class="stat-card stat-card--live">
-          <div class="stat-card__icon" aria-hidden="true"><i class="fas fa-circle"></i></div>
+          <div class="stat-card__icon" aria-hidden="true">
+            <span class="stat-card__icon-ring"></span>
+            <i class="fas fa-circle"></i>
+          </div>
           <div class="stat-card__value">{{ ongoingCount() }}</div>
           <div class="stat-card__label">En cours</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card__icon" aria-hidden="true"><i class="fas fa-users"></i></div>
+          <div class="stat-card__icon" aria-hidden="true">
+            <span class="stat-card__icon-ring"></span>
+            <i class="fas fa-users"></i>
+          </div>
           <div class="stat-card__value">{{ getTotalRegistrations() }}</div>
           <div class="stat-card__label">Participants</div>
         </div>
         @if (isLoggedIn()) {
           <div class="stat-card">
-            <div class="stat-card__icon" aria-hidden="true"><i class="fas fa-user-check"></i></div>
+            <div class="stat-card__icon" aria-hidden="true">
+              <span class="stat-card__icon-ring"></span>
+              <i class="fas fa-user-check"></i>
+            </div>
             <div class="stat-card__value">{{ myRegistrationsCount() }}</div>
             <div class="stat-card__label">Mes inscriptions</div>
           </div>
@@ -108,6 +133,16 @@
           <i class="fas fa-calendar-days" aria-hidden="true"></i>
           Calendrier
         </button>
+        <button
+          type="button"
+          class="view-toggle__btn"
+          [class.active]="viewMode() === 'timeline'"
+          [attr.aria-pressed]="viewMode() === 'timeline'"
+          (click)="viewMode.set('timeline')"
+        >
+          <i class="fas fa-timeline" aria-hidden="true"></i>
+          Chronologie
+        </button>
       </div>
     }
 
@@ -135,6 +170,7 @@
         <div class="empty-state__icon">
           <i class="fas fa-chalkboard-user"></i>
         </div>
+        <p class="empty-state__readout"><span>&gt;</span> QUERY_RESULT: 0 entrées</p>
         <h3 class="empty-state__title">
           @if (searchTerm()) {
             Aucun résultat pour "{{ searchTerm() }}"
@@ -246,6 +282,13 @@
           }
         </div>
       </div>
+    } @else if (viewMode() === 'timeline') {
+      <!-- Vue Chronologie -->
+      <app-glow-timeline
+        [items]="timelineItems()"
+        emptyLabel="Aucun workshop à afficher sur la chronologie."
+        (itemClick)="onTimelineItemClick($event)"
+      />
     } @else {
       <!-- Workshops Grid -->
       <div class="workshops-grid">
@@ -273,6 +316,13 @@
             (keydown.enter)="openWorkshopDetail(workshop)"
             (keydown.space)="$event.preventDefault(); openWorkshopDetail(workshop)"
           >
+            <span class="workshop-card__hud-corner workshop-card__hud-corner--tl" aria-hidden="true"></span>
+            <span class="workshop-card__hud-corner workshop-card__hud-corner--tr" aria-hidden="true"></span>
+            <span class="workshop-card__hud-corner workshop-card__hud-corner--bl" aria-hidden="true"></span>
+            <span class="workshop-card__hud-corner workshop-card__hud-corner--br" aria-hidden="true"></span>
+            <span class="workshop-card__scanline" aria-hidden="true"></span>
+            <span class="workshop-card__tag" aria-hidden="true">WS_{{ (i + 1).toString().padStart(3, '0') }}</span>
+
             <div class="workshop-card__header">
               <div class="workshop-card__badges">
                 <span
@@ -507,6 +557,7 @@
         <div class="inspiration-section">
           <div class="inspiration-card">
             <div class="inspiration-card__icon">
+              <span class="inspiration-card__icon-ring" aria-hidden="true"></span>
               <i class="fas fa-lightbulb"></i>
             </div>
             <div class="inspiration-card__content">
@@ -522,6 +573,7 @@
           </div>
           <div class="inspiration-card">
             <div class="inspiration-card__icon">
+              <span class="inspiration-card__icon-ring" aria-hidden="true"></span>
               <i class="fas fa-chart-line"></i>
             </div>
             <div class="inspiration-card__content">
@@ -597,6 +649,17 @@
 
       <div class="drawer__content">
         <h2 class="drawer__title" id="workshop-drawer-title">{{ selectedWorkshop()?.themeTitle }}</h2>
+
+        @if (selectedWorkshop()?.themeId) {
+          <a
+            [routerLink]="['/thematiques', themeSlugOf(selectedWorkshop()!)]"
+            class="btn btn--outline btn--sm drawer__full-page-link"
+            (click)="closeDrawer()"
+          >
+            <i class="fas fa-layer-group"></i>
+            Voir la fiche de la thématique
+          </a>
+        }
 
         <!-- Presenter info -->
         <div class="presenter-section">

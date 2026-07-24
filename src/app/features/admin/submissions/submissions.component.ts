@@ -7,6 +7,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { AiService, SubmissionSummary } from '../../../core/services/ai.service';
 import { ThemeSubmission } from '../../../core/model/models';
 import { ToastService } from '../../../core/services/toast.service';
+import { PersonInfoService } from '../../../core/services/person-info.service';
 import { TiltSpotlightDirective } from '../../../core/directives/tilt-spotlight.directive';
 
 type FilterType = 'all' | 'en attente' | 'approuvé' | 'refusé';
@@ -22,6 +23,7 @@ export class SubmissionsComponent {
   private themeService = inject(ThemeService);
   private aiService = inject(AiService);
   private toast = inject(ToastService);
+  private personInfoService = inject(PersonInfoService);
 
   allSubmissions = signal<ThemeSubmission[]>([]);
   activeFilter = signal<FilterType>('en attente');
@@ -32,6 +34,11 @@ export class SubmissionsComponent {
   summaryLoading = signal<Record<string, boolean>>({});
   summaryError = signal<Record<string, string>>({});
   summaryExpanded = signal<Record<string, boolean>>({});
+
+  // ✅ Cartes repliées par défaut (détails + analyse IA masqués) pour une
+  // liste plus lisible — seuls l'essentiel (titre, statut, auteur) et les
+  // actions restent visibles sans avoir à déplier.
+  expandedCards = signal<Record<string, boolean>>({});
 
   private subscription: Subscription | null = null;
 
@@ -82,6 +89,29 @@ export class SubmissionsComponent {
 
   setFilter(filter: FilterType): void {
     this.activeFilter.set(filter);
+  }
+
+  // ✅ Ouvre la fiche complète de l'étudiant à l'origine de la
+  // proposition — nom, promo, email + profil enrichi (établissement,
+  // filière, contacts) chargé en tâche de fond par le modal.
+  showProposer(sub: ThemeSubmission, event: Event): void {
+    event.stopPropagation();
+    this.personInfoService.show({
+      uid: sub.studentId,
+      name: sub.studentName,
+      email: sub.studentEmail,
+      promo: sub.promo,
+      aiAssisted: sub.aiAssisted,
+      context: sub.proposedTitle,
+    });
+  }
+
+  toggleCard(id: string): void {
+    this.expandedCards.update(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  isCardExpanded(id: string): boolean {
+    return this.expandedCards()[id] ?? false;
   }
 
   updateComment(id: string, value: string): void {

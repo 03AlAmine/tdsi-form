@@ -9,7 +9,38 @@ $border:  rgba(0, 212, 255, 0.08);
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  position: relative;
+  isolation: isolate;
   background: var(--tech-deep);
+
+  // ── Décor "tech" : mesh de couleur + grille en filigrane, cohérent
+  // avec les pages publiques (page-hero), pour que l'admin ne soit
+  // plus un simple fond uni. Intensité relevée pour que le décor se
+  // voie vraiment dans les zones vides (au-dessus/à côté des cartes,
+  // qui elles restent sur un fond quasi-opaque et ne perdent donc
+  // rien en lisibilité).
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 55% 45% at 12% 8%, rgba(var(--tech-cyan-rgb), 0.16), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 90% 12%, rgba(var(--tech-purple-rgb), 0.14), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 50% 100%, rgba(var(--tech-cyan-rgb), 0.08), transparent 65%);
+  }
+
+  &::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: var(--gradient-mesh);
+    opacity: 0.5;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, rgba(0, 0, 0, 0.9), transparent 75%);
+  }
 }
 
 // ============================================================
@@ -19,8 +50,11 @@ $border:  rgba(0, 212, 255, 0.08);
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: 240px;
-  background: var(--bg-panel);
+  background:
+    linear-gradient(180deg, rgba(var(--tech-cyan-rgb), 0.05), transparent 18%),
+    var(--bg-panel);
   border-right: 1px solid $border;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -41,6 +75,15 @@ $border:  rgba(0, 212, 255, 0.08);
 
   @media (max-width: 992px) {
     transform: translateX(-100%);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--tech-cyan), transparent);
+    opacity: 0.6;
   }
 
   // ── Header / Logo ──────────────────────────────────────
@@ -148,11 +191,25 @@ $border:  rgba(0, 212, 255, 0.08);
   &__badge {
     margin-left: auto;
     padding: 0.1rem 0.45rem;
+    min-width: 18px;
+    text-align: center;
     background: var(--tech-danger);
     border-radius: 20px;
     font-size: 0.6rem;
-    font-weight: 600;
+    font-weight: 700;
     color: white;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+    animation: sidebarBadgePulse 2.2s infinite;
+
+    &--mobile {
+      margin-left: auto;
+    }
+  }
+
+  @keyframes sidebarBadgePulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45); }
+    70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   }
 
   // ── Footer ────────────────────────────────────────────
@@ -184,14 +241,39 @@ $border:  rgba(0, 212, 255, 0.08);
     display: flex;
     align-items: center;
     gap: 0.625rem;
+    width: 100%;
     padding: 0.625rem 0.75rem;
     background: rgba(255, 255, 255, 0.03);
     border: 0.5px solid rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     margin-bottom: 0.5rem;
+
+    &--clickable {
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+
+      &:hover,
+      &:focus-visible {
+        background: rgba(var(--tech-cyan-rgb), 0.07);
+        border-color: rgba(var(--tech-cyan-rgb), 0.2);
+
+        .sidebar__user-chevron { opacity: 1; transform: translateX(2px); }
+      }
+    }
+  }
+
+  &__user-chevron {
+    font-size: 0.6875rem;
+    color: var(--tech-cyan);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    flex-shrink: 0;
   }
 
   &__user-avatar {
+    position: relative;
     width: 32px; height: 32px;
     background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
     border-radius: 8px;
@@ -200,6 +282,24 @@ $border:  rgba(0, 212, 255, 0.08);
     font-weight: 600;
     color: white;
     flex-shrink: 0;
+  }
+
+  &__user-badge {
+    position: absolute;
+    top: -5px; right: -5px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tech-danger);
+    border: 2px solid var(--bg-panel);
+    border-radius: 20px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1;
+    color: white;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+    animation: sidebarBadgePulse 2.2s infinite;
   }
 
   &__user-info { flex: 1; min-width: 0; }
@@ -289,6 +389,7 @@ $border:  rgba(0, 212, 255, 0.08);
   }
 
   &__avatar {
+    position: relative;
     width: 34px; height: 34px;
     background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
     border-radius: 8px;
@@ -296,6 +397,16 @@ $border:  rgba(0, 212, 255, 0.08);
     font-size: 0.8125rem;
     font-weight: 600;
     color: white;
+  }
+
+  &__avatar-badge {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 11px; height: 11px;
+    background: var(--tech-danger);
+    border: 2px solid var(--tech-deep);
+    border-radius: 50%;
+    animation: sidebarBadgePulse 2.2s infinite;
   }
 }
 
@@ -359,12 +470,31 @@ $border:  rgba(0, 212, 255, 0.08);
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    width: 100%;
     padding: 0.875rem;
     background: rgba(var(--tech-cyan-rgb), 0.04);
     border-bottom: 1px solid $border;
+
+    &--clickable {
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover,
+      &:focus-visible { background: rgba(var(--tech-cyan-rgb), 0.09); }
+    }
+  }
+
+  &__user-chevron {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--tech-cyan);
+    flex-shrink: 0;
   }
 
   &__avatar {
+    position: relative;
     width: 40px; height: 40px;
     background: linear-gradient(135deg, var(--tech-cyan), var(--tech-purple));
     border-radius: 10px;
@@ -372,6 +502,23 @@ $border:  rgba(0, 212, 255, 0.08);
     font-size: 1rem;
     font-weight: 600;
     color: white;
+  }
+
+  &__avatar-badge {
+    position: absolute;
+    top: -5px; right: -5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 3px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tech-danger);
+    border: 2px solid var(--bg-panel);
+    border-radius: 20px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1;
+    color: white;
+    animation: sidebarBadgePulse 2.2s infinite;
   }
 
   &__name { font-weight: 600; color: #e2e8f0; font-size: 0.875rem; }
@@ -436,6 +583,8 @@ $border:  rgba(0, 212, 255, 0.08);
 //  MAIN CONTENT
 // ============================================================
 .main-content {
+  position: relative;
+  z-index: 1;
   flex: 1;
   margin-left: 240px;
   min-height: 100vh;

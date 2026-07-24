@@ -318,6 +318,7 @@
       @for (theme of filteredThemes(); track theme.id) {
         <div
           class="theme-card"
+          [class]="'status-' + getStatusClass(theme.status)"
           appTiltSpotlight
           [tiltMax]="4"
           role="button"

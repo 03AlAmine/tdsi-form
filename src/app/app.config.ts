@@ -1,7 +1,7 @@
 import { ApplicationConfig, LOCALE_ID } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
-import { provideRouter, withPreloading, withViewTransitions } from '@angular/router';
+import { provideRouter, withPreloading, withViewTransitions, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { loadingInterceptor } from './core/interceptor/loading.interceptor';
 import { SelectivePreloadStrategy } from './core/strategy/selective-preload.strategy';
@@ -27,10 +27,20 @@ export const appConfig: ApplicationConfig = {
     // ✅ View Transitions API : transitions de page natives et fluides
     // (fondu croisé par défaut). Ignoré proprement par les navigateurs
     // qui ne supportent pas l'API et par prefers-reduced-motion.
+    // ✅ Scroll : sans ceci, Angular ne touche jamais au scroll entre deux
+    // navigations — la nouvelle page héritait donc de la position de scroll
+    // de la précédente au lieu de démarrer en haut. 'top' force le retour en
+    // haut sur une navigation classique, tout en conservant la position sur
+    // navigation arrière/avant (retour à une page déjà visitée) et le
+    // défilement vers un fragment (#ancre) le cas échéant.
     provideRouter(
       routes,
       withPreloading(SelectivePreloadStrategy),
       withViewTransitions(),
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'top',
+        anchorScrolling: 'enabled',
+      }),
     ),
     provideHttpClient(withInterceptors([loadingInterceptor]))
   ]

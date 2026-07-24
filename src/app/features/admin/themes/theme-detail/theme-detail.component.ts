@@ -2,6 +2,7 @@
 import { Component, Output, EventEmitter, signal, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Theme } from '../../../../core/model/models';
+import { PersonInfoService } from '../../../../core/services/person-info.service';
 
 @Component({
   selector: 'app-theme-detail',
@@ -16,10 +17,21 @@ export class ThemeDetailComponent {
   @Output() delete = new EventEmitter<Theme>();
 
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly personInfoService = inject(PersonInfoService);
   private lastFocusedTrigger: HTMLElement | null = null;
 
   theme: Theme | null = null;
   isOpen = signal(false);
+
+  showProposer(): void {
+    if (!this.theme?.fromStudentName) return;
+    this.personInfoService.show({
+      uid: this.theme.createdBy,
+      name: this.theme.fromStudentName,
+      promo: this.theme.fromStudentPromo,
+      context: this.theme.title,
+    });
+  }
 
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {

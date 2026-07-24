@@ -412,6 +412,59 @@
       filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
     }
   }
+  // Coin de page plié — décoratif, façon vrai carnet papier.
+  .notebook-fold {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 26px;
+    height: 26px;
+    z-index: 2;
+    background: linear-gradient(
+      135deg,
+      transparent 50%,
+      rgba(0, 212, 255, 0.14) 50.5%,
+      rgba(0, 212, 255, 0.05) 100%
+    );
+    border-radius: 0 0 4px 0;
+    box-shadow: -2px -2px 6px rgba(0, 0, 0, 0.25);
+    transition: transform var(--transition-base);
+    pointer-events: none;
+  }
+
+  // Post-it qui dépasse en haut à droite — clin d'œil "vrai bureau".
+  .notebook-postit {
+    position: absolute;
+    top: -8px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(160deg, #ffe27a, #f6c343);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-8deg);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    transition: transform var(--transition-base);
+    z-index: 3;
+
+    i {
+      font-size: 0.6875rem;
+      color: rgba(0, 0, 0, 0.45);
+      transform: rotate(8deg);
+    }
+  }
+
+  &:hover {
+    .notebook-fold {
+      transform: scale(1.15);
+    }
+    .notebook-postit {
+      transform: rotate(-4deg) translateY(-2px);
+    }
+  }
+
   .notebook-binding {
     position: absolute;
     left: 0;

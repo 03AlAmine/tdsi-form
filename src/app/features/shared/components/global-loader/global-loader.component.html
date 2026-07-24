@@ -1,7 +1,16 @@
 <!-- global-loader.component.html -->
 @if (loadingService.isLoading()) {
   <div class="global-loader-overlay">
+    <div class="loader-grid" aria-hidden="true"></div>
+    <div class="loader-radar" aria-hidden="true"></div>
+
     <div class="loader-wrapper">
+      <!-- Coins façon viseur scanner -->
+      <span class="loader-corner loader-corner--tl" aria-hidden="true"></span>
+      <span class="loader-corner loader-corner--tr" aria-hidden="true"></span>
+      <span class="loader-corner loader-corner--bl" aria-hidden="true"></span>
+      <span class="loader-corner loader-corner--br" aria-hidden="true"></span>
+
       <!-- Animated rings -->
       <div class="loader-rings">
         <div class="ring ring-1"></div>
@@ -20,6 +29,14 @@
     <div class="loader-content">
       <div class="loader-text">{{ loadingService.getMessage() }}</div>
       <div class="loader-dots"><span></span><span></span><span></span></div>
+
+      <!-- HUD système, même langage que le reste du site -->
+      <div class="loader-hud" aria-hidden="true">
+        <span class="loader-hud__dot"></span>
+        <span>CTC_CORE</span>
+        <span class="loader-hud__sep">·</span>
+        <span class="loader-hud__blink">SYNC</span>
+      </div>
     </div>
 
     <!-- Progress bar -->

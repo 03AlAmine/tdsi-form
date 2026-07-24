@@ -493,4 +493,23 @@ Retourne exactement :
       key
     );
   }
+
+  // ════════════════════════════════════════════════════════════
+  // AXE — Assistant conversationnel (widget flottant)
+  // ════════════════════════════════════════════════════════════
+  // Contrairement à callLLM(), pas de parsing JSON ni de cache : chaque
+  // échange est unique et la réponse est du texte libre affiché tel
+  // quel dans la bulle de chat. Réutilise la même file d'attente /
+  // throttle que le reste du service pour ne pas saturer le backend
+  // si l'utilisateur enchaîne les axes IA en même temps.
+  async chatAssistant(
+    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>
+  ): Promise<string> {
+    const data = await this.throttledFetch({
+      messages,
+      temperature: 0.6,
+      max_tokens: 400
+    });
+    return data?.choices?.[0]?.message?.content?.trim() ?? '';
+  }
 }

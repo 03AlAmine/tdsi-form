@@ -10,16 +10,80 @@
   align-items: center;
   justify-content: center;
   gap: 2rem;
+  overflow: hidden;
   animation: fadeIn 0.2s ease-out;
+}
+
+// ── Grille tech en filigrane, cohérente avec le reste du site ──
+.loader-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0, 0, 0, 0.9), transparent 80%);
+  pointer-events: none;
+}
+
+// ── Anneau radar géant en fond, même patron que le tech-background
+// global — pour que l'écran de chargement ne soit pas juste un
+// fond uni derrière le logo.
+.loader-radar {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: min(80vw, 900px);
+  height: min(80vw, 900px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(0, 212, 255, 0.1) 6%,
+    transparent 16%,
+    transparent 84%,
+    rgba(139, 92, 246, 0.08) 94%,
+    transparent 100%
+  );
+  animation: loader-radar-spin 12s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes loader-radar-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-radar { animation: none; }
 }
 
 .loader-wrapper {
   position: relative;
+  z-index: 1;
   width: 120px;
   height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+// ── Coins façon viseur/scanner autour du logo — renforce le côté
+// "détection en cours" plutôt qu'un simple spinner.
+.loader-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0, 212, 255, 0.5);
+  opacity: 0.8;
+
+  &--tl { top: -14px; left: -14px; border-right: none; border-bottom: none; }
+  &--tr { top: -14px; right: -14px; border-left: none; border-bottom: none; }
+  &--bl { bottom: -14px; left: -14px; border-right: none; border-top: none; }
+  &--br { bottom: -14px; right: -14px; border-left: none; border-top: none; }
 }
 
 .loader-rings {
@@ -81,6 +145,8 @@
 }
 
 .loader-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -118,6 +184,8 @@
 }
 
 .loader-progress {
+  position: relative;
+  z-index: 1;
   width: 200px;
   height: 2px;
   background: rgba(0, 212, 255, 0.1);
@@ -129,7 +197,42 @@
     width: 0%;
     background: linear-gradient(90deg, var(--tech-cyan), var(--tech-purple));
     border-radius: var(--radius-full);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
     animation: progressLoad 2s ease-in-out infinite;
+  }
+}
+
+// ── Ligne de statut HUD — même langage (point clignotant + mono) que
+// le reste du site (hero-hud, terminal-badge...).
+.loader-hud {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: var(--radius-full);
+  background: rgba(0, 212, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tech-cyan);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.9);
+    animation: dotPulse 1.4s ease-in-out infinite;
+  }
+
+  &__sep { color: rgba(255, 255, 255, 0.2); }
+
+  &__blink {
+    color: var(--tech-cyan);
+    font-weight: 600;
+    animation: textPulse 1.6s ease-in-out infinite;
   }
 }
 

@@ -1,8 +1,9 @@
 <div class="landing">
   <app-tech-background />
+  <app-page-spine [anchors]="spineAnchors" />
 
   <!-- Hero Section avec particules et effet 3D -->
-  <section class="hero">
+  <section class="hero" id="hero">
     <div class="container hero__container">
       <!-- Mouse follower glow -->
       <div class="mouse-glow" id="mouseGlow"></div>
@@ -67,9 +68,11 @@
           href="https://clubtdsi.sn"
           target="_blank"
           class="hero__website-link"
+          aria-label="Visitez notre site officiel"
         >
           <i class="fas fa-globe"></i>
-          <span>Visitez notre site officiel</span>
+          <span class="hero__website-link-text">Visitez notre site officiel</span>
+          <span class="hero__website-link-short" aria-hidden="true">Club</span>
           <i class="fas fa-external-link-alt"></i>
         </a>
 
@@ -88,7 +91,6 @@
               class="hero__logo-img"
             />
             <div class="logo-pulse-ring"></div>
-            <i class="fas fa-graduation-cap logo-grad-cap" aria-hidden="true"></i>
           </div>
 
           <!-- Floating particles -->
@@ -98,6 +100,7 @@
             <div class="particle p3"><i class="fas fa-robot"></i></div>
             <div class="particle p4"><i class="fas fa-cloud"></i></div>
             <div class="particle p5"><i class="fas fa-database"></i></div>
+            <div class="particle p6"><i class="fas fa-graduation-cap"></i></div>
           </div>
 
           <!-- Logo text -->
@@ -111,11 +114,12 @@
   </section>
 
   <!-- Floating Stats Section -->
-  <section class="stats-section">
+  <section class="stats-section" id="stats-section">
     <div class="container">
       <div class="stats-grid">
         <div class="stat-card stat-card--1" data-delay="0">
           <div class="stat-card__icon">
+            <span class="stat-card__icon-ring"></span>
             <i class="fas fa-book-open"></i>
           </div>
           <div class="stat-card__content">
@@ -130,6 +134,7 @@
 
         <div class="stat-card stat-card--2" data-delay="0.1">
           <div class="stat-card__icon">
+            <span class="stat-card__icon-ring"></span>
             <i class="fas fa-users"></i>
           </div>
           <div class="stat-card__content">
@@ -144,6 +149,7 @@
 
         <div class="stat-card stat-card--3" data-delay="0.2">
           <div class="stat-card__icon">
+            <span class="stat-card__icon-ring"></span>
             <i class="fas fa-chalkboard"></i>
           </div>
           <div class="stat-card__content">
@@ -158,6 +164,7 @@
 
         <div class="stat-card stat-card--4" data-delay="0.3">
           <div class="stat-card__icon">
+            <span class="stat-card__icon-ring"></span>
             <i class="fas fa-user-graduate"></i>
           </div>
           <div class="stat-card__content">
@@ -173,9 +180,16 @@
     </div>
   </section>
 
+  <!-- Le campus en chiffres — stats, jauges circulaires & graphes -->
+  <section class="insights-section" id="insights-section">
+    <div class="container">
+      <app-club-insights />
+    </div>
+  </section>
+
   <!-- Prochains événements -->
   @if (upcomingEvents().length > 0) {
-    <section class="upcoming-events">
+    <section class="upcoming-events" id="upcoming-events">
       <div class="container">
         <div class="section-header">
           <span class="section-badge">
@@ -230,7 +244,7 @@
   }
 
   <!-- Features Section -->
-  <section class="features">
+  <section class="features" id="features">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">
@@ -488,119 +502,104 @@
   }
 
   <!-- ============================================================ -->
-  <!-- SECTION : ARTICLES COMMUNAUTÉ                                -->
-  <!-- ============================================================
-  <section class="articles-preview-section">
+  <!-- SECTION : TON PARCOURS                                        -->
+  <!-- ============================================================ -->
+  <section class="journey-section" id="parcours-section">
     <div class="container">
-
       <div class="section-header">
         <span class="section-badge">
-          <i class="fas fa-newspaper"></i>
-          Articles · Communauté
+          <i class="fas fa-route"></i>
+          Ton parcours au club
         </span>
-        <h2 class="section-title">
-          La connaissance <span class="gradient-text">partagée</span>
-        </h2>
+        <h2 class="section-title">De la découverte au mentorat</h2>
         <p class="section-subtitle">
-          Des articles rédigés par la communauté sur la cybersécurité, l'IA
-          et les technologies de demain. Ouverts à tous.
+          Chaque membre suit le même fil, à son rythme. Clique une étape pour voir ce qu'elle représente —
+          tu retrouveras exactement ce parcours dans ton espace membre une fois inscrit.
         </p>
       </div>
 
-      @if (latestArticles().length > 0) {
-        <div class="articles-preview-grid">
-
-          <a
-            [routerLink]="['/articles', latestArticles()[0].id]"
-            class="article-preview-card article-preview-card--featured"
+      <div class="journey-stepper" role="tablist" aria-label="Étapes du parcours membre">
+        <div class="journey-stepper__line">
+          <div
+            class="journey-stepper__line-fill"
+            [style.width.%]="(activeJourneyIndex() / (journeySteps.length - 1)) * 100"
+          ></div>
+          @if (activeJourneyIndex() < journeySteps.length - 1) {
+            <div
+              class="journey-stepper__line-next"
+              [style.left.%]="(activeJourneyIndex() / (journeySteps.length - 1)) * 100"
+              [style.width.%]="(1 / (journeySteps.length - 1)) * 100"
+            ></div>
+          }
+        </div>
+        @for (step of journeySteps; track step.title; let i = $index) {
+          <button
+            type="button"
+            class="journey-stepper__step"
+            role="tab"
+            [class.active]="activeJourneyIndex() === i"
+            [class.is-past]="i < activeJourneyIndex()"
+            [attr.aria-selected]="activeJourneyIndex() === i"
+            (click)="setActiveJourneyStep(i)"
           >
-            <div class="apc__glow"></div>
-            <div class="apc__top">
-              <span class="apc__category">
-                <i class="fas {{ getCategoryIcon(latestArticles()[0].category) }}"></i>
-                {{ latestArticles()[0].category }}
-              </span>
-              <span class="apc__read-time">
-                <i class="fas fa-clock"></i>
-                {{ latestArticles()[0].readTimeMinutes ?? 1 }} min
-              </span>
-            </div>
-            <h3 class="apc__title">{{ latestArticles()[0].title }}</h3>
-            <p class="apc__summary">{{ latestArticles()[0].summary }}</p>
-            <div class="apc__footer">
-              <div class="apc__author">
-                <div class="apc__avatar">{{ latestArticles()[0].authorName.charAt(0).toUpperCase() }}</div>
-                <span>{{ latestArticles()[0].authorName }}</span>
-              </div>
-              <span class="apc__date">{{ formatArticleDate(latestArticles()[0].publishedAt ?? latestArticles()[0].submittedAt) }}</span>
-            </div>
-            <div class="apc__arrow"><i class="fas fa-arrow-right"></i></div>
-          </a>
-
-          <div class="articles-preview-side">
-            @for (article of latestArticles().slice(1, 3); track article.id) {
-              <a
-                [routerLink]="['/articles', article.id]"
-                class="article-preview-card article-preview-card--sm"
-              >
-                <div class="apc__glow"></div>
-                <div class="apc__top">
-                  <span class="apc__category">
-                    <i class="fas {{ getCategoryIcon(article.category) }}"></i>
-                    {{ article.category }}
-                  </span>
-                  <span class="apc__read-time">
-                    <i class="fas fa-clock"></i>
-                    {{ article.readTimeMinutes ?? 1 }} min
-                  </span>
-                </div>
-                <h3 class="apc__title">{{ article.title }}</h3>
-                <p class="apc__summary">{{ article.summary }}</p>
-                <div class="apc__footer">
-                  <div class="apc__author">
-                    <div class="apc__avatar">{{ article.authorName.charAt(0).toUpperCase() }}</div>
-                    <span>{{ article.authorName }}</span>
-                  </div>
-                  <span class="apc__date">{{ formatArticleDate(article.publishedAt ?? article.submittedAt) }}</span>
-                </div>
-              </a>
-            }
-          </div>
-
-        </div>
-      }
-
-      @if (latestArticles().length === 0) {
-        <div class="articles-empty-cta">
-          <div class="articles-empty-cta__icon">
-            <div class="aec__ring"></div>
-            <i class="fas fa-pen-nib"></i>
-          </div>
-          <h3>Soyez le premier à contribuer</h3>
-          <p>Partagez vos connaissances sur la cybersécurité, l'IA ou tout autre sujet tech.</p>
-        </div>
-      }
-
-      <div class="articles-preview-actions">
-        <a routerLink="/articles" class="btn btn--outline btn--lg">
-          <i class="fas fa-newspaper"></i>
-          Voir tous les articles
-          <i class="fas fa-arrow-right btn-arrow"></i>
-        </a>
-        <a routerLink="/articles/soumettre" class="btn btn--ghost">
-          <i class="fas fa-pen-nib"></i>
-          Écrire un article
-        </a>
+            <span class="journey-stepper__node">
+              <i class="fas {{ step.icon }}"></i>
+            </span>
+            <span class="journey-stepper__label">{{ step.title }}</span>
+          </button>
+        }
       </div>
 
+      @if (journeySteps[activeJourneyIndex()]; as active) {
+        <div class="journey-panel">
+          <div class="journey-panel__icon">
+            <i class="fas {{ active.icon }}"></i>
+          </div>
+          <div class="journey-panel__body">
+            <span class="journey-panel__step-number">
+              Étape {{ activeJourneyIndex() + 1 }} / {{ journeySteps.length }}
+            </span>
+            <h3 class="journey-panel__title">{{ active.title }}</h3>
+            <span class="journey-panel__tagline">{{ active.tagline }}</span>
+            <p class="journey-panel__description">{{ active.description }}</p>
+          </div>
+          <div class="journey-panel__nav">
+            <button
+              type="button"
+              class="journey-panel__nav-btn"
+              [disabled]="activeJourneyIndex() === 0"
+              (click)="setActiveJourneyStep(activeJourneyIndex() - 1)"
+              aria-label="Étape précédente"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button
+              type="button"
+              class="journey-panel__nav-btn"
+              [disabled]="activeJourneyIndex() === journeySteps.length - 1"
+              (click)="setActiveJourneyStep(activeJourneyIndex() + 1)"
+              aria-label="Étape suivante"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      }
+
+      <div class="journey-cta">
+        <a routerLink="/inscription" class="btn btn--primary">
+          <i class="fas fa-user-plus"></i>
+          <span>Commencer mon parcours</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
     </div>
   </section>
-  ============================================================ -->
 
   <!-- ============================================================ -->
   <!-- SECTION : CALENDRIER & ESPACE NOTES                          -->
   <!-- ============================================================ -->
-  <section class="workspace-section">
+  <section class="workspace-section" id="workspace-section">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">
@@ -707,7 +706,7 @@
   </section>
 
   <!-- Showcase Section -->
-  <section class="showcase">
+  <section class="showcase" id="showcase">
     <div class="container">
       <div class="showcase__wrapper">
         <div class="showcase__content">
@@ -779,7 +778,7 @@
   </section>
 
   <!-- CTA Section -->
-  <section class="cta-section">
+  <section class="cta-section" id="cta-section">
     <div class="container">
       <div class="cta-card">
         <div class="cta-card__glow"></div>

@@ -5,8 +5,30 @@
     <app-welcome-modal
       [displayName]="jr.displayName"
       [email]="jr.email"
-      (closed)="justRegistered.set(null)"
+      (closed)="onWelcomeModalClosed()"
     />
+  }
+
+  <!-- Profile completion nudge — shown after the welcome modal closes, if the
+       profile is still incomplete. Dismissible, non-blocking. -->
+  @if (showProfileNudge()) {
+    <div class="container">
+      <div class="welcome-widget welcome-widget--nudge">
+        <button class="welcome-widget__dismiss" (click)="dismissProfileNudge()" aria-label="Fermer">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="welcome-widget__icon">
+          <i class="fas fa-id-card"></i>
+        </div>
+        <div class="welcome-widget__content">
+          <h4>Complétez votre profil</h4>
+          <p>Ajoutez votre établissement et votre filière — ça prend une minute et ça aide la communauté à mieux vous connaître.</p>
+        </div>
+        <a routerLink="/espace-membre/profil" class="btn btn--primary btn--sm" (click)="dismissProfileNudge()">
+          Compléter <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
   }
 
   <!-- Hero Section -->
@@ -25,6 +47,35 @@
         <p class="dashboard-hero__subtitle">
           Bienvenue sur votre espace personnel Club TDSI
         </p>
+
+        <!-- Onboarding Rail — 3 étapes clés, survol pour le détail -->
+        <div class="onboarding-rail" role="list" aria-label="Étapes de démarrage">
+          <div class="onboarding-rail__line">
+            <div class="onboarding-rail__line-fill" [style.width.%]="onboardingProgress()"></div>
+          </div>
+          @for (step of onboardingSteps(); track step.id; let i = $index) {
+            <a
+              class="onboarding-rail__step"
+              [class.done]="step.done"
+              [class.current]="i === nextOnboardingStepIndex()"
+              [routerLink]="step.link"
+              role="listitem"
+              [attr.aria-label]="step.label + (step.done ? ' — complété' : ' — à faire')"
+            >
+              <span class="onboarding-rail__node">
+                @if (step.done) {
+                  <i class="fas fa-check"></i>
+                } @else {
+                  <i class="fas {{ step.icon }}"></i>
+                }
+              </span>
+              <span class="onboarding-rail__tooltip">
+                <strong>{{ step.label }}</strong>
+                <span>{{ step.description }}</span>
+              </span>
+            </a>
+          }
+        </div>
       </div>
     </div>
   </section>
@@ -59,33 +110,57 @@
 
       <!-- Stats Cards -->
       <div class="stats-grid">
-        <div class="stat-card" appReveal routerLink="/thematiques">
-          <div class="stat-card__icon"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-card stat-card--cyan" appReveal routerLink="/thematiques">
+          <span class="stat-card__ring"></span>
+          <div class="stat-card__top">
+            <div class="stat-card__icon"><i class="fas fa-layer-group"></i></div>
+            <i class="fas fa-arrow-up-right-from-square stat-card__hint"></i>
+          </div>
           <div class="stat-card__value" [appCountUp]="stats().totalThemes"></div>
           <div class="stat-card__label">Thématiques disponibles</div>
           <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
 
-        <div class="stat-card" appReveal [appRevealDelay]="60" routerLink="/workshops">
-          <div class="stat-card__icon"><i class="fas fa-chalkboard-user"></i></div>
+        <div class="stat-card stat-card--blue" appReveal [appRevealDelay]="60" routerLink="/workshops">
+          <span class="stat-card__ring"></span>
+          <div class="stat-card__top">
+            <div class="stat-card__icon"><i class="fas fa-chalkboard-user"></i></div>
+            <i class="fas fa-arrow-up-right-from-square stat-card__hint"></i>
+          </div>
           <div class="stat-card__value" [appCountUp]="stats().upcomingWorkshops"></div>
           <div class="stat-card__label">Workshops à venir</div>
           <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
 
-        <div class="stat-card" appReveal [appRevealDelay]="120" routerLink="/espace-membre/mes-soumissions">
-          <div class="stat-card__icon"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-card stat-card--green" appReveal [appRevealDelay]="120" routerLink="/espace-membre/mes-soumissions">
+          <span class="stat-card__ring"></span>
+          <div class="stat-card__top">
+            <div class="stat-card__icon"><i class="fas fa-file-alt"></i></div>
+            <i class="fas fa-arrow-up-right-from-square stat-card__hint"></i>
+          </div>
           <div class="stat-card__value" [appCountUp]="stats().mySubmissions"></div>
           <div class="stat-card__label">Mes soumissions</div>
           <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
 
-        <div class="stat-card" appReveal [appRevealDelay]="180" routerLink="/espace-membre/profil">
-          <div class="stat-card__icon"><i class="fas fa-user-circle"></i></div>
+        <div class="stat-card stat-card--cyan" appReveal [appRevealDelay]="180" routerLink="/espace-membre/profil">
+          <span class="stat-card__ring"></span>
+          <div class="stat-card__top">
+            <div class="stat-card__icon"><i class="fas fa-user-circle"></i></div>
+            <i class="fas fa-arrow-up-right-from-square stat-card__hint"></i>
+          </div>
           <div class="stat-card__value" [appCountUp]="stats().myRegistrations"></div>
           <div class="stat-card__label">Mes inscriptions</div>
           <div class="stat-card__arrow"><i class="fas fa-arrow-right"></i></div>
         </div>
+      </div>
+
+      <!-- Le campus en chiffres — stats, jauges circulaires & graphes -->
+      <div class="insights-section" appReveal>
+        <app-club-insights
+          title="Le campus en chiffres"
+          subtitle="Ce que la communauté Club TDSI construit ensemble"
+        />
       </div>
 
       <!-- Dashboard Row: Calendar + Notes -->
@@ -136,6 +211,18 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Ton parcours — même roadmap que la page Profil -->
+      <div class="roadmap-section" appReveal>
+        <h3 class="roadmap-section__title">
+          <i class="fas fa-route"></i>
+          Ton parcours
+        </h3>
+        <app-glow-timeline
+          [items]="memberRoadmap()"
+          emptyLabel="Rien à afficher pour le moment."
+        />
       </div>
 
       <!-- Quick Actions -->

@@ -126,6 +126,29 @@
                   </div>
                 }
               </div>
+
+              <!-- État de la soumission — même logique que la timeline du
+                   drawer, condensée sur une ligne pour se lire d'un coup
+                   d'œil sans avoir à ouvrir le détail. -->
+              <div class="submission-card__timeline">
+                <div class="mini-step mini-step--done">
+                  <span class="mini-step__icon"><i class="fas fa-paper-plane"></i></span>
+                  <span class="mini-step__label">Envoyée</span>
+                </div>
+                <span class="mini-step__connector" [class]="'mini-step__connector--' + getBadgeClass(sub.status)"></span>
+                <div class="mini-step" [class]="'mini-step--' + getBadgeClass(sub.status)">
+                  <span class="mini-step__icon"><i class="fas {{ getStatusIconClass(sub.status) }}"></i></span>
+                  <span class="mini-step__label">
+                    @if (sub.status === 'en attente') {
+                      Traitement en cours
+                    } @else if (sub.status === 'approuvé') {
+                      Traitée · Acceptée
+                    } @else {
+                      Traitée · Rejetée
+                    }
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div class="submission-card__arrow">
@@ -163,6 +186,17 @@
 
       <div class="drawer__content">
         <h2 class="drawer__title">{{ selectedSubmission()?.proposedTitle }}</h2>
+
+        @if (selectedSubmission()?.status === 'approuvé' && linkedThemeSlug()) {
+          <a
+            [routerLink]="['/thematiques', linkedThemeSlug()!]"
+            class="btn btn--outline btn--sm drawer__full-page-link"
+            (click)="closeDrawer()"
+          >
+            <i class="fas fa-layer-group"></i>
+            Voir la fiche de la thématique
+          </a>
+        }
 
         <!-- Meta Cards -->
         <div class="meta-grid">

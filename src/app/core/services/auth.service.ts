@@ -77,12 +77,27 @@ export class AuthService {
         this.watchProfile(firebaseUser.uid);
 
         if (this.isInitialCheck) {
-          const currentPath = window.location.pathname;
-          if (this.AUTH_REDIRECT_PATHS.includes(currentPath)) {
-            if (user?.role === 'admin') {
-              this.router.navigate(['/admin/dashboard']);
-            } else {
-              this.router.navigate(['/espace-membre']);
+          // ⚠️ createUserWithEmailAndPassword() / signInWithEmailAndPassword()
+          // déclenchent ce callback de façon interne, EN PARALLÈLE du reste
+          // de register()/login() (envoi d'emails, pose du ticket
+          // justRegistered, puis leur propre navigate()). Sans ce garde,
+          // cette redirection automatique gagnait quasi systématiquement la
+          // course contre register() — l'utilisateur atterrissait sur
+          // /espace-membre AVANT que le ticket ne soit posé, d'où un flash
+          // du dashboard sans la modale de bienvenue, suivi d'un
+          // navigate() vers la même URL (ignoré par le router) une fois
+          // register() enfin terminé. manualAuth (posé par login()/
+          // register() le temps de leur exécution) indique que la
+          // navigation est déjà prise en charge explicitement par l'appelant
+          // — on laisse alors la main plutôt que de la doubler.
+          if (!this.manualAuth) {
+            const currentPath = window.location.pathname;
+            if (this.AUTH_REDIRECT_PATHS.includes(currentPath)) {
+              if (user?.role === 'admin') {
+                this.router.navigate(['/admin/dashboard']);
+              } else {
+                this.router.navigate(['/espace-membre']);
+              }
             }
           }
           this.isInitialCheck = false;
@@ -196,6 +211,15 @@ export class AuthService {
       };
 
       await setDoc(doc(db, 'users', cred.user.uid), user);
+
+      // ✅ Pose le ticket AVANT de publier currentUser (juste en dessous) —
+      // n'importe quel code qui réagit au changement d'utilisateur connecté
+      // (garde de route sur /inscription redirigeant "si déjà connecté",
+      // effet ailleurs dans l'app...) doit trouver le ticket déjà en place
+      // s'il navigue vers /espace-membre de son côté. Ne pas dépendre de
+      // l'ordre d'exécution du reste de register() pour cette garantie.
+      this.justRegisteredSubject.next({ displayName: data.displayName, email: data.email });
+
       this.currentUserSubject.next(user);
 
       // ✅ Vérification d'email — best-effort, ne doit jamais bloquer
@@ -217,10 +241,9 @@ export class AuthService {
         console.error('Erreur email de bienvenue:', e);
       }
 
-      // Pose le ticket AVANT la navigation : le dashboard le lira dès
-      // son ngOnInit et affichera la modale de bienvenue une fois.
-      this.justRegisteredSubject.next({ displayName: data.displayName, email: data.email });
-
+      // Navigation explicite — c'est elle (et elle seule, désormais que
+      // manualAuth est vérifié dans onAuthStateChanged) qui amène
+      // l'utilisateur sur /espace-membre, ticket déjà posé.
       await this.router.navigate(['/espace-membre']);
     } finally {
       this.manualAuth = false;

@@ -96,9 +96,20 @@
 
 .gradient-text {
   background: var(--gradient-primary);
+  background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  animation: gradient-text-shift 6s ease-in-out infinite;
+}
+
+@keyframes gradient-text-shift {
+  0%, 100% { background-position: 0% center; }
+  50%      { background-position: 100% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-text { animation: none; }
 }
 
 // ── Responsive show/hide ─────────────────────────

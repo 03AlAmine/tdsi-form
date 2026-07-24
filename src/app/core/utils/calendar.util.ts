@@ -40,8 +40,8 @@ function locationOf(w: Workshop): string {
   return w.location === 'en ligne'
     ? 'En ligne'
     : w.location === 'hybride'
-      ? 'ESP – UCAD, Dakar (et en ligne)'
-      : 'ESP – UCAD, Dakar';
+      ? 'TDSI – UCAD, Dakar (et en ligne)'
+      : 'TDSI – UCAD, Dakar';
 }
 
 function descriptionOf(w: Workshop, pageUrl: string): string {

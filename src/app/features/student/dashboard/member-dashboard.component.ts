@@ -14,8 +14,11 @@ import { db } from '../../../../firebase.config';
 import { MemberCalendarComponent } from '../../calendar/calendar.component';
 import { MemberNotesComponent } from '../../notes/notes.component';
 import { WelcomeModalComponent } from '../../shared/components/welcome-modal/welcome-modal.component';
+import { GlowTimelineComponent } from '../../shared/components/glow-timeline/glow-timeline.component';
+import { TimelineItem } from '../../shared/components/glow-timeline/timeline-item.model';
 import { RevealDirective } from '../../../core/directives/reveal.directive';
 import { CountUpDirective } from '../../../core/directives/count-up.directive';
+import { ClubInsightsComponent } from '../../shared/components/club-insights/club-insights.component';
 import { User } from '../../../core/model/models';
 
 @Component({
@@ -28,8 +31,10 @@ import { User } from '../../../core/model/models';
     FormsModule,
     MemberNotesComponent,
     WelcomeModalComponent,
+    GlowTimelineComponent,
     RevealDirective,
     CountUpDirective,
+    ClubInsightsComponent,
   ],
   templateUrl: './member-dashboard.component.html',
   styleUrls: ['./member-dashboard.component.scss'],
@@ -48,6 +53,11 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
   // AuthService.consumeJustRegistered(). null tant qu'il n'y a rien à
   // afficher (utilisateur qui se connecte normalement, ou modale déjà vue).
   justRegistered = signal<{ displayName: string; email: string } | null>(null);
+
+  // ✅ Suggestion affichée une fois la modale de bienvenue fermée (croix ou
+  // simple clic en dehors), si le profil n'est pas encore complété — pour
+  // ne pas la manquer complètement une fois la modale disparue.
+  showProfileNudge = signal(false);
 
   stats = signal({
     totalThemes: 0,
@@ -145,6 +155,20 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
     return 'Bonsoir';
   }
 
+  // ✅ Appelé à la fermeture de la modale de bienvenue (croix, Échap, ou
+  // clic en dehors) — si le profil n'est pas encore complété, on affiche
+  // une suggestion discrète et non bloquante à la place.
+  onWelcomeModalClosed(): void {
+    this.justRegistered.set(null);
+    if (!this.isProfileComplete()) {
+      this.showProfileNudge.set(true);
+    }
+  }
+
+  dismissProfileNudge(): void {
+    this.showProfileNudge.set(false);
+  }
+
   goToWorkshop(_workshopId: string): void {
     this.router.navigate(['/workshops']);
   }
@@ -168,6 +192,142 @@ export class MemberDashboardComponent implements OnInit, OnDestroy {
   lastActivityDate(): Date {
     return new Date();
   }
+
+  // ── Rail d'onboarding — 3 étapes clés d'un nouveau membre ─────────────────
+  // Recalculé dès que le profil (etablissement/filiere) ou les stats
+  // (soumissions/inscriptions) changent, aucun état dupliqué.
+  isProfileComplete(): boolean {
+    const u = this.user();
+    return !!(u?.etablissement && u?.filiere);
+  }
+
+  onboardingSteps = computed(() => {
+    const u = this.user();
+    const s = this.stats();
+    const profileDone = !!(u?.etablissement && u?.filiere);
+    const themeDone = s.mySubmissions > 0;
+    const workshopDone = s.myRegistrations > 0;
+    return [
+      {
+        id: 'profile',
+        icon: 'fa-id-card',
+        label: 'Compléter votre profil',
+        description: profileDone
+          ? 'Profil complet — établissement et filière renseignés.'
+          : 'Ajoutez votre établissement et votre filière.',
+        done: profileDone,
+        link: '/espace-membre/profil',
+      },
+      {
+        id: 'theme',
+        icon: 'fa-lightbulb',
+        label: 'Proposer une thématique',
+        description: themeDone
+          ? 'Vous avez déjà proposé une thématique.'
+          : 'Partagez un sujet qui vous passionne avec le club.',
+        done: themeDone,
+        link: '/espace-membre/proposer',
+      },
+      {
+        id: 'workshop',
+        icon: 'fa-chalkboard-user',
+        label: 'Participer à un workshop',
+        description: workshopDone
+          ? 'Vous participez déjà à un workshop.'
+          : 'Réservez votre place à la prochaine session.',
+        done: workshopDone,
+        link: '/workshops',
+      },
+    ];
+  });
+
+  onboardingProgress = computed(() => {
+    const steps = this.onboardingSteps();
+    const doneCount = steps.filter((s) => s.done).length;
+    return steps.length > 0 ? (doneCount / steps.length) * 100 : 0;
+  });
+
+  // ✅ Étape "à faire" la plus proche — reçoit un halo pulsant pour indiquer
+  // clairement la prochaine action, même quand rien n'est encore complété.
+  nextOnboardingStepIndex = computed(() => {
+    return this.onboardingSteps().findIndex((s) => !s.done);
+  });
+
+  // ── Ton parcours — même roadmap que ProfileComponent.memberRoadmap
+  // (mêmes seuils, mêmes libellés) affichée ici aussi pour qu'un membre
+  // la retrouve dès l'accueil, sans avoir à aller sur son profil. ──
+  memberSince = computed(() => {
+    const createdAt = this.user()?.createdAt;
+    if (!createdAt) return 0;
+    const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
+    return Math.max(0, Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24)));
+  });
+
+  memberRoadmap = computed<TimelineItem[]>(() => {
+    const s = this.stats();
+    const since = this.memberSince();
+
+    const steps: Array<{
+      icon: string;
+      title: string;
+      description: string;
+      unlocked: boolean;
+    }> = [
+      {
+        icon: 'fa-compass',
+        title: 'Découvre',
+        description: 'Compte créé — bienvenue au Club TDSI.',
+        unlocked: true,
+      },
+      {
+        icon: 'fa-calendar-check',
+        title: 'Participe',
+        description: "S'inscrire à un premier workshop.",
+        unlocked: s.myRegistrations >= 1,
+      },
+      {
+        icon: 'fa-graduation-cap',
+        title: 'Apprends',
+        description: 'Suivre 3 workshops.',
+        unlocked: s.myRegistrations >= 3,
+      },
+      {
+        icon: 'fa-lightbulb',
+        title: 'Contribue',
+        description: 'Proposer une première thématique.',
+        unlocked: s.mySubmissions >= 1,
+      },
+      {
+        icon: 'fa-pen-nib',
+        title: 'Devient référence',
+        description: 'Proposer 3 thématiques.',
+        unlocked: s.mySubmissions >= 3,
+      },
+      {
+        icon: 'fa-user-graduate',
+        title: 'Mentor',
+        description: 'Membre fidèle et contributeur régulier du club.',
+        unlocked: since >= 90 && s.mySubmissions >= 3,
+      },
+    ];
+
+    let currentIndex = 0;
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i].unlocked) currentIndex = i;
+      else break;
+    }
+
+    return steps.map((step, i) => ({
+      id: `roadmap-${i}`,
+      icon: step.icon,
+      title: step.title,
+      description: step.description,
+      status: step.unlocked ? 'success' : 'neutral',
+      statusLabel: step.unlocked ? 'Débloqué' : 'À venir',
+      pulse: step.unlocked && i === currentIndex,
+      disabled: !step.unlocked,
+    }));
+  });
 
   // ── Notes ─────────────────────────────────────────────────────────────────
   async loadUserNotes(): Promise<void> {

@@ -1,0 +1,24 @@
+<nav class="page-spine" aria-label="Navigation rapide de la page">
+  <div class="page-spine__rail">
+    <div class="page-spine__track"></div>
+    <div class="page-spine__fill" [style.height.%]="fillPercent()"></div>
+  </div>
+
+  <ul class="page-spine__list">
+    @for (anchor of anchors; track anchor.id) {
+      <li class="page-spine__item">
+        <button
+          type="button"
+          class="page-spine__dot"
+          [class.is-active]="activeId() === anchor.id"
+          [attr.aria-current]="activeId() === anchor.id ? 'true' : null"
+          [attr.aria-label]="anchor.label"
+          (click)="scrollTo(anchor.id)"
+        >
+          <i [class]="'fas ' + anchor.icon" aria-hidden="true"></i>
+          <span class="page-spine__tooltip">{{ anchor.label }}</span>
+        </button>
+      </li>
+    }
+  </ul>
+</nav>

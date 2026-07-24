@@ -1,0 +1,386 @@
+// glow-timeline.component.scss
+// Rail vertical lumineux + points + cartes alternées gauche/droite.
+// Le "dessin" du fil au scroll est piloté par .glow-timeline__fill dont
+// la hauteur est mise à jour en JS (voir glow-timeline.component.ts).
+
+@keyframes timelineDotPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(var(--tech-cyan-rgb), 0.45),
+      0 0 12px rgba(var(--tech-cyan-rgb), 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(var(--tech-cyan-rgb), 0),
+      0 0 20px rgba(var(--tech-cyan-rgb), 0.55);
+  }
+}
+
+@keyframes timelineFillShimmer {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 60px;
+  }
+}
+
+.glow-timeline {
+  position: relative;
+  width: 100%;
+  padding-block: var(--space-lg);
+}
+
+.glow-timeline__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--gray-500);
+  text-align: center;
+  i {
+    font-size: 2rem;
+    color: var(--tech-cyan);
+    opacity: 0.4;
+  }
+}
+
+.glow-timeline__rail {
+  position: relative;
+}
+
+// Rail statique (fond, toujours visible, faible opacité)
+.glow-timeline__track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(var(--tech-cyan-rgb), 0.18) 4%,
+    rgba(var(--tech-cyan-rgb), 0.18) 96%,
+    transparent
+  );
+  z-index: 0;
+}
+
+// Rail "allumé" — se remplit au scroll (hauteur pilotée en JS)
+.glow-timeline__fill {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3px;
+  height: 0%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    var(--tech-cyan) 0%,
+    var(--tech-blue) 45%,
+    var(--tech-purple) 100%
+  );
+  box-shadow:
+    0 0 8px rgba(var(--tech-cyan-rgb), 0.7),
+    0 0 20px rgba(var(--tech-cyan-rgb), 0.35);
+  border-radius: var(--radius-full);
+  z-index: 1;
+  transition: height 0.15s linear;
+
+  // Léger effet de "courant" qui remonte le fil, purement décoratif.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.9) 0,
+      rgba(255, 255, 255, 0.9) 2px,
+      transparent 2px,
+      transparent 14px
+    );
+    opacity: 0.5;
+    animation: timelineFillShimmer 1.2s linear infinite;
+  }
+}
+
+.glow-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 4vw, 4rem);
+}
+
+.glow-timeline__row {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  column-gap: clamp(1rem, 3vw, 2.5rem);
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Point central
+.glow-timeline__dot {
+  grid-column: 2;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card-solid);
+  border: 2px solid rgba(var(--tech-cyan-rgb), 0.35);
+  color: var(--tech-cyan);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  box-shadow: 0 0 0 4px var(--bg-primary);
+
+  i {
+    font-size: 1rem;
+  }
+
+  &:hover:not(:disabled) {
+    transform: scale(1.12);
+    box-shadow:
+      0 0 0 4px var(--bg-primary),
+      0 0 16px rgba(var(--tech-cyan-rgb), 0.5);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  &.is-pulsing {
+    animation: timelineDotPulse 2.2s ease-in-out infinite;
+    border-color: var(--tech-cyan);
+  }
+
+  &.status--success {
+    border-color: rgba(16, 185, 129, 0.45);
+    color: var(--tech-success);
+  }
+  &.status--danger {
+    border-color: rgba(239, 68, 68, 0.45);
+    color: var(--tech-danger);
+  }
+  &.status--info {
+    border-color: rgba(139, 92, 246, 0.45);
+    color: var(--tech-purple);
+  }
+  &.status--neutral {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--gray-400);
+  }
+}
+
+.glow-timeline__connector {
+  display: none; // relié visuellement par le gap grid ; réservé si besoin d'affiner plus tard
+}
+
+// Carte
+.glow-timeline__card {
+  grid-column: 1;
+  justify-self: end;
+  text-align: right;
+  max-width: 420px;
+  width: 100%;
+  background: var(--glass-bg);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  position: relative;
+  transition:
+    transform var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(var(--tech-cyan-rgb), 0.4);
+    box-shadow: var(--shadow-glow);
+    outline: none;
+  }
+
+  &.is-disabled {
+    cursor: default;
+    opacity: 0.55;
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.glow-timeline__row--right .glow-timeline__card {
+  grid-column: 3;
+  justify-self: start;
+  text-align: left;
+}
+
+.glow-timeline__card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.glow-timeline__row:not(.glow-timeline__row--right) .glow-timeline__card-header {
+  justify-content: flex-end;
+}
+
+.glow-timeline__date {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+  letter-spacing: 0.03em;
+}
+
+.glow-timeline__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &.status--success { background: rgba(16, 185, 129, 0.12); color: var(--tech-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+  &.status--danger  { background: rgba(239, 68, 68, 0.12);  color: var(--tech-danger);  border: 1px solid rgba(239, 68, 68, 0.2); }
+  &.status--info    { background: rgba(139, 92, 246, 0.12); color: var(--tech-purple);  border: 1px solid rgba(139, 92, 246, 0.2); }
+  &.status--neutral { background: rgba(255, 255, 255, 0.05); color: var(--gray-500); }
+  &.status--default { background: rgba(var(--tech-cyan-rgb), 0.1); color: var(--tech-cyan); border: 1px solid rgba(var(--tech-cyan-rgb), 0.2); }
+}
+
+.glow-timeline__title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--white);
+  margin: 0 0 0.375rem;
+  line-height: 1.35;
+}
+
+.glow-timeline__description {
+  font-size: 0.8125rem;
+  color: var(--gray-400);
+  line-height: 1.6;
+  margin: 0 0 0.75rem;
+}
+
+.glow-timeline__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.glow-timeline__row:not(.glow-timeline__row--right) .glow-timeline__meta {
+  justify-content: flex-end;
+}
+
+.glow-timeline__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  i {
+    color: var(--tech-cyan);
+    opacity: 0.7;
+    font-size: 0.6875rem;
+  }
+}
+
+.glow-timeline__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tech-cyan);
+  margin-top: 0.25rem;
+
+  i {
+    font-size: 0.6875rem;
+    transition: transform var(--transition-fast);
+  }
+}
+
+.glow-timeline__card:hover .glow-timeline__cta i {
+  transform: translateX(3px);
+}
+
+// ── Mobile : colonne unique, tout aligné à droite du rail ──────────
+@media (max-width: 820px) {
+  .glow-timeline__track,
+  .glow-timeline__fill {
+    left: 22px;
+  }
+
+  .glow-timeline__row,
+  .glow-timeline__row--right {
+    grid-template-columns: 44px 1fr;
+    column-gap: 1rem;
+  }
+
+  .glow-timeline__dot {
+    grid-column: 1;
+    width: 40px;
+    height: 40px;
+  }
+
+  .glow-timeline__card,
+  .glow-timeline__row--right .glow-timeline__card {
+    grid-column: 2;
+    justify-self: stretch;
+    text-align: left;
+    max-width: none;
+  }
+
+  .glow-timeline__card-header,
+  .glow-timeline__row:not(.glow-timeline__row--right) .glow-timeline__card-header,
+  .glow-timeline__meta,
+  .glow-timeline__row:not(.glow-timeline__row--right) .glow-timeline__meta {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-timeline__row {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+  .glow-timeline__fill::after {
+    animation: none;
+  }
+  .glow-timeline__dot.is-pulsing {
+    animation: none;
+  }
+}

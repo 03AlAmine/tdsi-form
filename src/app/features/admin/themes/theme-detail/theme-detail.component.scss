@@ -113,6 +113,31 @@
   background: rgba(255, 255, 255, 0.02);
   border-radius: 10px;
 
+  &--btn {
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    position: relative;
+    transition: all 0.18s ease;
+
+    .meta-card__hint {
+      margin-left: auto;
+      color: var(--tech-cyan);
+      opacity: 0.5;
+      transition: opacity 0.18s ease;
+    }
+
+    &:hover {
+      background: rgba(0, 212, 255, 0.06);
+      border-color: rgba(0, 212, 255, 0.2);
+
+      .meta-card__hint { opacity: 1; }
+    }
+  }
+
   &__icon {
     width: 36px;
     height: 36px;

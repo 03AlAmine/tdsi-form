@@ -1,7 +1,28 @@
 <!-- propose.component.html -->
-<div class="app-page">
+<div class="app-page propose-page">
+  <!-- Décor tech (grille + glow) -->
+  <div class="propose-page__bg-grid" aria-hidden="true"></div>
+  <div class="propose-page__bg-glow" aria-hidden="true"></div>
+
+  <!-- Bouton flottant : accès rapide à mes dépôts (remplace l'ancienne pill dans le hero) -->
+  <a
+    routerLink="/espace-membre/mes-soumissions"
+    class="my-submissions-fab"
+    aria-label="Voir mes soumissions"
+  >
+    <span class="my-submissions-fab__icon"><i class="fas fa-file-alt" aria-hidden="true"></i></span>
+    @if (mySubmissionsCount() > 0) {
+      <span class="my-submissions-fab__badge" aria-hidden="true">{{ mySubmissionsCount() }}</span>
+    }
+    <span class="my-submissions-fab__tooltip" aria-hidden="true">
+      <span class="tooltip-text">Mes dépôts</span>
+      <span class="tooltip-arrow"></span>
+    </span>
+  </a>
+
   <!-- Hero Section -->
   <section class="page-hero">
+    <div class="page-hero__bg-grid" aria-hidden="true"></div>
     <div class="container">
       <div class="page-hero__content">
         <div class="page-hero__badge">
@@ -26,6 +47,7 @@
         <!-- Success State -->
         <div class="success-card animate-slide-up">
           <div class="success-card__icon">
+            <span class="success-card__icon-ring" aria-hidden="true"></span>
             <i class="fas fa-check-circle"></i>
           </div>
           <h3>Soumission envoyée avec succès !</h3>
@@ -57,10 +79,14 @@
       } @else {
         <!-- Form -->
         <form [formGroup]="form" (ngSubmit)="submit()" class="propose-form">
+          <div class="propose-steps">
           <!-- Section 1: Informations de base -->
           <div class="form-card">
             <div class="form-card__header">
-              <div class="step-indicator">1</div>
+              <div class="step-indicator">
+                <span class="step-indicator__ring" aria-hidden="true"></span>
+                1
+              </div>
               <div class="step-content">
                 <h3>Informations de base</h3>
                 <p>Définissez le sujet principal de votre workshop</p>
@@ -336,10 +362,19 @@
             </div>
           </div>
 
+          <!-- Connecteur visuel entre l'étape 1 et 2 -->
+          <div class="propose-steps__connector" aria-hidden="true">
+            <span class="propose-steps__connector-line"></span>
+            <span class="propose-steps__connector-icon"><i class="fas fa-chevron-down"></i></span>
+          </div>
+
           <!-- Section 2: Contenu pédagogique -->
           <div class="form-card">
             <div class="form-card__header">
-              <div class="step-indicator">2</div>
+              <div class="step-indicator">
+                <span class="step-indicator__ring" aria-hidden="true"></span>
+                2
+              </div>
               <div class="step-content">
                 <h3>Contenu pédagogique</h3>
                 <p>Structurez l'apprentissage des participants</p>
@@ -425,6 +460,7 @@
               </div>
             </div>
           </div>
+          </div>
 
           <!-- Tips Section -->
           <div class="tips-card">
@@ -434,19 +470,19 @@
             </div>
             <div class="tips-grid">
               <div class="tip-item">
-                <i class="fas fa-check-circle"></i>
+                <span class="tip-item__icon"><i class="fas fa-check-circle"></i></span>
                 <span>Soyez précis dans votre description</span>
               </div>
               <div class="tip-item">
-                <i class="fas fa-check-circle"></i>
+                <span class="tip-item__icon"><i class="fas fa-check-circle"></i></span>
                 <span>Définissez des objectifs mesurables</span>
               </div>
               <div class="tip-item">
-                <i class="fas fa-check-circle"></i>
+                <span class="tip-item__icon"><i class="fas fa-check-circle"></i></span>
                 <span>Listez clairement les prérequis</span>
               </div>
               <div class="tip-item">
-                <i class="fas fa-check-circle"></i>
+                <span class="tip-item__icon"><i class="fas fa-check-circle"></i></span>
                 <span>Estimez la durée réalistement</span>
               </div>
             </div>

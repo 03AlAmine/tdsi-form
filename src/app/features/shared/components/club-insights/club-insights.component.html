@@ -1,0 +1,141 @@
+<!-- club-insights.component.html -->
+<div class="club-insights">
+  <div class="club-insights__header" appReveal>
+    <span class="club-insights__badge">
+      <i class="fas fa-chart-pie"></i>
+      Data
+    </span>
+    <h2 class="club-insights__title">{{ title }}</h2>
+    <p class="club-insights__subtitle">{{ subtitle }}</p>
+  </div>
+
+  <!-- Bandeau de stats animées -->
+  <div class="stat-strip">
+    @for (s of stats; track s.label; let i = $index) {
+      <div class="stat-strip__item stat-strip__item--{{ s.color }}" appReveal [appRevealDelay]="s.delay">
+        <div class="stat-strip__icon">
+          <span class="stat-strip__icon-ring"></span>
+          <i class="fas {{ s.icon }}"></i>
+        </div>
+        <div class="stat-strip__value">
+          <span [appCountUp]="s.value" [appCountUpDuration]="s.duration"></span>{{ s.suffix }}
+        </div>
+        <div class="stat-strip__label">{{ s.label }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="club-insights__grid">
+
+    <!-- Jauges circulaires -->
+    <div class="insight-card insight-card--gauges" appReveal>
+      <div class="insight-card__header">
+        <h3>
+          <span class="icon-orb icon-orb--cyan">
+            <span class="icon-orb__ring"></span>
+            <i class="fas fa-bullseye"></i>
+          </span>
+          Nos indicateurs clés
+        </h3>
+        <span class="hud-status" [class.is-live]="revealed">
+          <span class="hud-status__dot"></span>
+          {{ revealed ? 'LIVE' : 'SYNC' }}
+        </span>
+      </div>
+
+      <div class="gauges-row">
+        @for (g of gauges; track g.label) {
+          <div
+            class="gauge gauge--{{ g.color }}"
+            [class.is-revealed]="revealed"
+            [class.is-pulsing]="gaugePulse[g.label]"
+          >
+            <span class="gauge__corner gauge__corner--tl"></span>
+            <span class="gauge__corner gauge__corner--br"></span>
+            <span class="gauge__ring-sweep"></span>
+            <svg class="gauge__svg" viewBox="0 0 100 100">
+              <circle class="gauge__track" cx="50" cy="50" r="40" />
+              <circle
+                class="gauge__progress"
+                cx="50" cy="50" r="40"
+                [style.strokeDasharray.px]="circumference"
+                [style.strokeDashoffset.px]="revealed ? gaugeOffset(g.value) : circumference"
+                [style.transitionDuration.ms]="g.duration"
+                [style.transitionDelay.ms]="revealed ? g.delay : 0"
+              />
+            </svg>
+            <div class="gauge__center">
+              <i class="fas {{ g.icon }}"></i>
+              <span class="gauge__value">{{ gaugeDisplay[g.label] }}%</span>
+            </div>
+            <div class="gauge__label">{{ g.label }}</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Donut : répartition par domaine -->
+    <div class="insight-card insight-card--donut" appReveal [appRevealDelay]="80">
+      <div class="insight-card__header">
+        <h3>
+          <span class="icon-orb icon-orb--blue">
+            <span class="icon-orb__ring"></span>
+            <i class="fas fa-layer-group"></i>
+          </span>
+          Répartition par domaine
+        </h3>
+        <span class="hud-status" [class.is-live]="!donutSyncing">
+          <span class="hud-status__dot"></span>
+          {{ donutSyncing ? 'ANALYSE...' : 'SYNC OK' }}
+        </span>
+      </div>
+
+      <div class="donut-wrap">
+        <div class="donut-canvas" [class.is-syncing]="donutSyncing">
+          <span class="donut-canvas__ring"></span>
+          <canvas #categoryCanvas></canvas>
+          <div class="donut-canvas__center">
+            <span class="donut-canvas__value">{{ donutTotalDisplay }}%</span>
+            <span class="donut-canvas__caption">total</span>
+          </div>
+        </div>
+
+        <div class="donut-legend">
+          @for (slice of categorySlices; track slice.label; let i = $index) {
+            <div class="donut-legend__row" appReveal [appRevealDelay]="200 + i * 90">
+              <span class="donut-legend__dot" [style.background]="slice.color"></span>
+              <span class="donut-legend__name">{{ slice.label }}</span>
+              <span class="donut-legend__pct">{{ slice.value }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Histogramme : workshops par mois -->
+    <div class="insight-card insight-card--bar" appReveal [appRevealDelay]="160">
+      <div class="insight-card__header">
+        <h3>
+          <span class="icon-orb icon-orb--cyan">
+            <span class="icon-orb__ring"></span>
+            <i class="fas fa-chalkboard-user"></i>
+          </span>
+          Workshops organisés
+        </h3>
+        <span class="insight-card__caption">Tendance sur 6 mois</span>
+      </div>
+
+      <div class="bar-chart-wrap" [class.is-sweeping]="barsSweeping">
+        <span class="bar-chart-wrap__grid"></span>
+        <span class="bar-chart-wrap__scanline"></span>
+        <span class="bar-chart-wrap__playhead"></span>
+        <canvas #monthlyCanvas></canvas>
+        <div class="bar-chart-wrap__total">
+          <span class="bar-chart-wrap__total-value">{{ monthlyTotalDisplay }}</span>
+          <span class="bar-chart-wrap__total-label">workshops / 6 mois</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

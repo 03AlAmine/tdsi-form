@@ -1,0 +1,90 @@
+<div class="ai-assistant" [class.is-open]="isOpen()">
+  @if (isOpen()) {
+    <div class="ai-assistant__panel" role="dialog" aria-label="Assistant Club TDSI">
+      <header class="ai-assistant__header">
+        <div class="ai-assistant__identity">
+          <span class="ai-assistant__avatar">
+            <i class="fas fa-shield-halved" aria-hidden="true"></i>
+          </span>
+          <div>
+            <p class="ai-assistant__name">Assistant TDSI</p>
+            <p class="ai-assistant__status">
+              <span class="ai-assistant__status-dot"></span>
+              En ligne
+            </p>
+          </div>
+        </div>
+        <button type="button" class="ai-assistant__close" aria-label="Fermer l'assistant" (click)="close()">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="ai-assistant__body">
+        @for (msg of messages(); track $index) {
+          <div class="ai-assistant__msg" [class.ai-assistant__msg--user]="msg.role === 'user'">
+            @if (msg.role === 'assistant') {
+              <span class="ai-assistant__msg-avatar"><i class="fas fa-shield-halved" aria-hidden="true"></i></span>
+            }
+            <p class="ai-assistant__msg-bubble">{{ msg.text }}</p>
+          </div>
+        }
+
+        @if (loading()) {
+          <div class="ai-assistant__msg">
+            <span class="ai-assistant__msg-avatar"><i class="fas fa-shield-halved" aria-hidden="true"></i></span>
+            <p class="ai-assistant__msg-bubble ai-assistant__typing">
+              <span></span><span></span><span></span>
+            </p>
+          </div>
+        }
+
+        <div #scrollAnchor></div>
+      </div>
+
+      @if (messages().length <= 1) {
+        <div class="ai-assistant__suggestions">
+          @for (s of suggestions; track s) {
+            <button type="button" class="ai-assistant__chip" (click)="sendSuggestion(s)">
+              {{ s }}
+            </button>
+          }
+        </div>
+      }
+
+      <form class="ai-assistant__composer" (ngSubmit)="send()">
+        <input
+          type="text"
+          placeholder="Pose ta question..."
+          aria-label="Écrire à l'assistant"
+          [ngModel]="draft()"
+          (ngModelChange)="draft.set($event)"
+          name="draft"
+          [disabled]="loading()"
+        />
+        <button type="submit" aria-label="Envoyer" [disabled]="loading() || !draft().trim()">
+          <i class="fas fa-paper-plane" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  }
+
+  <button
+    type="button"
+    class="ai-assistant__fab"
+    [attr.aria-label]="isOpen() ? 'Fermer l\'assistant' : 'Ouvrir l\'assistant du Club TDSI'"
+    (click)="toggle()"
+  >
+    @if (!isOpen()) {
+      <i class="fas fa-message" aria-hidden="true"></i>
+    } @else {
+      <i class="fas fa-chevron-down" aria-hidden="true"></i>
+    }
+    <span class="ai-assistant__fab-ping" aria-hidden="true"></span>
+    @if (!isOpen()) {
+      <span class="ai-assistant__tooltip" aria-hidden="true">
+        <span class="tooltip-text">Besoin d'aide ?</span>
+        <span class="tooltip-arrow"></span>
+      </span>
+    }
+  </button>
+</div>

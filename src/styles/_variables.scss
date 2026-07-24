@@ -139,4 +139,18 @@
   --backdrop-blur: blur(12px);
   --backdrop-blur-simple: blur(8px);
   --backdrop-blur-strong: blur(20px);
+
+  // Échelle de z-index — la navbar (desktop + menu mobile) culmine à 100001,
+  // donc tout ce qui doit passer AU-DESSUS (drawers, toasts) part de 500000+.
+  --z-navbar: 99999;
+  --z-navbar-mobile: 100001;
+  --z-bottom-nav: 99999;
+  --z-drawer-overlay: 500000;
+  --z-drawer: 500001;
+  --z-welcome-modal: 550000;
+  --z-toast: 600000;
+
+  // Bottom nav mobile — hauteur de référence utilisée pour compenser le
+  // padding du contenu et repositionner les boutons flottants au-dessus.
+  --bottom-nav-height: 60px;
 }

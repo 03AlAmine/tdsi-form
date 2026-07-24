@@ -60,6 +60,11 @@
         </div>
       </div>
 
+      <!-- Carte membre holographique -->
+      <div class="profile-card-wrapper">
+        <app-member-card [user]="user" [memberSinceLabel]="memberSinceLabel()" />
+      </div>
+
       <!-- Stats & Badges Widget -->
       <div class="profile-stats">
         <div class="profile-stats__row">
@@ -105,6 +110,20 @@
           }
         </div>
       </div>
+
+      <!-- Roadmap membre — parcours d'engagement au sein du club -->
+      <section class="profile-roadmap">
+        <div class="profile-roadmap__header">
+          <span class="section-badge">
+            <i class="fas fa-route"></i>
+            Ton parcours
+          </span>
+          <h2 class="section-title">
+            De <span class="gradient-text">membre</span> à mentor
+          </h2>
+        </div>
+        <app-glow-timeline [items]="memberRoadmap()" />
+      </section>
 
       <!-- Alert Messages -->
       @if (successMessage()) {
@@ -235,6 +254,138 @@
                   Veuillez sélectionner votre promotion
                 </span>
               }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-university"></i>
+                Établissement
+              </label>
+              <div class="select-wrapper">
+                <select formControlName="etablissement" class="form-select">
+                  <option value="" disabled>Sélectionner votre établissement</option>
+                  @for (e of etablissements; track e) {
+                    <option [value]="e">{{ e }}</option>
+                  }
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+                <div class="select-border"></div>
+              </div>
+              @if (isOtherEtablissement()) {
+                <div class="input-wrapper" style="margin-top: 0.625rem;">
+                  <input
+                    type="text"
+                    formControlName="etablissementAutre"
+                    class="form-input"
+                    placeholder="Précisez le nom de votre établissement"
+                  />
+                  <div class="input-border"></div>
+                </div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-book"></i>
+                Filière / spécialité
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  formControlName="filiere"
+                  class="form-input"
+                  placeholder="Ex: Génie Informatique, Cybersécurité..."
+                />
+                <div class="input-border"></div>
+                <i class="fas fa-book input-icon"></i>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-phone"></i>
+                Téléphone
+              </label>
+              <div class="input-wrapper">
+                <input
+                  type="tel"
+                  formControlName="phone"
+                  class="form-input"
+                  [class.error]="isProfileInvalid('phone')"
+                  placeholder="+221 77 000 00 00"
+                />
+                <div class="input-border"></div>
+                <i class="fas fa-phone input-icon"></i>
+              </div>
+              @if (isProfileInvalid("phone")) {
+                <span class="form-error">
+                  <i class="fas fa-exclamation-circle"></i>
+                  Numéro invalide
+                </span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fab fa-linkedin"></i>
+                  LinkedIn
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="url"
+                    formControlName="linkedin"
+                    class="form-input"
+                    [class.error]="isProfileInvalid('linkedin')"
+                    placeholder="https://linkedin.com/in/..."
+                  />
+                  <div class="input-border"></div>
+                </div>
+                @if (isProfileInvalid("linkedin")) {
+                  <span class="form-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Lien invalide (doit commencer par http/https)
+                  </span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fab fa-github"></i>
+                  GitHub
+                </label>
+                <div class="input-wrapper">
+                  <input
+                    type="url"
+                    formControlName="github"
+                    class="form-input"
+                    [class.error]="isProfileInvalid('github')"
+                    placeholder="https://github.com/..."
+                  />
+                  <div class="input-border"></div>
+                </div>
+                @if (isProfileInvalid("github")) {
+                  <span class="form-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Lien invalide (doit commencer par http/https)
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-align-left"></i>
+                Bio courte
+              </label>
+              <textarea
+                formControlName="bio"
+                class="form-textarea"
+                rows="3"
+                maxlength="220"
+                placeholder="Quelques mots sur vous, vos centres d'intérêt..."
+              ></textarea>
+              <span class="form-hint">{{ bioLength() }}/220 caractères</span>
             </div>
 
             <div class="form-actions">

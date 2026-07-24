@@ -74,6 +74,26 @@ export class ThemeService {
     };
   }
 
+  // ✅ Retrouve la thématique publiée à partir de l'id de la soumission
+  // dont elle est issue — utilisé côté "Mes dépôts" pour proposer un lien
+  // direct "Voir la fiche" une fois la proposition approuvée.
+  async getThemeBySubmissionId(submissionId: string): Promise<Theme | null> {
+    const q = query(
+      collection(db, 'themes'),
+      where('fromSubmissionId', '==', submissionId),
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const docSnap = snap.docs[0];
+    const d: any = docSnap.data();
+    return {
+      ...d,
+      id: docSnap.id,
+      workshopDate: d.workshopDate?.toDate?.(),
+      createdAt: d.createdAt?.toDate?.() ?? new Date(),
+    };
+  }
+
   async createTheme(theme: Omit<Theme, 'id'>): Promise<string> {
     const ref = await addDoc(collection(db, 'themes'), {
       ...theme,

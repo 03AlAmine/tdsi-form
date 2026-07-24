@@ -5,6 +5,14 @@ export interface User {
   role: 'admin' | 'student';
   promo?: string;
   createdAt: Date;
+  // ── Profil enrichi (tous optionnels — rétrocompatibles avec les
+  // comptes existants qui n'ont pas encore ces champs) ──
+  etablissement?: string;
+  filiere?: string;
+  phone?: string;
+  linkedin?: string;
+  github?: string;
+  bio?: string;
 }
 
 // ─────────────────────────────────────────────────────────────

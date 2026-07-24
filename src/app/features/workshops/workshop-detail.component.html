@@ -1,4 +1,8 @@
 <div class="wd">
+  <!-- ── Décor tech (grille + glow) ── -->
+  <div class="wd__bg-grid" aria-hidden="true"></div>
+  <div class="wd__bg-glow" aria-hidden="true"></div>
+
   <!-- ── Chargement ── -->
   @if (loading()) {
     <div class="wd__state">
@@ -32,22 +36,32 @@
 
       <!-- En-tête -->
       <header class="wd__header">
-        <div
-          class="wd__status"
-          [class.wd__status--live]="displayStatus() === 'en cours'"
-          [class.wd__status--done]="displayStatus() === 'terminé'"
-          [class.wd__status--cancelled]="displayStatus() === 'annulé'"
-        >
-          <span class="wd__status-dot" aria-hidden="true"></span>
-          {{ displayStatus() }}
+        <div class="wd__header-glow" aria-hidden="true"></div>
+
+        <div class="wd__header-top">
+          <div class="wd__header-icon" aria-hidden="true">
+            <i class="fas fa-chalkboard-user"></i>
+          </div>
+
+          <div class="wd__header-text">
+            <div
+              class="wd__status"
+              [class.wd__status--live]="displayStatus() === 'en cours'"
+              [class.wd__status--done]="displayStatus() === 'terminé'"
+              [class.wd__status--cancelled]="displayStatus() === 'annulé'"
+            >
+              <span class="wd__status-dot" aria-hidden="true"></span>
+              {{ displayStatus() }}
+            </div>
+
+            <h1 class="wd__title gradient-text">{{ w.themeTitle }}</h1>
+
+            <p class="wd__presenter">
+              <i class="fas fa-microphone-alt" aria-hidden="true"></i>
+              Animé par <strong>{{ w.presenter }}</strong>
+            </p>
+          </div>
         </div>
-
-        <h1 class="wd__title">{{ w.themeTitle }}</h1>
-
-        <p class="wd__presenter">
-          <i class="fas fa-microphone-alt" aria-hidden="true"></i>
-          Animé par <strong>{{ w.presenter }}</strong>
-        </p>
       </header>
 
       <div class="wd__layout">
@@ -86,6 +100,15 @@
                   }
                 </span>
               </div>
+            </div>
+
+            <!-- Jauge de remplissage -->
+            <div class="wd__capacity" role="img" [attr.aria-label]="(w.registrations.length || 0) + ' inscrits sur ' + w.maxParticipants + ' places'">
+              <div
+                class="wd__capacity-bar"
+                [class.wd__capacity-bar--full]="isFull()"
+                [style.width.%]="((w.registrations.length || 0) / w.maxParticipants) * 100"
+              ></div>
             </div>
           </section>
 
@@ -130,7 +153,7 @@
           @if (displayStatus() === 'planifié') {
             <div class="wd__calendar">
               <span class="wd__calendar-label">
-                <i class="far fa-calendar-plus" aria-hidden="true"></i>
+                <span class="wd__section-icon wd__section-icon--sm"><i class="far fa-calendar-plus" aria-hidden="true"></i></span>
                 Ajouter à mon agenda :
               </span>
               <button class="wd__calendar-btn" (click)="addToCalendar()">
@@ -159,7 +182,7 @@
               @if (e.objectives.length) {
                 <section class="wd__section">
                   <h2 class="wd__section-title">
-                    <i class="fas fa-bullseye" aria-hidden="true"></i>
+                    <span class="wd__section-icon"><i class="fas fa-bullseye" aria-hidden="true"></i></span>
                     Ce que tu vas apprendre
                   </h2>
                   <ul class="wd__list">
@@ -173,7 +196,7 @@
               @if (e.prerequisites.length) {
                 <section class="wd__section">
                   <h2 class="wd__section-title">
-                    <i class="fas fa-list-check" aria-hidden="true"></i>
+                    <span class="wd__section-icon"><i class="fas fa-list-check" aria-hidden="true"></i></span>
                     Prérequis
                   </h2>
                   <ul class="wd__list">
@@ -187,7 +210,7 @@
               @if (e.skills.length) {
                 <section class="wd__section">
                   <h2 class="wd__section-title">
-                    <i class="fas fa-brain" aria-hidden="true"></i>
+                    <span class="wd__section-icon"><i class="fas fa-brain" aria-hidden="true"></i></span>
                     Compétences développées
                   </h2>
                   <ul class="wd__chips">
@@ -201,7 +224,7 @@
               @if (e.outcomes?.length) {
                 <section class="wd__section">
                   <h2 class="wd__section-title">
-                    <i class="fas fa-rocket" aria-hidden="true"></i>
+                    <span class="wd__section-icon"><i class="fas fa-rocket" aria-hidden="true"></i></span>
                     Ce que tu en retires
                   </h2>
                   <ul class="wd__list">
@@ -218,13 +241,19 @@
         <!-- ── Colonne latérale ── -->
         <aside class="wd__aside">
           <div class="wd__card">
+            <div class="wd__card-chrome">
+              <span class="wd__card-dot wd__card-dot--a"></span>
+              <span class="wd__card-dot wd__card-dot--b"></span>
+              <span class="wd__card-dot wd__card-dot--c"></span>
+              <span class="wd__card-chrome-label">club.json</span>
+            </div>
             <h2 class="wd__card-title">
-              <i class="fas fa-shield-halved" aria-hidden="true"></i>
+              <span class="wd__section-icon wd__section-icon--sm"><i class="fas fa-shield-halved" aria-hidden="true"></i></span>
               Club TDSI
             </h2>
             <p class="wd__card-text">
-              Communauté cybersécurité, IA &amp; transmission de données de
-              l'ESP – UCAD, Dakar. Workshops gratuits, ouverts aux étudiants
+              Communauté cybersécurité, IA &amp; transmission de données du club
+              TDSI – UCAD, Dakar. Workshops gratuits, ouverts aux étudiants
               et passionnés.
             </p>
             <a routerLink="/thematiques" class="wd__card-link">

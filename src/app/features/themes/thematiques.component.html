@@ -1,7 +1,22 @@
 <!-- thematiques.component.html -->
 <div class="app-page">
+  <!-- Bouton flottant : proposer une thématique -->
+  <a
+    routerLink="/espace-membre/proposer"
+    class="thematiques-fab"
+    aria-label="Proposer une thématique"
+  >
+    <span class="thematiques-fab__ring" aria-hidden="true"></span>
+    <span class="thematiques-fab__icon"><i class="fas fa-lightbulb" aria-hidden="true"></i></span>
+    <span class="thematiques-fab__tooltip" aria-hidden="true">
+      <span class="tooltip-text">Proposer une thématique</span>
+      <span class="tooltip-arrow"></span>
+    </span>
+  </a>
+
   <!-- Hero Section - utilise .page-hero global -->
   <section class="page-hero">
+    <div class="page-hero__bg-grid" aria-hidden="true"></div>
     <div class="container">
       <div class="page-hero__content">
         <div class="page-hero__badge">
@@ -17,22 +32,33 @@
           Découvrez l'ensemble des sujets proposés par la communauté Club TDSI
         </p>
 
-        <!-- Search Bar -->
-        <div class="page-hero__search">
-          <div class="search-wrapper search-wrapper--rounded">
-            <i class="fas fa-search" aria-hidden="true"></i>
-            <input
-              type="text"
-              placeholder="Rechercher une thématique..."
-              aria-label="Rechercher une thématique"
-              (input)="searchTerm.set($any($event.target).value)"
-              [value]="searchTerm()"
-            />
-            @if (searchTerm()) {
-              <button class="search-clear" aria-label="Effacer la recherche" (click)="searchTerm.set('')">
-                <i class="fas fa-times" aria-hidden="true"></i>
-              </button>
-            }
+        <!-- Barre d'outils compacte : statut sync + recherche côte à côte -->
+        <div class="hero-toolbar">
+          <div class="hero-hud" aria-hidden="true">
+            <span class="hero-hud__dot"></span>
+            <span>CATALOGUE_INDEX</span>
+            <span class="hero-hud__sep">·</span>
+            <span>{{ themes().length }} entrées</span>
+            <span class="hero-hud__sep">·</span>
+            <span class="hero-hud__blink">SYNC</span>
+          </div>
+
+          <div class="page-hero__search">
+            <div class="search-wrapper search-wrapper--rounded">
+              <i class="fas fa-search" aria-hidden="true"></i>
+              <input
+                type="text"
+                placeholder="Rechercher une thématique..."
+                aria-label="Rechercher une thématique"
+                (input)="searchTerm.set($any($event.target).value)"
+                [value]="searchTerm()"
+              />
+              @if (searchTerm()) {
+                <button class="search-clear" aria-label="Effacer la recherche" (click)="searchTerm.set('')">
+                  <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -64,6 +90,12 @@
     } @else {
       <!-- Filters Section -->
       <div class="filters-section">
+        <div class="filters-section__chrome" aria-hidden="true">
+          <span class="filters-section__dot filters-section__dot--r"></span>
+          <span class="filters-section__dot filters-section__dot--y"></span>
+          <span class="filters-section__dot filters-section__dot--g"></span>
+          <span class="filters-section__chrome-label">filter_index.sh</span>
+        </div>
         <div class="filters-header">
           <div class="filters-stats" aria-live="polite">
             <span class="stats-value">{{ filteredThemes().length }}</span>
@@ -113,6 +145,7 @@
           <div class="empty-state__icon">
             <i class="fas fa-compass"></i>
           </div>
+          <p class="empty-state__readout"><span>&gt;</span> QUERY_RESULT: 0 entrées</p>
           <h3 class="empty-state__title">
             @if (searchTerm()) {
               Aucun résultat pour "{{ searchTerm() }}"
@@ -166,7 +199,15 @@
               (keydown.enter)="openThemeDetail(theme)"
               (keydown.space)="$event.preventDefault(); openThemeDetail(theme)"
             >
+              <span class="theme-card__hud-corner theme-card__hud-corner--tl" aria-hidden="true"></span>
+              <span class="theme-card__hud-corner theme-card__hud-corner--tr" aria-hidden="true"></span>
+              <span class="theme-card__hud-corner theme-card__hud-corner--bl" aria-hidden="true"></span>
+              <span class="theme-card__hud-corner theme-card__hud-corner--br" aria-hidden="true"></span>
+              <span class="theme-card__scanline" aria-hidden="true"></span>
+              <span class="theme-card__tag" aria-hidden="true">REC_{{ (i + 1).toString().padStart(3, '0') }}</span>
+
               <div class="theme-card__icon">
+                <span class="theme-card__icon-ring" aria-hidden="true"></span>
                 <i class="fas fa-microchip" aria-hidden="true"></i>
               </div>
 
@@ -675,7 +716,12 @@
 
           <!-- Author info -->
           @if (selectedTheme()?.fromStudentName) {
-            <div class="author-card">
+            <button
+              type="button"
+              class="author-card author-card--btn"
+              title="Voir la fiche de l'étudiant"
+              (click)="showProposer(selectedTheme())"
+            >
               <div class="author-avatar">
                 <i class="fas fa-user-graduate"></i>
               </div>
@@ -690,7 +736,20 @@
                   >
                 }
               </div>
-            </div>
+              <i class="fas fa-id-card author-card__hint" aria-hidden="true"></i>
+            </button>
+          }
+
+          <!-- Voir la fiche complète (page dédiée) -->
+          @if (selectedTheme()) {
+            <a
+              [routerLink]="['/thematiques', slugOf(selectedTheme()!)]"
+              class="btn btn--outline btn--full drawer__full-page-link"
+              (click)="closeDrawer()"
+            >
+              <i class="fas fa-arrow-up-right-from-square"></i>
+              Voir la fiche complète de la thématique
+            </a>
           }
 
           <!-- Associated Workshop -->

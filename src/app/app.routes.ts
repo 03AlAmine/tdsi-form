@@ -83,49 +83,6 @@ export const routes: Routes = [
             (m) => m.JitsiMeetComponent,
           ),
       },
-      /*/ ── Articles (public, sans connexion) ──
-      {
-        path: 'articles',
-        loadComponent: () =>
-          import('./features/articles/articles.component').then(
-            (m) => m.ArticlesComponent,
-          ),
-      },
-      {
-        path: 'articles/soumettre',
-        loadComponent: () =>
-          import('./features/articles/submit-article.component').then(
-            (m) => m.SubmitArticleComponent,
-          ),
-      },
-      {
-        path: 'articles/:id',
-        loadComponent: () =>
-          import('./features/articles/article-detail.component').then(
-            (m) => m.ArticleDetailComponent,
-          ),
-      },
-       {
-        path: 'activites',
-        loadComponent: () =>
-          import('./features/activities/activities.component').then(
-            (m) => m.ActivitiesComponent,
-          ),
-      },
-      {
-        path: 'activites/:id',
-        loadComponent: () =>
-          import('./features/activities/activity-detail.component').then(
-            (m) => m.ActivityDetailComponent,
-          ),
-      },
-      {
-        path: 'activites/:id/inscription',
-        loadComponent: () =>
-          import('./features/activities/activity-register.component').then(
-            (m) => m.ActivityRegisterComponent,
-          ),
-      },*/
       // ── Espace membre (auth requis) ──
       {
         path: 'espace-membre',
@@ -145,7 +102,6 @@ export const routes: Routes = [
             pathMatch: 'full',
           },
           { path: 'workshops', redirectTo: '/workshops', pathMatch: 'full' },
-          /*   { path: 'activites', redirectTo: '/activites', pathMatch: 'full' },*/
           // Pages membres exclusives
           {
             path: 'proposer',
@@ -232,27 +188,6 @@ export const routes: Routes = [
             (m) => m.AdminConfigurationComponent,
           ),
       },
-      /*  {
-        path: 'activites',
-        loadComponent: () =>
-          import('./features/admin/activities/admin-activities.component').then(
-            (m) => m.AdminActivitiesComponent,
-          ),
-      },
-      {
-        path: 'activites/:id/presences',
-        loadComponent: () =>
-          import('./features/admin/activities/activity-presence/activity-presence.component').then(
-            (m) => m.ActivityPresenceComponent,
-          ),
-      },
-      {
-        path: 'articles',
-        loadComponent: () =>
-          import('./features/admin/articles/admin-articles.component').then(
-            (m) => m.AdminArticlesComponent,
-          ),
-      },*/
       {
         path: 'users',
         loadComponent: () =>

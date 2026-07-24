@@ -150,6 +150,10 @@ export class AdminUsersComponent implements OnInit {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
   }
 
+  isSuspended(user: User): boolean {
+    return !!(user as User & { disabled?: boolean }).disabled;
+  }
+
   // ── Actions ────────────────────────────────────────────────
   async updateRole(): Promise<void> {
     const user = this.selectedUser();
@@ -207,6 +211,25 @@ export class AdminUsersComponent implements OnInit {
         } catch (err) {
           this.logger.error('[AdminUsers] Erreur réactivation:', err);
           this.toast.error('Erreur lors de la réactivation');
+        }
+      },
+    });
+  }
+
+  async deleteUser(user: User): Promise<void> {
+    this.confirm.confirm({
+      title: "Supprimer l'utilisateur",
+      message: `Supprimer définitivement le profil de "${user.displayName}" ? Cette action est irréversible : son profil, sa promotion et son rôle seront effacés. Remarque : le compte de connexion Firebase reste actif (limitation du plan Spark) — supprimez-le aussi depuis la console Firebase si besoin.`,
+      type: 'danger', confirmText: 'Supprimer', cancelText: 'Annuler',
+      onConfirm: async () => {
+        try {
+          await this.userSvc.deleteUser(user.uid);
+          this.users.update(us => us.filter(u => u.uid !== user.uid));
+          this.toast.success(user.displayName + ' a été supprimé');
+          this.closePanel();
+        } catch (err) {
+          this.logger.error('[AdminUsers] Erreur suppression:', err);
+          this.toast.error('Erreur lors de la suppression');
         }
       },
     });

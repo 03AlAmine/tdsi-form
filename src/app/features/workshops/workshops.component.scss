@@ -1,6 +1,112 @@
 /* ============================================================
+   DÉCOR HERO — grille tech en filigrane, cohérente avec les pages
+   de détail (thematique-detail / workshop-detail) et le listing
+   thématiques.
+   ============================================================ */
+.page-hero__bg-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--gradient-mesh);
+  opacity: 0.5;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 85%);
+  pointer-events: none;
+}
+
+.page-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+// ── En-tête compact : on resserre le hero (badge / titre / sous-titre)
+// et on regroupe le statut sync + la recherche sur une seule ligne pour
+// réduire la hauteur totale occupée par l'en-tête.
+.page-hero {
+  padding-top: 1.5rem;
+  padding-bottom: 1.75rem;
+}
+.page-hero__badge    { margin-bottom: 0.875rem; }
+.page-hero__title    { margin-bottom: 0.5rem; }
+.page-hero__subtitle { margin-bottom: 0.25rem; }
+
+// ── Barre d'outils : statut sync + recherche (ou rien, si visiteur),
+// côte à côte plutôt qu'empilés — c'est ce qui économise le plus de
+// hauteur. Le CTA visiteur reste en dessous, sur sa propre ligne.
+.hero-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+
+  .page-hero__search {
+    margin: 0;
+    max-width: 320px;
+    flex: 1 1 240px;
+  }
+}
+
+.page-hero__cta { margin-top: 1.25rem; }
+
+// ── Ligne de statut système sous le sous-titre du hero — même langage
+// HUD que sur le listing thématiques.
+.hero-hud {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  flex: none;
+  padding: 0.375rem 0.875rem;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: var(--radius-full);
+  background: rgba(0, 212, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--gray-400);
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tech-cyan);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.9);
+    animation: pulse 2s infinite;
+  }
+
+  &__sep {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  &__blink {
+    color: var(--tech-cyan);
+    font-weight: 600;
+    animation: hero-hud-blink 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-hud-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-hud__dot,
+  .hero-hud__blink { animation: none; }
+}
+
+/* ============================================================
    STATS DASHBOARD
    ============================================================ */
+.drawer__full-page-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0 1.25rem;
+}
+
 .stats-dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -9,6 +115,8 @@
 }
 
 .stat-card {
+  --accent-rgb: var(--tech-cyan-rgb);
+
   backdrop-filter: var(--backdrop-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
@@ -18,13 +126,47 @@
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba(0, 212, 255, 0.3);
+    border-color: rgba(var(--accent-rgb), 0.3);
+
+    .stat-card__icon-ring { opacity: 1; }
+    .stat-card__icon { transform: scale(1.08); }
   }
 
   &__icon {
-    font-size: 1.5rem;
+    position: relative;
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.28);
+    font-size: 1.0625rem;
     color: var(--tech-cyan);
-    margin-bottom: 0.5rem;
+    transition: transform var(--transition-base);
+
+    i { position: relative; z-index: 1; }
+  }
+
+  // Anneau conique tournant, révélé au survol — même mécanique que sur
+  // le reste du site (landing, dashboard, campus en chiffres).
+  &__icon-ring {
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      rgba(var(--accent-rgb), 0.9),
+      transparent 30%,
+      transparent 70%,
+      rgba(var(--accent-rgb), 0.9)
+    );
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    animation: stat-card-icon-ring-spin 4s linear infinite;
+    pointer-events: none;
   }
 
   &__value {
@@ -43,6 +185,7 @@
   }
 
   &--live {
+    --accent-rgb: var(--tech-success-rgb);
     border-color: rgba(16, 185, 129, 0.3);
 
     .stat-card__icon {
@@ -50,6 +193,14 @@
       animation: pulse 2s infinite;
     }
   }
+}
+
+@keyframes stat-card-icon-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card__icon-ring { animation: none; }
 }
 
 /* ============================================================
@@ -118,6 +269,69 @@
       rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
     border-color: rgba(0, 212, 255, 0.3);
     box-shadow: var(--shadow-glow);
+
+    .workshop-card__title {
+      color: var(--tech-cyan);
+    }
+
+    .workshop-card__hud-corner {
+      opacity: 1;
+    }
+
+    .workshop-card__scanline {
+      animation: workshop-card-scan-sweep 1.1s ease-in-out;
+    }
+
+    .workshop-card__tag {
+      opacity: 0.7;
+    }
+  }
+
+  // ── Coins de visée façon HUD — même langage que theme-card, décalés
+  // légèrement pour ne pas empiéter sur les badges de statut/lieu.
+  &__hud-corner {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(0, 212, 255, 0.75);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
+
+    &--tl { top: 6px;    left: 6px;  border-right: none; border-bottom: none; }
+    &--tr { top: 6px;    right: 6px; border-left: none;  border-bottom: none; }
+    &--bl { bottom: 6px; left: 6px;  border-right: none; border-top: none; }
+    &--br { bottom: 6px; right: 6px; border-left: none;  border-top: none; }
+  }
+
+  // ── Balayage lumineux au survol — signature "scan" reprise de
+  // theme-card, pour une cohérence totale entre les deux listings.
+  &__scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -8%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.95), transparent);
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.8);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  // ── Tag "WS_XXX" façon identifiant de session — discret, se révèle
+  // légèrement au survol.
+  &__tag {
+    position: absolute;
+    top: 6px;
+    left: 24px;
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    letter-spacing: 0.06em;
+    color: rgba(0, 212, 255, 0.55);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
   }
 
   .live-indicator {
@@ -175,6 +389,7 @@
     font-weight: 600;
     margin-bottom: 0.75rem;
     line-height: 1.4;
+    transition: color var(--transition-base);
   }
 
   &__presenter {
@@ -209,6 +424,10 @@
   // Utilise .progress-bar-wrap depuis styles.scss
   &__progress {
     margin-bottom: 1rem;
+
+    .progress-fill {
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+    }
   }
 
   &__actions {
@@ -216,6 +435,17 @@
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+}
+
+@keyframes workshop-card-scan-sweep {
+  0%   { top: -8%;  opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 106%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workshop-card__scanline { animation: none !important; }
 }
 
 .registered-badge {
@@ -284,16 +514,45 @@
   }
 
   &__icon {
+    position: relative;
     width: 56px;
     height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.25);
     border-radius: 50%;
     font-size: 1.5rem;
     color: var(--tech-cyan);
+
+    i { position: relative; z-index: 1; }
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        rgba(0, 212, 255, 0.9),
+        transparent 30%,
+        transparent 70%,
+        rgba(0, 212, 255, 0.9)
+      );
+      opacity: 0;
+      transition: opacity var(--transition-base);
+      animation: guest-cta-icon-spin 4s linear infinite;
+    }
   }
+
+  &:hover &__icon::before {
+    opacity: 1;
+  }
+}
+
+@keyframes guest-cta-icon-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ============================================================
@@ -314,24 +573,51 @@
   gap: 1rem;
   padding: 1rem 1.25rem;
   background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-lg);
   transition: all var(--transition-fast);
 
   &:hover {
     background: rgba(0, 212, 255, 0.05);
+    border-color: rgba(0, 212, 255, 0.25);
     transform: translateX(4px);
+
+    .inspiration-card__icon-ring {
+      opacity: 1;
+    }
   }
 
   &__icon {
+    position: relative;
     width: 48px;
     height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.22);
     border-radius: 50%;
     font-size: 1.25rem;
     color: var(--tech-cyan);
+
+    i { position: relative; z-index: 1; }
+  }
+
+  &__icon-ring {
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      rgba(0, 212, 255, 0.9),
+      transparent 30%,
+      transparent 70%,
+      rgba(0, 212, 255, 0.9)
+    );
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    animation: inspiration-icon-spin 4s linear infinite;
+    pointer-events: none;
   }
 
   &__content {
@@ -347,6 +633,17 @@
       font-size: 0.6875rem;
       color: var(--gray-500);
     }
+  }
+}
+
+@keyframes inspiration-icon-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guest-cta-banner__icon::before,
+  .inspiration-card__icon-ring {
+    animation: none;
   }
 }
 
@@ -643,11 +940,27 @@
   border-radius: var(--radius-full);
   font-size: 0.6875rem;
   font-weight: 500;
+  border: 1px solid transparent;
 
-  &--info    { background: rgba(0, 212, 255, 0.12);  color: var(--tech-cyan); }
-  &--success { background: rgba(16, 185, 129, 0.12); color: var(--tech-success); }
-  &--neutral { background: rgba(255, 255, 255, 0.05); color: var(--gray-500); }
-  &--danger  { background: rgba(239, 68, 68, 0.12);  color: var(--tech-danger); }
+  &--info    { background: rgba(0, 212, 255, 0.12);  color: var(--tech-cyan);    border-color: rgba(0, 212, 255, 0.25); }
+  &--success {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--tech-success);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: statusBadgeLivePulse 2.2s ease-in-out infinite;
+  }
+  &--neutral { background: rgba(255, 255, 255, 0.05); color: var(--gray-500); border-color: rgba(255, 255, 255, 0.08); }
+  &--danger  { background: rgba(239, 68, 68, 0.12);  color: var(--tech-danger);  border-color: rgba(239, 68, 68, 0.25); }
+}
+
+@keyframes statusBadgeLivePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+  50%      { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-badge--success { animation: none; }
 }
 
 .location-badge {
@@ -656,6 +969,7 @@
   gap: 0.25rem;
   padding: 0.25rem 0.75rem;
   background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-full);
   font-size: 0.6875rem;
   color: var(--gray-500);
@@ -934,13 +1248,24 @@
 
 // ── Toggle Liste / Calendrier ─────────────────────────────────────────
 .view-toggle {
-  display: inline-flex;
+  display: flex;
+  max-width: 100%;
   gap: 0.25rem;
   padding: 0.25rem;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   margin-bottom: 1.5rem;
+  // Sur mobile, les 3 boutons (Liste / Calendrier / Chronologie) peuvent
+  // dépasser la largeur de l'écran — on autorise un défilement horizontal
+  // au lieu de laisser le contenu déborder de la page.
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   &__btn {
     display: flex;
@@ -953,6 +1278,8 @@
     color: var(--gray-400);
     font-size: var(--text-sm);
     font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
     cursor: pointer;
     transition: all var(--transition-fast);
 
@@ -963,7 +1290,65 @@
     &.active {
       background: var(--gradient-primary);
       color: var(--white);
+      box-shadow: 0 2px 12px rgba(0, 212, 255, 0.35);
+      transform: translateY(-1px);
     }
+  }
+
+  @media (max-width: 480px) {
+    &__btn {
+      padding: 0.45rem 0.75rem;
+      font-size: var(--text-xs);
+      gap: 0.35rem;
+    }
+  }
+}
+
+/* ============================================================
+   EMPTY STATE — icône en anneau, cohérente avec le reste du site
+   ============================================================ */
+.empty-state__icon {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--tech-cyan);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 50%;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -9px;
+    border-radius: 50%;
+    border: 1px dashed rgba(0, 212, 255, 0.28);
+    animation: empty-state-icon-spin 18s linear infinite;
+  }
+}
+
+@keyframes empty-state-icon-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state__icon::before { animation: none; }
+}
+
+.empty-state__readout {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: rgba(0, 212, 255, 0.5);
+  margin-bottom: 0.5rem;
+
+  span {
+    color: var(--tech-cyan);
+    margin-right: 0.25rem;
   }
 }
 
@@ -1148,6 +1533,47 @@
 
   .calendar-pill__title {
     display: none;
+  }
+}
+
+// ── Calendrier sur très petits écrans : 7 colonnes restent denses même
+// avec le titre masqué (768px) — on resserre encore pour éviter que le
+// contenu (date + pastilles) ne se retrouve tassé ou tronqué.
+@media (max-width: 480px) {
+  .calendar-view__header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .calendar-view__title h3 {
+    font-size: var(--text-base);
+  }
+
+  .calendar-grid__weekdays span {
+    padding: 0.4rem 0.15rem;
+    font-size: 0.625rem;
+    letter-spacing: 0;
+  }
+
+  .calendar-cell {
+    min-height: 52px;
+    padding: 0.25rem 0.15rem;
+    gap: 0.15rem;
+  }
+
+  .calendar-cell__date {
+    width: 18px;
+    height: 18px;
+    font-size: 0.6875rem;
+  }
+
+  .calendar-pill {
+    padding: 0.1rem 0.2rem;
+    justify-content: center;
+  }
+
+  .calendar-pill__time {
+    font-size: 0.6rem;
   }
 }
 

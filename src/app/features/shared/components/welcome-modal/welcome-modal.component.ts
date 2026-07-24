@@ -8,6 +8,10 @@ import { RouterLink } from '@angular/router';
 // après une inscription réussie (voir AuthService.consumeJustRegistered()
 // et MemberDashboardComponent qui la déclenche). Purement présentationnel :
 // aucun accès Firestore/Auth ici, tout est passé en @Input.
+//
+// Le z-index (au-dessus de la navbar) et le verrouillage du scroll de la
+// page pendant l'affichage sont gérés en CSS via `body:has(.welcome-overlay)`
+// dans src/styles/_layout.scss — pas besoin d'y toucher ici.
 // ─────────────────────────────────────────────────────────────
 @Component({
   selector: 'app-welcome-modal',

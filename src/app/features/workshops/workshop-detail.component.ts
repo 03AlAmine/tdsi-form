@@ -102,7 +102,7 @@ export class WorkshopDetailComponent implements OnInit, OnDestroy {
         : 'Workshop — Club TDSI Campus',
       description:
         `Workshop « ${provisionalTitle || '…'} » du Club TDSI — ` +
-        'cybersécurité, IA & réseaux. ESP – UCAD, Dakar. Inscription en ligne.',
+        'cybersécurité, IA & réseaux. TDSI – UCAD, Dakar. Inscription en ligne.',
       path: `/workshops/${slugParam}`,
       type: 'article',
     });
@@ -169,7 +169,7 @@ export class WorkshopDetailComponent implements OnInit, OnDestroy {
       description:
         `Workshop « ${w.themeTitle} » animé par ${w.presenter}, ` +
         `le ${dateFr} (${w.location}). ` +
-        `Club TDSI, ESP – UCAD, Dakar. Inscription en ligne.`,
+        `Club TDSI, TDSI – UCAD, Dakar. Inscription en ligne.`,
       path,
       type: 'article',
     });

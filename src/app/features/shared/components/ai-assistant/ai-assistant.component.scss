@@ -1,0 +1,399 @@
+// ai-assistant.component.scss
+
+@keyframes assistantPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes assistantPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.ai-assistant {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+
+  @media (max-width: 767px) {
+    right: 1rem;
+    // Remonté au-dessus de la bottom nav (voir --bottom-nav-height) au
+    // lieu de rester collé en bas, sous la barre.
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem);
+  }
+}
+
+// ── Bouton flottant ─────────────────────────────────────────
+.ai-assistant__fab {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gradient-primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(var(--tech-cyan-rgb), 0.4);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+
+  &:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 28px rgba(var(--tech-cyan-rgb), 0.55);
+  }
+
+  // Boutons flottants plus discrets sur mobile — 56px prenait beaucoup
+  // de place à l'écran une fois cumulé avec les autres FAB de la page.
+  @media (max-width: 767px) {
+    width: 46px;
+    height: 46px;
+    font-size: 1.05rem;
+  }
+}
+
+.ai-assistant__fab-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--tech-cyan-rgb), 0.6);
+  animation: assistantPing 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+// ── Info-bulle "Besoin d'aide ?" — même patron visuel que le
+// reco-fab (thematiques) : pilule sombre à gauche, flèche, révélée
+// au survol/focus du bouton rond.
+.ai-assistant__tooltip {
+  position: absolute;
+  right: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, var(--tech-dark), var(--tech-deep));
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-lg);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(var(--tech-cyan-rgb), 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+
+  .tooltip-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--tech-cyan);
+    letter-spacing: 0.5px;
+  }
+
+  .tooltip-arrow {
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 0 6px 8px;
+    border-color: transparent transparent transparent rgba(var(--tech-cyan-rgb), 0.3);
+  }
+}
+
+.ai-assistant__fab:hover .ai-assistant__tooltip,
+.ai-assistant__fab:focus-visible .ai-assistant__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(-4px);
+}
+
+@media (max-width: 640px) {
+  .ai-assistant__tooltip { display: none; }
+}
+
+// ── Panneau de chat ─────────────────────────────────────────
+.ai-assistant__panel {
+  width: min(360px, calc(100vw - 2rem));
+  max-height: min(520px, 70vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card-solid);
+  backdrop-filter: var(--backdrop-blur-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: assistantPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ai-assistant__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, rgba(var(--tech-cyan-rgb), 0.06), transparent);
+}
+
+.ai-assistant__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.ai-assistant__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(var(--tech-cyan-rgb), 0.12);
+  border: 1px solid rgba(var(--tech-cyan-rgb), 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tech-cyan);
+  font-size: 0.9375rem;
+  flex-shrink: 0;
+}
+
+.ai-assistant__name {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.ai-assistant__status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  color: var(--gray-500);
+}
+
+.ai-assistant__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tech-success);
+  box-shadow: 0 0 6px var(--tech-success);
+}
+
+.ai-assistant__close {
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+
+  &:hover {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+// ── Messages ─────────────────────────────────────────────────
+.ai-assistant__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  scrollbar-width: thin;
+}
+
+.ai-assistant__msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: 88%;
+}
+
+.ai-assistant__msg--user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.ai-assistant__msg-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(var(--tech-cyan-rgb), 0.12);
+  color: var(--tech-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  flex-shrink: 0;
+}
+
+.ai-assistant__msg-bubble {
+  margin: 0;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--gray-200);
+}
+
+.ai-assistant__msg--user .ai-assistant__msg-bubble {
+  background: var(--gradient-primary);
+  color: var(--white);
+  border-color: transparent;
+}
+
+.ai-assistant__typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.75rem 0.875rem;
+
+  span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tech-cyan);
+    animation: typingDot 1.2s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+  }
+}
+
+// ── Suggestions ─────────────────────────────────────────────
+.ai-assistant__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0 1rem 0.875rem;
+}
+
+.ai-assistant__chip {
+  border: 1px solid rgba(var(--tech-cyan-rgb), 0.25);
+  background: rgba(var(--tech-cyan-rgb), 0.06);
+  color: var(--tech-cyan);
+  border-radius: var(--radius-full);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.6875rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: rgba(var(--tech-cyan-rgb), 0.14);
+    transform: translateY(-1px);
+  }
+}
+
+// ── Composer ─────────────────────────────────────────────────
+.ai-assistant__composer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--glass-border);
+
+  input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    color: var(--white);
+    outline: none;
+    transition: border-color var(--transition-fast);
+
+    &:focus {
+      border-color: var(--tech-cyan);
+    }
+
+    &::placeholder {
+      color: var(--gray-500);
+    }
+  }
+
+  button {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: var(--gradient-primary);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition:
+      transform var(--transition-fast),
+      opacity var(--transition-fast);
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:not(:disabled):hover {
+      transform: scale(1.08);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-assistant__fab-ping,
+  .ai-assistant__panel,
+  .ai-assistant__typing span {
+    animation: none;
+  }
+}

@@ -1,0 +1,116 @@
+<!-- person-info-modal.component.html -->
+@if (personInfoService.current(); as person) {
+  <div class="pim-overlay" (click)="close()">
+    <div
+      class="pim-container"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="person-info-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="pim-gradient-border"></div>
+
+      <button class="pim-close" aria-label="Fermer la fiche" (click)="close()">
+        <i class="fas fa-times"></i>
+      </button>
+
+      @if (person.context) {
+        <div class="pim-context">
+          <i class="fas fa-lightbulb"></i>
+          <span>Proposé pour « {{ person.context }} »</span>
+        </div>
+      }
+
+      <div class="pim-header">
+        <div class="pim-avatar">
+          <span>{{ initialOf(person.name) }}</span>
+          <div class="pim-avatar-glow"></div>
+        </div>
+        <div class="pim-header-info">
+          <h3 id="person-info-title" class="pim-name">{{ person.name }}</h3>
+          @if (person.promo) {
+            <span class="pim-promo">
+              <i class="fas fa-graduation-cap"></i>
+              {{ person.promo }}
+            </span>
+          }
+        </div>
+        @if (person.aiAssisted) {
+          <span class="ai-badge ai-badge--sm" title="Formulaire pré-rempli avec l'aide de l'IA">
+            <i class="fas fa-robot"></i>
+          </span>
+        }
+      </div>
+
+      <div class="pim-body">
+        @if (person.email || fullProfile()?.email) {
+          <a class="pim-row pim-row--link" [href]="'mailto:' + (fullProfile()?.email || person.email)">
+            <i class="fas fa-envelope"></i>
+            <span>{{ fullProfile()?.email || person.email }}</span>
+          </a>
+        }
+
+        @if (profileLoading()) {
+          <div class="pim-loading">
+            <div class="pim-loading__spinner"></div>
+            <span>Chargement du profil complet...</span>
+          </div>
+        }
+
+        @if (fullProfile(); as profile) {
+          @if (profile.phone) {
+            <a class="pim-row pim-row--link" [href]="'tel:' + profile.phone">
+              <i class="fas fa-phone"></i>
+              <span>{{ profile.phone }}</span>
+            </a>
+          }
+          @if (profile.etablissement || profile.filiere) {
+            <div class="pim-row">
+              <i class="fas fa-school"></i>
+              <span>
+                {{ profile.etablissement }}
+                @if (profile.etablissement && profile.filiere) { <span> · </span> }
+                {{ profile.filiere }}
+              </span>
+            </div>
+          }
+          @if (profile.bio) {
+            <div class="pim-bio">
+              <i class="fas fa-quote-left" aria-hidden="true"></i>
+              <p>{{ profile.bio }}</p>
+            </div>
+          }
+          @if (profile.linkedin || profile.github) {
+            <div class="pim-socials">
+              @if (profile.linkedin) {
+                <a [href]="profile.linkedin" target="_blank" rel="noopener" class="pim-social pim-social--linkedin">
+                  <i class="fab fa-linkedin"></i>
+                  <span>LinkedIn</span>
+                </a>
+              }
+              @if (profile.github) {
+                <a [href]="profile.github" target="_blank" rel="noopener" class="pim-social pim-social--github">
+                  <i class="fab fa-github"></i>
+                  <span>GitHub</span>
+                </a>
+              }
+            </div>
+          }
+          <div class="pim-row pim-row--muted">
+            <i class="fas fa-user-clock"></i>
+            <span>Membre depuis {{ profile.createdAt | date: 'MMMM yyyy' }}</span>
+          </div>
+        } @else if (!profileLoading() && !profileError() && !person.uid) {
+          <p class="pim-hint">Profil détaillé non disponible pour cette fiche.</p>
+        }
+
+        @if (profileError()) {
+          <p class="pim-hint">
+            <i class="fas fa-circle-info"></i>
+            Détails complémentaires non accessibles depuis cet espace.
+          </p>
+        }
+      </div>
+    </div>
+  </div>
+}

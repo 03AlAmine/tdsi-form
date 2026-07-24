@@ -4,8 +4,12 @@
 .page-hero {
   position: relative;
   padding: 2rem 0 3rem;
-  background: radial-gradient(ellipse at 50% 0%, rgba(0, 212, 255, 0.08), transparent);
+  background:
+    radial-gradient(ellipse 60% 80% at 15% 20%, rgba(139, 92, 246, 0.10), transparent 60%),
+    radial-gradient(ellipse 70% 90% at 85% 10%, rgba(0, 212, 255, 0.10), transparent 60%),
+    radial-gradient(ellipse at 50% 0%, rgba(0, 212, 255, 0.08), transparent);
   overflow: hidden;
+  isolation: isolate;
 
   &::before {
     content: "";
@@ -13,9 +17,26 @@
     top: 0; left: 0; right: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--tech-cyan), transparent);
+    z-index: 2;
   }
 
-  &__content  { text-align: center; max-width: var(--hero-content-width, 800px); margin: 0 auto; }
+  // ── Ligne de balayage lumineuse, en boucle lente — renforce l'ambiance
+  // "console" sans nécessiter de nouveau markup (pseudo-élément pur).
+  &::after {
+    content: "";
+    position: absolute;
+    left: -20%;
+    right: -20%;
+    top: -40%;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(0, 212, 255, 0.06), transparent);
+    transform: rotate(-3deg);
+    animation: page-hero-sweep 9s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &__content  { position: relative; z-index: 1; text-align: center; max-width: var(--hero-content-width, 800px); margin: 0 auto; }
 
   &__badge {
     display: inline-flex;
@@ -39,10 +60,25 @@
     }
   }
 
-  &__title    { font-size: clamp(2rem, 5vw, 2.5rem); font-weight: 700; margin-bottom: 1rem; }
+  &__title    {
+    position: relative;
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
   &__subtitle { font-size: 1rem; color: var(--gray-400); margin-bottom: 2rem; }
-  &__search   { max-width: 480px; margin: 0 auto; }
+  &__search   { position: relative; z-index: 1; max-width: 480px; margin: 1.5rem auto 0; }
   &__cta      { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+}
+
+@keyframes page-hero-sweep {
+  0%, 100% { transform: rotate(-3deg) translateY(0); opacity: 0.5; }
+  50%      { transform: rotate(-3deg) translateY(30px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-hero::after { animation: none; opacity: 0.4; }
 }
 
 // ── AI loading ────────────────────────────────────
@@ -84,7 +120,9 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
-  z-index: 1000;
+  // Au-dessus de la navbar (99999) et de son menu mobile (100001), du footer,
+  // des modales, de tout — un drawer doit toujours flotter par-dessus l'appli.
+  z-index: var(--z-drawer-overlay);
   display: flex;
   justify-content: flex-end;
   visibility: hidden;
@@ -94,25 +132,55 @@
   &--open { visibility: visible; opacity: 1; }
 }
 
-body:has(.drawer-overlay--open) {
+body:has(.drawer-overlay--open),
+body:has(.welcome-overlay) {
   overflow: hidden;
   position: fixed;
   width: 100%;
   top: 0;
+
+  // ⚠️ La vraie cause du "navbar toujours au-dessus" : .navbar a
+  // `isolation: isolate` + z-index 99999 (voir shell-navbar.component.scss),
+  // ce qui en fait un contexte d'empilement à part entière. N'importe quel
+  // élément fixed avec un z-index énorme MAIS rendu à l'intérieur d'un
+  // ancêtre qui crée lui-même un contexte d'empilement (ex: .shell-main,
+  // position:relative + z-index:10) reste plafonné par ce contexte — c'est
+  // le cas de app-welcome-modal, rendue à l'intérieur de member-dashboard,
+  // lui-même dans .shell-main. Aucun z-index sur la modale ne peut donc la
+  // faire passer au-dessus de .navbar : seul un z-index plus élevé sur ce
+  // contexte-sœur lui-même (ici .navbar) permet de le repasser derrière.
+  // On neutralise donc .navbar (et par ricochet son menu mobile, qui est un
+  // enfant du même contexte isolé) UNIQUEMENT pendant qu'un drawer OU la
+  // welcome-modal est ouvert(e).
+  .navbar {
+    z-index: 1 !important;
+  }
+
+  .bottom-nav {
+    z-index: 1 !important;
+  }
 }
 
 .drawer {
+  position: relative;
+  z-index: var(--z-drawer);
   width: 100%;
   max-width: 550px;
-  height: calc(100% - 70px);
+  // Toute la hauteur de l'écran — le drawer n'a plus besoin de "laisser passer"
+  // la navbar puisqu'il s'affiche désormais par-dessus elle.
+  height: 100%;
+  height: 100dvh;
   background: linear-gradient(135deg, #0f1235, #0a0e27);
   border-left: 1px solid rgba(0, 212, 255, 0.2);
   transform: translateX(100%);
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
-  margin-top: 70px;
   border-radius: 4.5rem 0 0 0;
+  // Sans ça, la bordure du header (droite) ignore le rayon du drawer et
+  // "dépasse" tout droit à travers le coin arrondi. Le clip force tout le
+  // contenu (header inclus) à suivre la même courbe que le drawer lui-même.
+  overflow: hidden;
 
   &--open { transform: translateX(0); }
 
@@ -222,37 +290,48 @@ body:has(.drawer-overlay--open) {
 }
 
 // ── Mobile blur ───────────────────────────────────
-// Appliqué sur le contenu quand la navbar mobile est ouverte
+// Appliqué sur le contenu UNIQUEMENT quand la navbar mobile est ouverte.
+// ⚠️ Le sélecteur ci-dessous s'appliquait auparavant sans aucune condition
+// dès qu'on était sous 768px — donc en permanence sur mobile, avec un
+// ::before en position: fixed par-dessus TOUT le contenu (backdrop-filter
+// blur). C'est ce qui donnait l'impression d'un "overlay" figé sur les
+// pages thématiques / workshops / fiche thématique en mobile. Le flou ne
+// doit exister que pendant que `.mobile-nav-overlay` est dans le DOM
+// (menu latéral ouvert, voir shell-navbar.component.html).
 @media (max-width: 768px) {
-  .shell-main,
-  .main-content,
-  .auth-container,
-  .landing,
-  .themes-page,
-  .workshops-page,
-  .propose-page,
-  .submissions-page,
-  .profile-page,
-  .admin-workshops,
-  .admin-themes,
-  .member-dashboard {
-    position: relative;
+  body:has(.mobile-nav-overlay) {
+    .shell-main,
+    .main-content,
+    .auth-container,
+    .landing,
+    .themes-page,
+    .workshops-page,
+    .propose-page,
+    .submissions-page,
+    .profile-page,
+    .admin-workshops,
+    .admin-themes,
+    .member-dashboard {
+      position: relative;
 
-    &::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
-      pointer-events: none;
-      z-index: 1;
+      &::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        pointer-events: none;
+        z-index: 1;
+      }
     }
   }
 }
 
 @media (max-width: 480px) {
-  .shell-main::before,
-  .main-content::before {
-    backdrop-filter: blur(2px) !important;
+  body:has(.mobile-nav-overlay) {
+    .shell-main::before,
+    .main-content::before {
+      backdrop-filter: blur(2px) !important;
+    }
   }
 }

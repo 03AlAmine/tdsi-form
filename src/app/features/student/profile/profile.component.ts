@@ -8,6 +8,9 @@ import { ToastService } from '../../../core/services/toast.service';
 import { LoggerService } from '../../../core/services/logger.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { WorkshopService } from '../../../core/services/workshop.service';
+import { GlowTimelineComponent } from '../../shared/components/glow-timeline/glow-timeline.component';
+import { TimelineItem } from '../../shared/components/glow-timeline/timeline-item.model';
+import { MemberCardComponent } from '../../shared/components/member-card/member-card.component';
 import { auth } from '../../../../firebase.config';
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { Subscription } from 'rxjs';
@@ -15,7 +18,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink, GlowTimelineComponent, MemberCardComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })
@@ -48,6 +51,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return Math.max(0, Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24)));
   });
 
+  memberSinceLabel = computed(() => {
+    const days = this.memberSince();
+    return days > 0 ? `Membre depuis ${days} jour${days > 1 ? 's' : ''}` : 'Nouveau membre';
+  });
+
   badges = computed(() => [
     {
       icon: 'fa-lightbulb',
@@ -75,6 +83,80 @@ export class ProfileComponent implements OnInit, OnDestroy {
     },
   ]);
 
+  // ── Roadmap membre — réutilise app-glow-timeline avec les mêmes
+  // seuils que les badges ci-dessus, pour rester cohérent (pas de
+  // nouveau chiffre inventé). Le premier palier "Découvre" est toujours
+  // acquis (compte créé) ; les suivants s'allument avec l'engagement
+  // réel du membre. ──
+  memberRoadmap = computed<TimelineItem[]>(() => {
+    const s = this.stats();
+    const since = this.memberSince();
+
+    const steps: Array<{
+      icon: string;
+      title: string;
+      description: string;
+      unlocked: boolean;
+    }> = [
+      {
+        icon: 'fa-compass',
+        title: 'Découvre',
+        description: 'Compte créé — bienvenue au Club TDSI.',
+        unlocked: true,
+      },
+      {
+        icon: 'fa-calendar-check',
+        title: 'Participe',
+        description: "S'inscrire à un premier workshop.",
+        unlocked: s.myRegistrations >= 1,
+      },
+      {
+        icon: 'fa-graduation-cap',
+        title: 'Apprends',
+        description: 'Suivre 3 workshops.',
+        unlocked: s.myRegistrations >= 3,
+      },
+      {
+        icon: 'fa-lightbulb',
+        title: 'Contribue',
+        description: 'Proposer une première thématique.',
+        unlocked: s.mySubmissions >= 1,
+      },
+      {
+        icon: 'fa-pen-nib',
+        title: 'Devient référence',
+        description: 'Proposer 3 thématiques.',
+        unlocked: s.mySubmissions >= 3,
+      },
+      {
+        icon: 'fa-user-graduate',
+        title: 'Mentor',
+        description: 'Membre fidèle et contributeur régulier du club.',
+        unlocked: since >= 90 && s.mySubmissions >= 3,
+      },
+    ];
+
+    // Le "step" actif = le dernier débloqué en partant du début, tant
+    // que la chaîne n'est pas rompue (évite un pulse sur une étape
+    // ultérieure débloquée "par hasard" avant une étape intermédiaire).
+    let currentIndex = 0;
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i].unlocked) currentIndex = i;
+      else break;
+    }
+
+    return steps.map((step, i) => ({
+      id: `roadmap-${i}`,
+      icon: step.icon,
+      title: step.title,
+      description: step.description,
+      status: step.unlocked ? 'success' : 'neutral',
+      statusLabel: step.unlocked ? 'Débloqué' : 'À venir',
+      pulse: step.unlocked && i === currentIndex,
+      disabled: !step.unlocked,
+    }));
+  });
+
   savingProfile       = signal(false);
   changingPassword    = signal(false);
   showCurrentPassword = signal(false);
@@ -84,8 +166,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
   errorMessage        = signal('');
 
   profileForm = this.fb.group({
-    displayName: [this.user?.displayName ?? '', [Validators.required, Validators.minLength(3)]],
-    promo:       [this.user?.promo       ?? '',  Validators.required],
+    displayName:   [this.user?.displayName   ?? '', [Validators.required, Validators.minLength(3)]],
+    promo:         [this.user?.promo         ?? '', Validators.required],
+    etablissement: [this.user?.etablissement ?? ''],
+    etablissementAutre: [''],
+    filiere:       [this.user?.filiere       ?? ''],
+    phone:         [this.user?.phone         ?? '', Validators.pattern(/^\+?[0-9 ]{7,15}$/)],
+    linkedin:      [this.user?.linkedin      ?? '', Validators.pattern(/^https?:\/\/.+/)],
+    github:        [this.user?.github        ?? '', Validators.pattern(/^https?:\/\/.+/)],
+    bio:           [this.user?.bio           ?? '', Validators.maxLength(220)],
   });
 
   passwordForm: FormGroup = this.fb.group({
@@ -95,6 +184,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }, { validators: this.passwordMatchValidator });
 
   promos = ['L1', 'L2', 'L3', 'M1', 'M2', 'Doctorat', 'Professionnel'];
+
+  // ✅ Liste prédéfinie — "Autre" fait apparaître un champ libre
+  // (etablissementAutre) dont la valeur remplace "Autre" à l'enregistrement.
+  etablissements = [
+    'Transmission de Données et Sécurité de l’Information (TDSI)',
+    'École Supérieure Polytechnique de Dakar (ESP)',
+    'Université Cheikh Anta Diop (UCAD)',
+    'Université Gaston Berger (UGB)',
+    'Université Alioune Diop de Bambey (UADB)',
+    'Université Assane Seck de Ziguinchor (UASZ)',
+    'École Polytechnique de Thiès (EPT)',
+    'Institut Supérieur de Management (ISM)',
+    "Institut Supérieur d'Informatique (ISI)",
+    'Autre',
+  ];
 
   get newPassword(): AbstractControl     { return this.passwordForm.get('newPassword')!; }
   get confirmPassword(): AbstractControl { return this.passwordForm.get('confirmPassword')!; }
@@ -106,8 +210,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.sub = this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.user = user;
+        const knownEtablissement = user.etablissement && this.etablissements.includes(user.etablissement);
         this.profileForm.patchValue(
-          { displayName: user.displayName, promo: user.promo },
+          {
+            displayName: user.displayName,
+            promo: user.promo,
+            etablissement: knownEtablissement ? user.etablissement : (user.etablissement ? 'Autre' : ''),
+            etablissementAutre: knownEtablissement ? '' : (user.etablissement ?? ''),
+            filiere: user.filiere ?? '',
+            phone: user.phone ?? '',
+            linkedin: user.linkedin ?? '',
+            github: user.github ?? '',
+            bio: user.bio ?? '',
+          },
           { emitEvent: false }
         );
       }
@@ -148,6 +263,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return c ? c.invalid && c.touched : false;
   }
 
+  isOtherEtablissement(): boolean {
+    return this.profileForm.get('etablissement')?.value === 'Autre';
+  }
+
+  bioLength(): number {
+    return (this.profileForm.get('bio')?.value ?? '').length;
+  }
+
   isPasswordInvalid(field: string): boolean {
     const c = this.passwordForm.get(field);
     return c ? c.invalid && c.touched : false;
@@ -169,9 +292,22 @@ export class ProfileComponent implements OnInit, OnDestroy {
       const uid = this.user!.uid;
       const displayName = this.profileForm.value.displayName!;
       const promo       = this.profileForm.value.promo!;
+      const etablissement =
+        this.profileForm.value.etablissement === 'Autre'
+          ? (this.profileForm.value.etablissementAutre ?? '').trim()
+          : (this.profileForm.value.etablissement ?? '');
 
       // ✅ Via UserService — plus de updateDoc direct
-      await this.userSvc.updateProfile(uid, { displayName, promo });
+      await this.userSvc.updateProfile(uid, {
+        displayName,
+        promo,
+        etablissement,
+        filiere:  this.profileForm.value.filiere  ?? '',
+        phone:    this.profileForm.value.phone    ?? '',
+        linkedin: this.profileForm.value.linkedin ?? '',
+        github:   this.profileForm.value.github   ?? '',
+        bio:      this.profileForm.value.bio      ?? '',
+      });
       await this.authService.refreshCurrentUser();
 
       this.successMessage.set('Profil mis à jour avec succès !');

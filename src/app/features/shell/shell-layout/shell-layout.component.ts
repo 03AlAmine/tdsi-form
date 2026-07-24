@@ -7,6 +7,7 @@ import { PublicFooterComponent } from '../../shared/components/public-footer/pub
 import { TechBackgroundComponent } from '../../shared/components/tech-background/tech-background.component';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
+import { PersonInfoModalComponent } from '../../shared/components/person-info-modal/person-info-modal.component';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -19,6 +20,7 @@ import { AuthService } from '../../../core/services/auth.service';
     TechBackgroundComponent,
     ToastComponent,
     ConfirmModalComponent,
+    PersonInfoModalComponent,
     CommonModule,
   ],
   templateUrl: './shell-layout.component.html',

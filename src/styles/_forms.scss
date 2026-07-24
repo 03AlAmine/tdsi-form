@@ -65,6 +65,7 @@
 // ── Search wrapper ────────────────────────────────
 .search-wrapper {
   position: relative;
+  transition: transform var(--transition-fast);
 
   i {
     position: absolute;
@@ -74,6 +75,7 @@
     color: var(--gray-500);
     font-size: 1rem;
     pointer-events: none;
+    transition: color var(--transition-fast);
   }
 
   input,
@@ -81,19 +83,25 @@
     width: 100%;
     padding: 0.875rem 2.5rem 0.875rem 2.75rem;
     background: rgba(21, 30, 45, 0.8);
+    backdrop-filter: var(--backdrop-blur-simple);
     border: 1px solid rgba(0, 212, 255, 0.15);
     border-radius: var(--radius-lg);
     color: var(--white);
     font-size: 0.9375rem;
+    box-shadow: var(--shadow-sm);
     transition: all var(--transition-fast);
 
     &:focus {
       outline: none;
       border-color: var(--tech-cyan);
-      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+      box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.14), var(--shadow-glow);
     }
 
     &::placeholder { color: var(--gray-500); }
+  }
+
+  &:focus-within i {
+    color: var(--tech-cyan);
   }
 
   &--rounded input,
@@ -109,8 +117,11 @@
     color: var(--gray-500);
     cursor: pointer;
     padding: 0.25rem;
-    transition: color var(--transition-fast);
+    transition: color var(--transition-fast), transform var(--transition-fast);
 
-    &:hover { color: var(--tech-cyan); }
+    &:hover {
+      color: var(--tech-cyan);
+      transform: translateY(-50%) rotate(90deg);
+    }
   }
 }

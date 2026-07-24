@@ -2,8 +2,10 @@
 import { Component, HostListener, inject, signal, effect, AfterViewInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommandPaletteService } from '../../../core/services/command-palette.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -29,10 +31,18 @@ export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
   private authService = inject(AuthService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly commandPaletteService = inject(CommandPaletteService);
+  private readonly themeService = inject(ThemeService);
 
   userMenuOpen = signal(false);
   mobileMenuOpen = signal(false);
   isScrolled = false;
+
+  // ✅ Badge "Mes dépôts" — nombre de propositions encore en attente
+  // de traitement, affiché dans le dropdown utilisateur (et repris sur
+  // la page "Proposer"). Un abonnement léger, actif tant que l'onglet
+  // reste connecté.
+  private mySubmissionsSub: Subscription | null = null;
+  pendingMySubmissionsCount = signal(0);
 
   private scrollListener: (() => void) | null = null;
 
@@ -54,6 +64,17 @@ export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
         this.dismissCmdkHint();
       }
     });
+
+    const uid = this.authService.currentUser?.uid;
+    if (uid) {
+      this.mySubmissionsSub = this.themeService
+        .getMySubmissions(uid)
+        .subscribe((subs) => {
+          this.pendingMySubmissionsCount.set(
+            subs.filter((s) => s.status === 'en attente').length,
+          );
+        });
+    }
   }
 
   dismissCmdkHint(): void {
@@ -142,6 +163,7 @@ export class ShellNavbarComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.hintTimeout) clearTimeout(this.hintTimeout);
     if (this.hintAutoDismiss) clearTimeout(this.hintAutoDismiss);
+    this.mySubmissionsSub?.unsubscribe();
     if (!this.isBrowser) return;
     if (this.scrollListener) {
       window.removeEventListener('scroll', this.scrollListener);
