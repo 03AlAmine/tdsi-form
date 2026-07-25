@@ -38,6 +38,10 @@ export interface SeoPageConfig {
   path: string;
   /** URL absolue d'une image de partage. Fallback : logo du site. */
   image?: string;
+  /** Largeur en px de `image` (défaut : dimensions du logo). Requis par certains crawlers, ex. LinkedIn. */
+  imageWidth?: number;
+  /** Hauteur en px de `image` (défaut : dimensions du logo). */
+  imageHeight?: number;
   /** Type Open Graph. 'website' par défaut, 'article' pour du contenu daté. */
   type?: 'website' | 'article';
   /** true pour les pages à exclure de l'index (espace membre, admin…). */
@@ -57,6 +61,9 @@ export class SeoService {
     'https://campus.clubtdsi.sn';
 
   private readonly defaultImage = `${this.siteUrl}/assets/images/logo.png`;
+  /** Dimensions réelles de assets/images/logo.png — à ajuster si le fichier change. */
+  private readonly defaultImageWidth = 1024;
+  private readonly defaultImageHeight = 1024;
 
   // ── Page complète ────────────────────────────────────────────────
 
@@ -66,6 +73,12 @@ export class SeoService {
       : `${cfg.title} | ${SITE_NAME}`;
     const url = this.absoluteUrl(cfg.path);
     const image = cfg.image ?? this.defaultImage;
+    // Si une image custom est fournie sans dimensions, on ne force pas de
+    // largeur/hauteur erronées : on les omet plutôt que de mentir au crawler.
+    const imageWidth =
+      cfg.imageWidth ?? (cfg.image ? undefined : this.defaultImageWidth);
+    const imageHeight =
+      cfg.imageHeight ?? (cfg.image ? undefined : this.defaultImageHeight);
 
     this.title.setTitle(fullTitle);
 
@@ -78,6 +91,16 @@ export class SeoService {
     this.upsertProp('og:description', cfg.description);
     this.upsertProp('og:url', url);
     this.upsertProp('og:image', image);
+    if (imageWidth) {
+      this.upsertProp('og:image:width', String(imageWidth));
+    } else {
+      this.meta.removeTag('property="og:image:width"');
+    }
+    if (imageHeight) {
+      this.upsertProp('og:image:height', String(imageHeight));
+    } else {
+      this.meta.removeTag('property="og:image:height"');
+    }
     this.upsertProp('og:type', cfg.type ?? 'website');
     this.upsertProp('og:locale', 'fr_SN');
 

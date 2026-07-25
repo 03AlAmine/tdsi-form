@@ -327,6 +327,35 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       path: '/',
     });
 
+    // ── JSON-LD Organization + WebSite ──
+    // Sert uniquement sur la home : identifie l'entité "Club TDSI" pour
+    // Google (knowledge panel potentiel) et déclare le site pour une
+    // éventuelle sitelinks search box.
+    this.seo.setJsonLd('organization', {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Club TDSI',
+      alternateName: 'Club TDSI Campus',
+      url: this.seo.absoluteUrl('/'),
+      logo: this.seo.absoluteUrl('/assets/images/logo.png'),
+      description:
+        'Club étudiant dédié à la cybersécurité, l’IA et les technologies ' +
+        'de l’information — TDSI, École Supérieure Polytechnique (ESP), UCAD, Dakar.',
+      // 🔧 À compléter avec les vrais liens du club (retire ceux qui n'existent pas).
+      sameAs: [
+        // 'https://www.facebook.com/clubtdsi',
+        // 'https://www.instagram.com/clubtdsi',
+        // 'https://www.linkedin.com/company/club-tdsi',
+      ],
+    });
+
+    this.seo.setJsonLd('website', {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Club TDSI Campus',
+      url: this.seo.absoluteUrl('/'),
+    });
+
     // ✅ SSR-safe : le listener Firestore temps réel ne doit s'ouvrir
     // que dans le navigateur (il empêcherait le prerender de se
     // stabiliser). Le HTML prérendu contient le shell + les meta.
@@ -400,6 +429,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.seo.clearJsonLd('organization');
+    this.seo.clearJsonLd('website');
     if (this.observer) this.observer.disconnect();
     if (this.typingInterval) clearInterval(this.typingInterval);
     if (this.codeTypingTimeout) clearTimeout(this.codeTypingTimeout);
