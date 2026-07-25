@@ -8,14 +8,30 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT || 587),
-  secure: Number(process.env.SMTP_PORT) === 465, // 465 = SSL direct, 587 = STARTTLS
+  port: Number(process.env.SMTP_PORT),
+  secure: Number(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
+transporter.verify((err, success) => {
+  if (err) {
+    console.error("SMTP VERIFY ERROR:");
+    console.error(err);
+  } else {
+    console.log("SMTP READY");
+  }
+});
+console.log({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  user: process.env.SMTP_USER,
+});
 const FROM = process.env.MAIL_FROM || `"Campus Club TDSI" <${process.env.SMTP_USER}>`;
 const SITE_URL = process.env.FRONTEND_URL || 'https://campus.clubtdsi.sn';
 

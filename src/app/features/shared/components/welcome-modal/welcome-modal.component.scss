@@ -316,3 +316,28 @@
     animation: none;
   }
 }
+.welcome-card {
+  &__icon i {
+    color: var(--tech-cyan);
+  }
+
+  &__list-icon i {
+    color: var(--tech-cyan);
+    font-size: 0.9rem;
+  }
+
+  &__notice-icon i {
+    color: var(--tech-cyan);
+  }
+
+  &__close i {
+    font-size: 0.9rem;
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+}

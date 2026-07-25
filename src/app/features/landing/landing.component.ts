@@ -343,9 +343,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         'de l’information — TDSI, École Supérieure Polytechnique (ESP), UCAD, Dakar.',
       // 🔧 À compléter avec les vrais liens du club (retire ceux qui n'existent pas).
       sameAs: [
-        // 'https://www.facebook.com/clubtdsi',
-        // 'https://www.instagram.com/clubtdsi',
-        // 'https://www.linkedin.com/company/club-tdsi',
+        'https://www.facebook.com/share/1AaiwkKR39/?mibextid=wwXIfr',
+        'https://www.instagram.com/club_tdsi?igsh=bnRqZmloaWh6OGJl&utm_source=qr',
+         'https://www.linkedin.com/company/club-tdsi-ucad/',
       ],
     });
 
