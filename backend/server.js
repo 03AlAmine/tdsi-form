@@ -135,7 +135,29 @@ app.post('/api/email', async (req, res) => {
 
 // ── START SERVER ──────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
+const tls = require("tls");
 
+const socket = tls.connect(
+  {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    servername: process.env.SMTP_HOST,
+    timeout: 10000,
+  },
+  () => {
+    console.log("TLS CONNECT OK");
+    socket.end();
+  }
+);
+
+socket.on("timeout", () => {
+  console.log("TLS TIMEOUT");
+  socket.destroy();
+});
+
+socket.on("error", (err) => {
+  console.error("TLS ERROR:", err);
+});
 app.listen(PORT, () => {
   console.log(`Serveur TDSI démarré sur le port ${PORT}`);
 });
