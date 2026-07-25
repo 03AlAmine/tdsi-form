@@ -161,3 +161,44 @@ socket.on("error", (err) => {
 app.listen(PORT, () => {
   console.log(`Serveur TDSI démarré sur le port ${PORT}`);
 });
+const dns = require("dns");
+const net = require("net");
+
+app.get("/smtp-test", (req, res) => {
+  dns.lookup(process.env.SMTP_HOST, (err, address) => {
+    if (err) {
+      return res.json({ dns: err.message });
+    }
+
+    const socket = net.createConnection(
+      Number(process.env.SMTP_PORT),
+      process.env.SMTP_HOST
+    );
+
+    socket.setTimeout(5000);
+
+    socket.on("connect", () => {
+      res.json({
+        dns: address,
+        tcp: "OK"
+      });
+      socket.destroy();
+    });
+
+    socket.on("timeout", () => {
+      res.json({
+        dns: address,
+        tcp: "TIMEOUT"
+      });
+      socket.destroy();
+    });
+
+    socket.on("error", (e) => {
+      res.json({
+        dns: address,
+        tcp: e.code,
+        error: e.message
+      });
+    });
+  });
+});
