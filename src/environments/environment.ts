@@ -1,10 +1,10 @@
 export const environment = {
   production: false,
-  // URL publique du site — sert au SEO (canonical, og:url, JSON-LD)
   siteUrl: 'https://campus.clubtdsi.sn',
-  apiUrl: 'http://localhost:3000',
-  // Doit correspondre à EMAIL_API_KEY côté backend (voir tdsi-backend/.env)
+  apiUrl: 'https://campus.clubtdsi.sn/api',
+
   emailApiKey: 'ad277e88e9cab0251dab22c16bea3b5a96fe935830f4a2a4',
+
   firebase: {
     apiKey: 'AIzaSyD-bglX-I4R6XYKFegytaPvlO7nGdwCOzA',
     authDomain: 'club-tdsi-sign.firebaseapp.com',

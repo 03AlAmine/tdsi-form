@@ -1,11 +1,10 @@
 export const environment = {
   production: true,
-  // URL publique du site — sert au SEO (canonical, og:url, JSON-LD)
   siteUrl: 'https://campus.clubtdsi.sn',
-  // Backend Node.js en local (npm run dev dans tdsi-backend/)
-  apiUrl: 'https://club-tdsi-campus.onrender.com',
-  // Doit correspondre à EMAIL_API_KEY sur Render (variables d'environnement)
+  apiUrl: 'https://campus.clubtdsi.sn/api',
+
   emailApiKey: 'ad277e88e9cab0251dab22c16bea3b5a96fe935830f4a2a4',
+
   firebase: {
     apiKey: 'AIzaSyD-bglX-I4R6XYKFegytaPvlO7nGdwCOzA',
     authDomain: 'club-tdsi-sign.firebaseapp.com',
